@@ -22,7 +22,8 @@ import (
 )
 
 func main() {
-	cfgFile := flag.String("config", "", "path to config.yaml")
+	cfgFile   := flag.String("config",    "", "path to config.yaml")
+	inspectIP := flag.String("inspect-ip", "", "dump state + run diagnostic poll for one IP, then exit")
 	flag.Parse()
 
 	cfg, err := config.Load(*cfgFile)
@@ -32,6 +33,12 @@ func main() {
 	}
 
 	log := buildLogger(cfg.LogLevel)
+
+	// Diagnostic mode — inspect a single device, skip normal cycle
+	if *inspectIP != "" {
+		runInspect(cfg, *inspectIP, log)
+		return
+	}
 
 	// PID lock — prevent overlapping cron runs
 	if err := acquireLock(cfg.LockFile, log); err != nil {

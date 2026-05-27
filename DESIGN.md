@@ -297,10 +297,10 @@ FROM device
 ```sql
 CREATE TABLE device_reboot_event (
     id               BIGSERIAL    PRIMARY KEY,
-    detected_at      TIMESTAMPTZ  NOT NULL,
+    detected_at      TIMESTAMP  NOT NULL,
     ip               VARCHAR(45)  NOT NULL,
     name             TEXT         NOT NULL,
-    boot_time        TIMESTAMPTZ,
+    boot_time        TIMESTAMP,
     is_suspected     BOOLEAN      NOT NULL DEFAULT FALSE,
     detection_method VARCHAR(32)  NOT NULL,
     prev_value       BIGINT,
@@ -318,9 +318,9 @@ CREATE TABLE device_last_uptime (
     sys_uptime      BIGINT,
     engine_boots    BIGINT,
     engine_time     BIGINT,
-    polled_at       TIMESTAMPTZ  NOT NULL,
+    polled_at       TIMESTAMP  NOT NULL,
     poll_method     VARCHAR(32)  NOT NULL,   -- 'engine_oids' | 'sys_uptime'
-    last_reboot_at  TIMESTAMPTZ
+    last_reboot_at  TIMESTAMP
 );
 ```
 

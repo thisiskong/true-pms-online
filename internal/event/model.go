@@ -25,7 +25,7 @@ type RebootEvent struct {
 
 // PollRecord is written to the JSON poll log for every device polled each cycle.
 type PollRecord struct {
-	Timestamp       time.Time       `json:"timestamp"`
+	Timestamp       LocalTime       `json:"timestamp"`
 	IP              string          `json:"ip"`
 	Name            string          `json:"name"`
 	SysUptime       *uint32         `json:"sys_uptime,omitempty"`
@@ -35,5 +35,5 @@ type PollRecord struct {
 	IsReboot        bool            `json:"is_reboot"`
 	IsSuspected     bool            `json:"is_suspected,omitempty"`
 	DetectionMethod DetectionMethod `json:"detection_method,omitempty"`
-	BootTime        *time.Time      `json:"boot_time,omitempty"`
+	BootTime        *LocalTime      `json:"boot_time,omitempty"`
 }

@@ -132,7 +132,7 @@ func handleProbe(
 		boots32 := boots
 		engTime32 := engTime
 		rec := event.PollRecord{
-			Timestamp:   now,
+			Timestamp:   event.NewLocalTime(now),
 			IP:          dev.IP,
 			Name:        dev.Name,
 			EngineBoots: &boots32,
@@ -146,7 +146,7 @@ func handleProbe(
 	next := SeedUptimeState(prev, sysUptime, now)
 	next.ConsecutiveFailures = 0
 	rec := event.PollRecord{
-		Timestamp: now,
+		Timestamp: event.NewLocalTime(now),
 		IP:        dev.IP,
 		Name:      dev.Name,
 		SysUptime: &sysUptime,
@@ -179,7 +179,7 @@ func handlePathA(
 		next.LastSysUptime = sysUptime
 		next.LastWallClock = now
 		next.ConsecutiveFailures = 0
-		rec := event.PollRecord{Timestamp: now, IP: dev.IP, Name: dev.Name, SysUptime: &sysUptime}
+		rec := event.PollRecord{Timestamp: event.NewLocalTime(now), IP: dev.IP, Name: dev.Name, SysUptime: &sysUptime}
 		return PollResult{Device: dev, NewState: next, Record: rec}
 	}
 
@@ -192,7 +192,7 @@ func handlePathA(
 	boots32 := boots
 	engTime32 := engTime
 	rec := event.PollRecord{
-		Timestamp:       now,
+		Timestamp:       event.NewLocalTime(now),
 		IP:              dev.IP,
 		Name:            dev.Name,
 		EngineBoots:     &boots32,
@@ -201,7 +201,7 @@ func handlePathA(
 		DetectionMethod: result.DetectionMethod,
 	}
 	if result.IsReboot && !result.EstimatedBoot.IsZero() {
-		t := result.EstimatedBoot
+		t := event.NewLocalTime(result.EstimatedBoot)
 		rec.BootTime = &t
 	}
 
@@ -243,7 +243,7 @@ func handlePathB(
 	next.ConsecutiveFailures = 0
 
 	rec := event.PollRecord{
-		Timestamp:       now,
+		Timestamp:       event.NewLocalTime(now),
 		IP:              dev.IP,
 		Name:            dev.Name,
 		SysUptime:       &sysUptime,
@@ -252,7 +252,7 @@ func handlePathB(
 		DetectionMethod: result.DetectionMethod,
 	}
 	if result.IsReboot && !result.EstimatedBoot.IsZero() {
-		t := result.EstimatedBoot
+		t := event.NewLocalTime(result.EstimatedBoot)
 		rec.BootTime = &t
 	}
 
@@ -275,7 +275,7 @@ func handlePathB(
 
 func errRecord(dev device.Device, now time.Time, msg string) event.PollRecord {
 	return event.PollRecord{
-		Timestamp: now,
+		Timestamp: event.NewLocalTime(now),
 		IP:        dev.IP,
 		Name:      dev.Name,
 		Error:     msg,

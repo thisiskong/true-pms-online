@@ -11,10 +11,10 @@ import (
 )
 
 type rebootLogEntry struct {
-	Timestamp       time.Time       `json:"timestamp"`
+	Timestamp       LocalTime       `json:"timestamp"`
 	IP              string          `json:"ip"`
 	Name            string          `json:"name"`
-	BootTime        *time.Time      `json:"boot_time,omitempty"`
+	BootTime        *LocalTime      `json:"boot_time,omitempty"`
 	IsSuspected     bool            `json:"is_suspected"`
 	DetectionMethod DetectionMethod `json:"detection_method"`
 	PrevValue       uint32          `json:"prev_value"`
@@ -45,7 +45,7 @@ func (e *RebootLogEmitter) Emit(_ context.Context, ev RebootEvent) error {
 	}
 
 	entry := rebootLogEntry{
-		Timestamp:       ev.DetectedAt,
+		Timestamp:       NewLocalTime(ev.DetectedAt),
 		IP:              ev.DeviceIP,
 		Name:            ev.DeviceName,
 		IsSuspected:     ev.IsSuspected,
@@ -54,7 +54,7 @@ func (e *RebootLogEmitter) Emit(_ context.Context, ev RebootEvent) error {
 		CurrValue:       ev.CurrValue,
 	}
 	if !ev.EstimatedBoot.IsZero() {
-		t := ev.EstimatedBoot
+		t := NewLocalTime(ev.EstimatedBoot)
 		entry.BootTime = &t
 	}
 

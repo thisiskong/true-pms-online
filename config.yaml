@@ -30,7 +30,7 @@ reboot_pg_table: ""            # e.g. "device_reboot_event"; disabled if empty
 reboot_pg_timeout: 3s
 pg_retry_queue_file: "./data/pg_retry.queue"
 
-uptime_pg_table: "device_last_uptime"
+uptime_pg_table: ""              # set to "device_last_uptime" once table is created
 uptime_batch_size: 500
 pg_uptime_retry_queue_file: "./data/pg_uptime_retry.queue"
 

@@ -112,7 +112,7 @@ func buildUptimeRow(r PollResult) event.UptimeRow {
 	row := event.UptimeRow{
 		IP:       r.Device.IP,
 		Name:     r.Device.Name,
-		PolledAt: r.Record.Timestamp,
+		PolledAt: r.Record.Timestamp.Time,
 	}
 	if r.NewState.UseEngineOIDs {
 		row.PollMethod = "engine_oids"

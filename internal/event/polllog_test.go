@@ -22,7 +22,7 @@ func TestPollLogger_WriteSameDay(t *testing.T) {
 	l, dir := newTestPollLogger(t)
 	day := time.Date(2026, 5, 27, 10, 0, 0, 0, time.UTC)
 	for i := 0; i < 5; i++ {
-		if err := l.Write(PollRecord{Timestamp: day, IP: "10.0.0.1", Name: "sw"}); err != nil {
+		if err := l.Write(PollRecord{Timestamp: NewLocalTime(day), IP: "10.0.0.1", Name: "sw"}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -36,10 +36,10 @@ func TestPollLogger_DateRollover(t *testing.T) {
 	l, dir := newTestPollLogger(t)
 	day1 := time.Date(2026, 5, 27, 23, 59, 0, 0, time.UTC)
 	day2 := time.Date(2026, 5, 28, 0, 1, 0, 0, time.UTC)
-	if err := l.Write(PollRecord{Timestamp: day1, IP: "10.0.0.1"}); err != nil {
+	if err := l.Write(PollRecord{Timestamp: NewLocalTime(day1), IP: "10.0.0.1"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := l.Write(PollRecord{Timestamp: day2, IP: "10.0.0.1"}); err != nil {
+	if err := l.Write(PollRecord{Timestamp: NewLocalTime(day2), IP: "10.0.0.1"}); err != nil {
 		t.Fatal(err)
 	}
 	entries, _ := os.ReadDir(dir)

@@ -34,7 +34,7 @@ func (l *FilePollLogger) Write(rec PollRecord) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	if err := l.rotateIfNeeded(rec.Timestamp); err != nil {
+	if err := l.rotateIfNeeded(rec.Timestamp.Time); err != nil {
 		return err
 	}
 
