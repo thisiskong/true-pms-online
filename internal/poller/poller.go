@@ -122,9 +122,9 @@ func buildUptimeRow(r PollResult) event.UptimeRow {
 		row.EngineTime = &engTime
 	} else {
 		row.PollMethod = "sys_uptime"
-		up := int64(r.NewState.LastSysUptime)
-		row.SysUptime = &up
 	}
+	up := int64(r.NewState.LastSysUptime)
+	row.SysUptime = &up
 	if !r.NewState.LastBootTime.IsZero() {
 		t := r.NewState.LastBootTime
 		row.LastReboot = &t

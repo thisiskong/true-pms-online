@@ -10,7 +10,8 @@ const (
 var ProbeOIDs = []string{OIDEngineBoots, OIDEngineTime, OIDSysUptime}
 
 // EngineOIDs is used on subsequent polls for Path A devices.
-var EngineOIDs = []string{OIDEngineBoots, OIDEngineTime}
+// sysUptime is included so device_last_uptime.sys_uptime is always populated.
+var EngineOIDs = []string{OIDEngineBoots, OIDEngineTime, OIDSysUptime}
 
 // UptimeOIDs is used on subsequent polls for Path B devices.
 var UptimeOIDs = []string{OIDSysUptime}

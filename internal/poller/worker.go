@@ -128,6 +128,7 @@ func handleProbe(
 		boots := values[snmp.OIDEngineBoots]
 		engTime := values[snmp.OIDEngineTime]
 		next := SeedEngineState(prev, boots, engTime)
+		next.LastSysUptime = values[snmp.OIDSysUptime]
 		next.ConsecutiveFailures = 0
 		boots32 := boots
 		engTime32 := engTime
@@ -187,6 +188,7 @@ func handlePathA(
 	engTime := values[snmp.OIDEngineTime]
 
 	result, next := DetectRebootEngine(prev, boots, engTime, now, cfg)
+	next.LastSysUptime = values[snmp.OIDSysUptime]
 	next.ConsecutiveFailures = 0
 
 	boots32 := boots
