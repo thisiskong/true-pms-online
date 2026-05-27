@@ -1,0 +1,5 @@
+pms-poller
+data/
+logs/
+*.db
+*.queue
