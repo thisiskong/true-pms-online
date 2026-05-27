@@ -10,8 +10,9 @@ type DeviceState struct {
 	ReprobeAt     time.Time // zero = never re-probe
 
 	// Path A — snmpEngineBoots / snmpEngineTime
-	LastEngineBoots uint32
-	LastEngineTime  uint32 // seconds
+	LastEngineBoots           uint32
+	LastEngineTime            uint32 // seconds
+	EngineTimeDecreasingStreak int   // consecutive polls where engTime went backwards; reset on forward/reboot
 
 	// Path B — sysUptime
 	LastSysUptime  uint32

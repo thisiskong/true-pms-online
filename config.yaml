@@ -38,7 +38,8 @@ rollover_threshold_seconds: 42520176
 max_value_streak_threshold: 3
 max_consecutive_failures: 10
 gap_reboot_threshold_seconds: 1800
-engine_time_drift_tolerance_seconds: 300  # suppress false reboot when engTime regresses < 300s (NTP slew)
+engine_time_drift_tolerance_seconds: 300        # suppress false reboot when engTime regresses < 300s (NTP slew)
+engine_time_decreasing_streak_threshold: 5      # switch to Path B after N consecutive decreasing engTime polls
 
 prune_removed_devices: true
 default_port: 161

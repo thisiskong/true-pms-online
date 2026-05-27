@@ -191,6 +191,26 @@ func handlePathA(
 	next.LastSysUptime = values[snmp.OIDSysUptime]
 	next.ConsecutiveFailures = 0
 
+	// Detect devices where snmpEngineTime counts down instead of up.
+	// Track consecutive backwards-engTime polls (when no reboot was declared).
+	// Once the streak hits the threshold, switch permanently to Path B.
+	if !result.IsReboot && boots == prev.LastEngineBoots && engTime < prev.LastEngineTime {
+		next.EngineTimeDecreasingStreak = prev.EngineTimeDecreasingStreak + 1
+		threshold := cfg.EngineTimeDecreasingStreakThreshold
+		if threshold <= 0 {
+			threshold = 5
+		}
+		if next.EngineTimeDecreasingStreak >= threshold {
+			log.Warn("snmpEngineTime counts down — switching to Path B", "ip", dev.IP,
+				"streak", next.EngineTimeDecreasingStreak)
+			next.UseEngineOIDs = false
+			next.LastWallClock = now
+			next.EngineTimeDecreasingStreak = 0
+		}
+	} else {
+		next.EngineTimeDecreasingStreak = 0
+	}
+
 	boots32 := boots
 	engTime32 := engTime
 	rec := event.PollRecord{

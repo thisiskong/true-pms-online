@@ -155,10 +155,11 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 		SNMPTimeout: cfg.SNMPTimeout,
 	}
 	detectCfg := poller.DetectConfig{
-		RolloverThresholdSeconds:        cfg.RolloverThresholdSeconds,
-		MaxValueStreakThreshold:         cfg.MaxValueStreakThreshold,
-		GapRebootThresholdSeconds:       cfg.GapRebootThresholdSeconds,
-		EngineTimeDriftToleranceSeconds: cfg.EngineTimeDriftToleranceSeconds,
+		RolloverThresholdSeconds:           cfg.RolloverThresholdSeconds,
+		MaxValueStreakThreshold:            cfg.MaxValueStreakThreshold,
+		GapRebootThresholdSeconds:          cfg.GapRebootThresholdSeconds,
+		EngineTimeDriftToleranceSeconds:    cfg.EngineTimeDriftToleranceSeconds,
+		EngineTimeDecreasingStreakThreshold: cfg.EngineTimeDecreasingStreakThreshold,
 	}
 
 	cycleStart := time.Now()

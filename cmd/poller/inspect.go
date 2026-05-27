@@ -61,10 +61,11 @@ func runInspect(cfg *config.Config, ip string, log *slog.Logger) {
 	now := time.Now().UTC()
 
 	detectCfg := poller.DetectConfig{
-		RolloverThresholdSeconds:        cfg.RolloverThresholdSeconds,
-		MaxValueStreakThreshold:         cfg.MaxValueStreakThreshold,
-		GapRebootThresholdSeconds:       cfg.GapRebootThresholdSeconds,
-		EngineTimeDriftToleranceSeconds: cfg.EngineTimeDriftToleranceSeconds,
+		RolloverThresholdSeconds:           cfg.RolloverThresholdSeconds,
+		MaxValueStreakThreshold:            cfg.MaxValueStreakThreshold,
+		GapRebootThresholdSeconds:          cfg.GapRebootThresholdSeconds,
+		EngineTimeDriftToleranceSeconds:    cfg.EngineTimeDriftToleranceSeconds,
+		EngineTimeDecreasingStreakThreshold: cfg.EngineTimeDecreasingStreakThreshold,
 	}
 
 	engineAbsent := absent[snmp.OIDEngineBoots] || absent[snmp.OIDEngineTime]
