@@ -25,7 +25,7 @@ func TestDetectRebootEngine_Normal(t *testing.T) {
 		LastEngineBoots: 5,
 		LastEngineTime:  100,
 	}
-	result, next := DetectRebootEngine(prev, 5, 200, baseTime)
+	result, next := DetectRebootEngine(prev, 5, 200, baseTime, defaultDetectCfg)
 	if result.IsReboot {
 		t.Fatal("expected no reboot")
 	}
@@ -36,7 +36,7 @@ func TestDetectRebootEngine_Normal(t *testing.T) {
 
 func TestDetectRebootEngine_SingleReboot(t *testing.T) {
 	prev := state.DeviceState{LastEngineBoots: 5, LastEngineTime: 7200}
-	result, _ := DetectRebootEngine(prev, 6, 300, baseTime)
+	result, _ := DetectRebootEngine(prev, 6, 300, baseTime, defaultDetectCfg)
 	if !result.IsReboot {
 		t.Fatal("expected reboot")
 	}
@@ -50,7 +50,7 @@ func TestDetectRebootEngine_SingleReboot(t *testing.T) {
 
 func TestDetectRebootEngine_MultipleReboots(t *testing.T) {
 	prev := state.DeviceState{LastEngineBoots: 5, LastEngineTime: 7200}
-	result, _ := DetectRebootEngine(prev, 8, 300, baseTime)
+	result, _ := DetectRebootEngine(prev, 8, 300, baseTime, defaultDetectCfg)
 	if !result.IsReboot {
 		t.Fatal("expected reboot")
 	}
@@ -58,7 +58,7 @@ func TestDetectRebootEngine_MultipleReboots(t *testing.T) {
 
 func TestDetectRebootEngine_EngineTimeBackwards(t *testing.T) {
 	prev := state.DeviceState{LastEngineBoots: 5, LastEngineTime: 500}
-	result, _ := DetectRebootEngine(prev, 5, 100, baseTime)
+	result, _ := DetectRebootEngine(prev, 5, 100, baseTime, defaultDetectCfg)
 	if !result.IsReboot {
 		t.Fatal("expected reboot (engineTime went backwards)")
 	}
@@ -66,7 +66,7 @@ func TestDetectRebootEngine_EngineTimeBackwards(t *testing.T) {
 
 func TestDetectRebootEngine_BothZero(t *testing.T) {
 	prev := state.DeviceState{LastEngineBoots: 0, LastEngineTime: 0}
-	result, _ := DetectRebootEngine(prev, 0, 0, baseTime)
+	result, _ := DetectRebootEngine(prev, 0, 0, baseTime, defaultDetectCfg)
 	if result.IsReboot {
 		t.Fatal("expected no reboot for same-zero state")
 	}
@@ -74,7 +74,7 @@ func TestDetectRebootEngine_BothZero(t *testing.T) {
 
 func TestDetectRebootEngine_BootsWrap(t *testing.T) {
 	prev := state.DeviceState{LastEngineBoots: 0xFFFFFFFF, LastEngineTime: 500}
-	result, _ := DetectRebootEngine(prev, 0, 100, baseTime)
+	result, _ := DetectRebootEngine(prev, 0, 100, baseTime, defaultDetectCfg)
 	if !result.IsReboot {
 		t.Fatal("expected reboot on boots counter wrap")
 	}
@@ -82,7 +82,7 @@ func TestDetectRebootEngine_BootsWrap(t *testing.T) {
 
 func TestDetectRebootEngine_BootsDecreased(t *testing.T) {
 	prev := state.DeviceState{LastEngineBoots: 10, LastEngineTime: 500}
-	result, _ := DetectRebootEngine(prev, 5, 600, baseTime)
+	result, _ := DetectRebootEngine(prev, 5, 600, baseTime, defaultDetectCfg)
 	if !result.IsReboot {
 		t.Fatal("expected reboot when boots decreased")
 	}
@@ -90,7 +90,7 @@ func TestDetectRebootEngine_BootsDecreased(t *testing.T) {
 
 func TestDetectRebootEngine_EstimatedBoot(t *testing.T) {
 	prev := state.DeviceState{LastEngineBoots: 5, LastEngineTime: 7200}
-	result, _ := DetectRebootEngine(prev, 6, 3600, baseTime)
+	result, _ := DetectRebootEngine(prev, 6, 3600, baseTime, defaultDetectCfg)
 	expected := baseTime.Add(-3600 * time.Second)
 	if !result.EstimatedBoot.Equal(expected) {
 		t.Fatalf("expected boot time %v, got %v", expected, result.EstimatedBoot)

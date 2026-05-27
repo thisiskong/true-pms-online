@@ -186,7 +186,7 @@ func handlePathA(
 	boots := values[snmp.OIDEngineBoots]
 	engTime := values[snmp.OIDEngineTime]
 
-	result, next := DetectRebootEngine(prev, boots, engTime, now)
+	result, next := DetectRebootEngine(prev, boots, engTime, now, cfg)
 	next.ConsecutiveFailures = 0
 
 	boots32 := boots

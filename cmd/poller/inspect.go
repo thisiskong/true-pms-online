@@ -61,9 +61,10 @@ func runInspect(cfg *config.Config, ip string, log *slog.Logger) {
 	now := time.Now().UTC()
 
 	detectCfg := poller.DetectConfig{
-		RolloverThresholdSeconds:  cfg.RolloverThresholdSeconds,
-		MaxValueStreakThreshold:   cfg.MaxValueStreakThreshold,
-		GapRebootThresholdSeconds: cfg.GapRebootThresholdSeconds,
+		RolloverThresholdSeconds:        cfg.RolloverThresholdSeconds,
+		MaxValueStreakThreshold:         cfg.MaxValueStreakThreshold,
+		GapRebootThresholdSeconds:       cfg.GapRebootThresholdSeconds,
+		EngineTimeDriftToleranceSeconds: cfg.EngineTimeDriftToleranceSeconds,
 	}
 
 	engineAbsent := absent[snmp.OIDEngineBoots] || absent[snmp.OIDEngineTime]
@@ -76,7 +77,7 @@ func runInspect(cfg *config.Config, ip string, log *slog.Logger) {
 		engTime := values[snmp.OIDEngineTime]
 		fmt.Printf("prev boots  : %d   curr boots : %d\n", st.LastEngineBoots, boots)
 		fmt.Printf("prev engTime: %d   curr engTime: %d\n", st.LastEngineTime, engTime)
-		result, _ := poller.DetectRebootEngine(st, boots, engTime, now)
+		result, _ := poller.DetectRebootEngine(st, boots, engTime, now, detectCfg)
 		printResult(result)
 	} else {
 		if st.UseEngineOIDs && engineAbsent {

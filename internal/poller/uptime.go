@@ -19,14 +19,15 @@ type RebootResult struct {
 
 // DetectConfig holds thresholds used by the detection functions.
 type DetectConfig struct {
-	RolloverThresholdSeconds  int // default 42520176 (~492 days)
-	MaxValueStreakThreshold   int // default 3
-	GapRebootThresholdSeconds int // default 1800
+	RolloverThresholdSeconds        int // default 42520176 (~492 days)
+	MaxValueStreakThreshold         int // default 3
+	GapRebootThresholdSeconds       int // default 1800
+	EngineTimeDriftToleranceSeconds int // default 300 — NTP slew on device can push engTime backwards slightly
 }
 
 // DetectRebootEngine implements Path A detection (snmpEngineBoots + snmpEngineTime).
 // prev must already have EngineProbed=true. Pure function — no I/O.
-func DetectRebootEngine(prev state.DeviceState, boots, engineTime uint32, now time.Time) (RebootResult, state.DeviceState) {
+func DetectRebootEngine(prev state.DeviceState, boots, engineTime uint32, now time.Time, cfg DetectConfig) (RebootResult, state.DeviceState) {
 	next := prev
 	next.LastEngineBoots = boots
 	next.LastEngineTime = engineTime
@@ -43,8 +44,11 @@ func DetectRebootEngine(prev state.DeviceState, boots, engineTime uint32, now ti
 		// boots decreased unexpectedly
 		isReboot = true
 	case boots == prev.LastEngineBoots && engineTime < prev.LastEngineTime:
-		// engineTime went backwards within same boots value — firmware anomaly
-		isReboot = true
+		// engineTime went backwards — could be NTP slew (small) or genuine reboot (large)
+		regression := int64(prev.LastEngineTime) - int64(engineTime)
+		if regression > int64(cfg.EngineTimeDriftToleranceSeconds) {
+			isReboot = true
+		}
 	}
 
 	if !isReboot {
