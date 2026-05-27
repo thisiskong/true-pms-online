@@ -7,31 +7,19 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const deviceQuery = `
-SELECT ip, name,
-       COALESCE(port, 161)::int,
-       COALESCE(snmp_version, 2)::int,
-       COALESCE(community, ''),
-       COALESCE(security_name, ''),
-       COALESCE(security_level, ''),
-       COALESCE(auth_protocol, ''),
-       COALESCE(auth_key, ''),
-       COALESCE(priv_protocol, ''),
-       COALESCE(priv_key, '')
-FROM device`
-
 // PostgresRepository loads the device list from the device table.
 type PostgresRepository struct {
 	pool        *pgxpool.Pool
 	defaultPort uint16
+	query       string
 }
 
-func NewPostgresRepository(pool *pgxpool.Pool, defaultPort uint16) *PostgresRepository {
-	return &PostgresRepository{pool: pool, defaultPort: defaultPort}
+func NewPostgresRepository(pool *pgxpool.Pool, defaultPort uint16, query string) *PostgresRepository {
+	return &PostgresRepository{pool: pool, defaultPort: defaultPort, query: query}
 }
 
 func (r *PostgresRepository) LoadFromDB(ctx context.Context) ([]Device, error) {
-	rows, err := r.pool.Query(ctx, deviceQuery)
+	rows, err := r.pool.Query(ctx, r.query)
 	if err != nil {
 		return nil, fmt.Errorf("query devices: %w", err)
 	}

@@ -23,6 +23,7 @@ type Config struct {
 
 	PostgresDSN     string        `mapstructure:"postgres_dsn"`
 	PostgresTimeout time.Duration `mapstructure:"postgres_timeout"`
+	DeviceQuery     string        `mapstructure:"device_query"`
 
 	RebootPGTable    string        `mapstructure:"reboot_pg_table"`
 	RebootPGTimeout  time.Duration `mapstructure:"reboot_pg_timeout"`
@@ -58,6 +59,7 @@ func Load(cfgFile string) (*Config, error) {
 	v.SetDefault("log_retention_days", 30)
 	v.SetDefault("log_level", "info")
 	v.SetDefault("postgres_timeout", "10s")
+	v.SetDefault("device_query", `SELECT ip, name, COALESCE(port,161)::int, COALESCE(snmp_version,2)::int, COALESCE(community,''), COALESCE(security_name,''), COALESCE(security_level,''), COALESCE(auth_protocol,''), COALESCE(auth_key,''), COALESCE(priv_protocol,''), COALESCE(priv_key,'') FROM device`)
 	v.SetDefault("reboot_pg_timeout", "3s")
 	v.SetDefault("pg_retry_queue_file", "./data/pg_retry.queue")
 	v.SetDefault("uptime_pg_table", "device_last_uptime")

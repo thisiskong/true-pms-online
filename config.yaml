@@ -13,6 +13,18 @@ log_level: "info"
 # Set via POLLER_POSTGRES_DSN env var or here
 postgres_dsn: ""
 postgres_timeout: 10s
+device_query: |
+  SELECT ip, name,
+         COALESCE(port, 161)::int,
+         COALESCE(snmp_version, 2)::int,
+         COALESCE(community, ''),
+         COALESCE(security_name, ''),
+         COALESCE(security_level, ''),
+         COALESCE(auth_protocol, ''),
+         COALESCE(auth_key, ''),
+         COALESCE(priv_protocol, ''),
+         COALESCE(priv_key, '')
+  FROM device
 
 reboot_pg_table: ""            # e.g. "device_reboot_event"; disabled if empty
 reboot_pg_timeout: 3s

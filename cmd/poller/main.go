@@ -188,7 +188,7 @@ func loadDevices(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, lo
 	if pool != nil {
 		dbCtx, cancel := context.WithTimeout(ctx, cfg.PostgresTimeout)
 		defer cancel()
-		pg := device.NewPostgresRepository(pool, cfg.DefaultPort)
+		pg := device.NewPostgresRepository(pool, cfg.DefaultPort, cfg.DeviceQuery)
 		repo := device.NewCompositeRepository(pg, cache)
 		devices, fromCache, err := repo.Load(dbCtx)
 		if err != nil {
