@@ -37,8 +37,6 @@ type Config struct {
 	MaxValueStreakThreshold         int `mapstructure:"max_value_streak_threshold"`
 	MaxConsecutiveFailures          int `mapstructure:"max_consecutive_failures"`
 	GapRebootThresholdSeconds       int `mapstructure:"gap_reboot_threshold_seconds"`
-	EngineTimeDriftToleranceSeconds    int `mapstructure:"engine_time_drift_tolerance_seconds"`
-	EngineTimeDecreasingStreakThreshold int `mapstructure:"engine_time_decreasing_streak_threshold"`
 
 	PruneRemovedDevices bool   `mapstructure:"prune_removed_devices"`
 	DefaultPort         uint16 `mapstructure:"default_port"`
@@ -71,8 +69,6 @@ func Load(cfgFile string) (*Config, error) {
 	v.SetDefault("max_value_streak_threshold", 3)
 	v.SetDefault("max_consecutive_failures", 10)
 	v.SetDefault("gap_reboot_threshold_seconds", 1800)
-	v.SetDefault("engine_time_drift_tolerance_seconds", 300)
-	v.SetDefault("engine_time_decreasing_streak_threshold", 5)
 	v.SetDefault("prune_removed_devices", true)
 	v.SetDefault("default_port", 161)
 	v.SetDefault("pushgateway_job", "pms_poller")

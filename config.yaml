@@ -11,7 +11,7 @@ log_retention_days: 30
 log_level: "info"
 
 # Set via POLLER_POSTGRES_DSN env var or here
-postgres_dsn: ""
+postgres_dsn: "postgresql://pmsonline:pmsonline@tyb-pms-etl-dv01.pms:5432/pmsonline?sslmode=disable&connect_timeout=10"
 postgres_timeout: 10s
 device_query: |
   SELECT ip, name,
@@ -26,11 +26,11 @@ device_query: |
          COALESCE(priv_key, '')
   FROM device
 
-reboot_pg_table: ""            # e.g. "device_reboot_event"; disabled if empty
+reboot_pg_table: "device_reboot_event"
 reboot_pg_timeout: 3s
 pg_retry_queue_file: "./data/pg_retry.queue"
 
-uptime_pg_table: ""              # set to "device_last_uptime" once table is created
+uptime_pg_table: "device_last_uptime"
 uptime_batch_size: 500
 pg_uptime_retry_queue_file: "./data/pg_uptime_retry.queue"
 
@@ -38,8 +38,6 @@ rollover_threshold_seconds: 42520176
 max_value_streak_threshold: 3
 max_consecutive_failures: 10
 gap_reboot_threshold_seconds: 1800
-engine_time_drift_tolerance_seconds: 300        # suppress false reboot when engTime regresses < 300s (NTP slew)
-engine_time_decreasing_streak_threshold: 5      # switch to Path B after N consecutive decreasing engTime polls
 
 prune_removed_devices: true
 default_port: 161

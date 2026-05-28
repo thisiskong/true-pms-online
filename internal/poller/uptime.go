@@ -22,8 +22,6 @@ type DetectConfig struct {
 	RolloverThresholdSeconds           int // default 42520176 (~492 days)
 	MaxValueStreakThreshold            int // default 3
 	GapRebootThresholdSeconds          int // default 1800
-	EngineTimeDriftToleranceSeconds    int // default 300 — NTP slew on device can push engTime backwards slightly
-	EngineTimeDecreasingStreakThreshold int // default 5 — switch to Path B when engTime counts down this many polls in a row
 }
 
 // DetectRebootEngine implements Path A detection (snmpEngineBoots + snmpEngineTime).

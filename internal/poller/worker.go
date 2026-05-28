@@ -207,32 +207,6 @@ func handlePathA(
 		rec.BootTime = &t
 	}
 
-	// Detect devices where snmpEngineTime counts down instead of up.
-	// Count every poll where boots is unchanged but engTime went backwards,
-	// whether or not DetectRebootEngine declared a reboot. Once the streak
-	// hits the threshold, switch permanently to Path B and suppress the
-	// current (false) reboot event if one was just declared.
-	if boots == prev.LastEngineBoots && engTime < prev.LastEngineTime {
-		next.EngineTimeDecreasingStreak = prev.EngineTimeDecreasingStreak + 1
-		threshold := cfg.EngineTimeDecreasingStreakThreshold
-		if threshold <= 0 {
-			threshold = 5
-		}
-		if next.EngineTimeDecreasingStreak >= threshold {
-			log.Warn("snmpEngineTime counts down — switching to Path B", "ip", dev.IP,
-				"streak", next.EngineTimeDecreasingStreak)
-			next.UseEngineOIDs = false
-			next.LastWallClock = now
-			next.EngineTimeDecreasingStreak = 0
-			rec.IsReboot = false
-			rec.DetectionMethod = ""
-			rec.BootTime = nil
-			return PollResult{Device: dev, NewState: next, Record: rec}
-		}
-	} else {
-		next.EngineTimeDecreasingStreak = 0
-	}
-
 	var rev *event.RebootEvent
 	if result.IsReboot {
 		ev := event.RebootEvent{
