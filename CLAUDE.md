@@ -9,14 +9,9 @@ A Go daemon that polls ~25,000 SNMP-enabled network devices (Huawei, ZTE, Fiberh
 ## Build & Run
 
 ```bash
-# Build for Linux x86 (target platform)
-GOOS=linux GOARCH=386 go build -o pms-poller ./cmd/poller
-
-# Build for local dev/testing
-go build ./...
-
-# Run tests
-go test ./...
+make build    # cross-compile for linux/386 → ./poll-uptime
+make deploy   # build + sftp to dv02:/home/pms/online/sbin/poll-uptime
+make test     # run all unit tests
 
 # Run a single test
 go test ./internal/poller -run TestSysUptimeRollover

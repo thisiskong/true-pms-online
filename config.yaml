@@ -7,8 +7,11 @@ device_cache_file: "./data/devices.json"
 
 poll_log_dir: "./logs"
 reboot_log_dir: "./logs"
-log_retention_days: 30
+log_retention_days: 7
 log_level: "info"
+log_format: "json"       # "json" or "text"
+log_output: "stderr"     # "stderr", "stdout", or a directory path (e.g. "./logs")
+log_rotate: false        # active: <log_output>/poll-uptime.log, archived: poll-uptime.YYYY-MM-DD.log
 
 # Set via POLLER_POSTGRES_DSN env var or here
 postgres_dsn: "postgresql://pmsonline:pmsonline@tyb-pms-etl-dv01.pms:5432/pmsonline?sslmode=disable&connect_timeout=10"

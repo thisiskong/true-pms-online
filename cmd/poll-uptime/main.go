@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -32,7 +33,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	log := buildLogger(cfg.LogLevel)
+	log, logCloser, err := buildLogger(cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "build logger: %v\n", err)
+		os.Exit(1)
+	}
+	if logCloser != nil {
+		defer logCloser.Close()
+	}
 
 	// Diagnostic mode — inspect a single device, skip normal cycle
 	if *inspectIP != "" {
@@ -63,7 +71,11 @@ func main() {
 
 func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 	// Prune old log files
-	event.PruneOldLogs(cfg.PollLogDir, cfg.RebootLogDir, cfg.LogRetentionDays, time.Now())
+	appLogDir := ""
+	if cfg.LogRotate {
+		appLogDir = cfg.LogOutput
+	}
+	event.PruneOldLogs(cfg.PollLogDir, cfg.RebootLogDir, appLogDir, cfg.LogRetentionDays, time.Now())
 
 	// Open LevelDB
 	store, err := state.NewLevelDBStore(cfg.LevelDBPath)
@@ -237,9 +249,9 @@ func pruneRemovedDevices(store state.StateStore, devices []device.Device, log *s
 	}
 }
 
-func buildLogger(level string) *slog.Logger {
+func buildLogger(cfg *config.Config) (*slog.Logger, io.Closer, error) {
 	var l slog.Level
-	switch level {
+	switch cfg.LogLevel {
 	case "debug":
 		l = slog.LevelDebug
 	case "warn":
@@ -249,5 +261,38 @@ func buildLogger(level string) *slog.Logger {
 	default:
 		l = slog.LevelInfo
 	}
-	return slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: l}))
+
+	var w io.Writer
+	var closer io.Closer
+	switch cfg.LogOutput {
+	case "", "stderr":
+		w = os.Stderr
+	case "stdout":
+		w = os.Stdout
+	default:
+		if cfg.LogRotate {
+			rw, err := event.NewRotatingWriter(cfg.LogOutput)
+			if err != nil {
+				return nil, nil, fmt.Errorf("open rotating log: %w", err)
+			}
+			w = rw
+			closer = rw
+		} else {
+			f, err := os.OpenFile(cfg.LogOutput, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+			if err != nil {
+				return nil, nil, fmt.Errorf("open log file: %w", err)
+			}
+			w = f
+			closer = f
+		}
+	}
+
+	opts := &slog.HandlerOptions{Level: l}
+	var handler slog.Handler
+	if cfg.LogFormat == "text" {
+		handler = slog.NewTextHandler(w, opts)
+	} else {
+		handler = slog.NewJSONHandler(w, opts)
+	}
+	return slog.New(handler), closer, nil
 }

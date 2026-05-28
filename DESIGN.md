@@ -11,8 +11,8 @@ A Go daemon that polls ~25,000 SNMP-enabled network devices every 15 minutes and
 **Short-lived process invoked by system cron every 15 minutes.** The binary starts, loads devices, polls all 25k devices concurrently, writes state to LevelDB, then exits.
 
 ```
-# /etc/cron.d/poller-uptime
-*/15 * * * * root /home/pms/online/sbin/poller-uptime --config /etc/poller-uptime/config.yaml
+# /etc/cron.d/poll-uptime
+*/15 * * * * root /home/pms/online/sbin/poll-uptime --config /etc/pms/poll-uptime.yaml
 ```
 
 A **PID lock file** (`/var/run/pms-poller.lock`) prevents overlapping runs. On startup: if file exists and PID is alive → exit. If PID is dead (stale lock) → overwrite and continue. On exit: delete lock file.
@@ -23,7 +23,7 @@ A **PID lock file** (`/var/run/pms-poller.lock`) prevents overlapping runs. On s
 
 ```
 true-pms-online/
-├── cmd/poller-uptime/           # Entry point: load config, load devices, run poll cycle, exit
+├── cmd/poll-uptime/           # Entry point: load config, load devices, run poll cycle, exit
 │   ├── main.go
 │   ├── inspect.go               # --inspect-ip diagnostic mode
 │   └── lockfile.go
@@ -96,9 +96,8 @@ type DeviceState struct {
     ReprobeAt     time.Time // zero = never re-probe
 
     // Path A — snmpEngineBoots / snmpEngineTime
-    LastEngineBoots            uint32
-    LastEngineTime             uint32 // seconds
-    EngineTimeDecreasingStreak int    // consecutive polls where engTime went backwards (same boots)
+    LastEngineBoots uint32
+    LastEngineTime  uint32 // seconds
 
     // Path B — sysUptime
     LastSysUptime  uint32
@@ -151,24 +150,28 @@ type PollRecord struct {
 
 ## Output Files
 
-### Poll log — `<poll_log_dir>/poll.YYYY-MM-DD.log`
+### Poll log — `<poll_log_dir>/uptime.log` (active) / `uptime.YYYY-MM-DD.log` (archived)
 
-One NDJSON record per device per run. Daily rotation (in-process). Deleted after `log_retention_days`.
+One NDJSON record per device per run. Active file has no date suffix; on UTC midnight rotation the file is renamed with the date. Deleted after `log_retention_days`.
 
 ```json
 {"timestamp":"2026-05-27T10:00:01","ip":"10.0.0.1","name":"HW-SW-01","sys_uptime":3078000,"engine_boots":3,"engine_time":7200,"is_reboot":false}
-{"timestamp":"2026-05-27T10:00:02","ip":"10.0.0.2","name":"ZTE-OLT-03","sys_uptime":500,"is_reboot":true,"detection_method":"sys_uptime","boot_time":"2026-05-27T09:58:47"}
+{"timestamp":"2026-05-27T10:00:02","ip":"10.0.0.2","name":"ZTE-OLT-03","sys_uptime":500,"engine_boots":6,"engine_time":500,"is_reboot":true,"detection_method":"engine_boots","boot_time":"2026-05-27T09:58:47"}
 {"timestamp":"2026-05-27T10:00:03","ip":"10.0.0.3","name":"FH-ONU-07","error":"snmp timeout","is_reboot":false}
 ```
 
-### Reboot event log — `<reboot_log_dir>/reboot.YYYY-MM-DD.log`
+### Reboot event log — `<reboot_log_dir>/reboot.log` (active) / `reboot.YYYY-MM-DD.log` (archived)
 
-One NDJSON record per reboot event only. Daily rotation. Deleted after `log_retention_days`.
+One NDJSON record per reboot event only. Active file has no date suffix; renamed with date on rotation. Deleted after `log_retention_days`.
 
 ```json
 {"timestamp":"2026-05-27T10:00:02","ip":"10.0.0.2","name":"ZTE-OLT-03","boot_time":"2026-05-27T09:58:47","is_suspected":false,"detection_method":"engine_boots","prev_value":5,"curr_value":6}
 {"timestamp":"2026-05-27T10:15:07","ip":"10.0.1.5","name":"HW-OLT-12","boot_time":"2026-05-27T10:10:00","is_suspected":true,"detection_method":"gap_inferred","prev_value":1234567,"curr_value":30000}
 ```
+
+### App log — `<log_output>/poll-uptime.log` (active) / `poll-uptime.YYYY-MM-DD.log` (archived) *(when `log_rotate: true`)*
+
+Structured application log (slog JSON or text). Active file has no date suffix; renamed with date on rotation. Deleted after `log_retention_days`. When `log_output` is `stderr` or `stdout`, no file is written.
 
 All timestamps use `"2006-01-02T15:04:05"` format (no timezone suffix).
 
@@ -197,18 +200,17 @@ Path A GET requests 3 OIDs so `sys_uptime` is always populated in `device_last_u
 ### Path A — snmpEngineBoots + snmpEngineTime (preferred)
 
 ```
-IF boots > prev.LastEngineBoots                                       → reboot (certain)
-IF boots == 0 AND prev == 0xFFFFFFFF                                  → counter wrapped, reboot
-IF boots < prev (and not wrap)                                        → counter decreased, reboot
-IF boots == prev AND engTime < prev AND regression > drift_tolerance  → firmware anomaly, reboot
-ELSE                                                                  → normal
+IF boots > prev.LastEngineBoots          → reboot (certain)
+IF boots == 0 AND prev == 0xFFFFFFFF     → counter wrapped, reboot
+IF boots < prev (and not wrap)           → counter decreased, reboot
+IF boots == prev                         → NOT a reboot (NTP slew or countdown-timer firmware)
+ELSE                                     → normal
 ```
 
-**Path A → Path B fallback conditions:**
-1. **Firmware downgrade**: engine OIDs return `noSuchObject` on a regular poll → flip `UseEngineOIDs=false` immediately.
-2. **Countdown engTime**: device's `snmpEngineTime` decrements instead of counting up. After `engine_time_decreasing_streak_threshold` (default 5) consecutive backwards-engTime polls with the same boots count, flip `UseEngineOIDs=false` and switch to Path B permanently. The triggering poll's reboot event is suppressed.
+`snmpEngineTime` moving backwards with `boots` unchanged is never treated as a reboot. Small regressions are NTP slew; large regressions indicate countdown-timer firmware bugs (e.g. some Huawei models). Both are benign as long as `boots` doesn't change.
 
-**NTP drift tolerance**: small backwards regressions in `snmpEngineTime` (within the same boots value) are treated as NTP slew and suppressed if regression ≤ `engine_time_drift_tolerance_seconds` (default 300s).
+**Path A → Path B fallback:**
+- **Firmware downgrade**: engine OIDs return `noSuchObject` on a regular poll → flip `UseEngineOIDs=false` immediately, seed Path B from sysUptime in the same response.
 
 ### Path B — sysUptime fallback
 
@@ -306,7 +308,7 @@ Failed `device_reboot_event` INSERTs and `device_last_uptime` batch upserts are 
 ## Diagnostic Mode (`--inspect-ip`)
 
 ```bash
-poller-uptime --config config.yaml --inspect-ip 10.0.1.5
+poll-uptime --config config.yaml --inspect-ip 10.0.1.5
 ```
 
 Read-only. Dumps LevelDB state for the IP as JSON, runs a live SNMP GET, and prints what the detection algorithm would decide and why. Does not write state or emit events.
@@ -341,11 +343,14 @@ poll_log_dir: "./logs"
 reboot_log_dir: "./logs"
 log_retention_days: 30
 log_level: "info"
+log_format: "json"       # "json" or "text"
+log_output: "stderr"     # "stderr", "stdout", or a directory path
+log_rotate: false        # daily rotation to <log_output>/poll-uptime.YYYY-MM-DD.log
 postgres_dsn: ""                      # use POLLER_POSTGRES_DSN env var
 postgres_timeout: 10s
 device_query: |                       # SQL to load device list
   SELECT ip, name, ...
-reboot_pg_table: ""                   # disabled if empty
+reboot_pg_table: "device_reboot_event"
 reboot_pg_timeout: 3s
 pg_retry_queue_file: "./data/pg_retry.queue"
 uptime_pg_table: "device_last_uptime"
@@ -355,8 +360,6 @@ rollover_threshold_seconds: 42520176
 max_value_streak_threshold: 3
 max_consecutive_failures: 10
 gap_reboot_threshold_seconds: 1800
-engine_time_drift_tolerance_seconds: 300      # NTP slew tolerance for engTime regression
-engine_time_decreasing_streak_threshold: 5    # polls before switching countdown-engTime device to Path B
 prune_removed_devices: true
 default_port: 161
 pushgateway_url: ""
@@ -383,7 +386,7 @@ No CGo — required for `GOOS=linux GOARCH=386` cross-compilation.
 ## Build & Deploy
 
 ```bash
-make build    # cross-compile for linux/386 → ./poller-uptime
+make build    # cross-compile for linux/386 → ./poll-uptime
 make test     # run all unit tests
-make deploy   # build + sftp to dv02:/home/pms/online/sbin/poller-uptime
+make deploy   # build + sftp to dv02:/home/pms/online/sbin/poll-uptime
 ```

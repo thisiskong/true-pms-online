@@ -61,28 +61,37 @@ func (l *FilePollLogger) rotateIfNeeded(t time.Time) error {
 	if l.file != nil && l.openDate == today {
 		return nil
 	}
+	active := filepath.Join(l.dir, "uptime.log")
 	if l.file != nil {
 		_ = l.file.Close()
+		_ = os.Rename(active, filepath.Join(l.dir, "uptime."+l.openDate+".log"))
+	} else if info, err := os.Stat(active); err == nil {
+		modDate := info.ModTime().UTC().Format("2006-01-02")
+		if modDate != today {
+			_ = os.Rename(active, filepath.Join(l.dir, "uptime."+modDate+".log"))
+		}
 	}
-	path := filepath.Join(l.dir, "poll."+today+".log")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(active, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("open poll log %s: %w", path, err)
+		return fmt.Errorf("open poll log %s: %w", active, err)
 	}
 	l.file = f
 	l.openDate = today
 	return nil
 }
 
-// PruneOldLogs deletes poll and reboot log files older than retentionDays.
-// retentionDays=0 means keep forever.
-func PruneOldLogs(pollDir, rebootDir string, retentionDays int, now time.Time) {
+// PruneOldLogs deletes poll, reboot, and app log files older than retentionDays.
+// retentionDays=0 means keep forever. appLogDir is only pruned when non-empty.
+func PruneOldLogs(pollDir, rebootDir, appLogDir string, retentionDays int, now time.Time) {
 	if retentionDays <= 0 {
 		return
 	}
 	cutoff := now.UTC().AddDate(0, 0, -retentionDays)
-	pruneDir(pollDir, "poll.", cutoff)
+	pruneDir(pollDir, "uptime.", cutoff)
 	pruneDir(rebootDir, "reboot.", cutoff)
+	if appLogDir != "" {
+		pruneDir(appLogDir, "poll-uptime.", cutoff)
+	}
 }
 
 func pruneDir(dir, prefix string, cutoff time.Time) {

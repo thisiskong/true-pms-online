@@ -9,17 +9,20 @@ import (
 )
 
 type Config struct {
-	Concurrency   int           `mapstructure:"concurrency"`
-	SNMPTimeout   time.Duration `mapstructure:"snmp_timeout"`
-	SNMPRetries   int           `mapstructure:"snmp_retries"`
-	LockFile      string        `mapstructure:"lock_file"`
-	LevelDBPath   string        `mapstructure:"leveldb_path"`
-	DeviceCacheFile string      `mapstructure:"device_cache_file"`
+	Concurrency     int           `mapstructure:"concurrency"`
+	SNMPTimeout     time.Duration `mapstructure:"snmp_timeout"`
+	SNMPRetries     int           `mapstructure:"snmp_retries"`
+	LockFile        string        `mapstructure:"lock_file"`
+	LevelDBPath     string        `mapstructure:"leveldb_path"`
+	DeviceCacheFile string        `mapstructure:"device_cache_file"`
 
-	PollLogDir      string `mapstructure:"poll_log_dir"`
-	RebootLogDir    string `mapstructure:"reboot_log_dir"`
-	LogRetentionDays int   `mapstructure:"log_retention_days"`
-	LogLevel        string `mapstructure:"log_level"`
+	PollLogDir       string `mapstructure:"poll_log_dir"`
+	RebootLogDir     string `mapstructure:"reboot_log_dir"`
+	LogRetentionDays int    `mapstructure:"log_retention_days"`
+	LogLevel         string `mapstructure:"log_level"`
+	LogFormat        string `mapstructure:"log_format"`
+	LogOutput        string `mapstructure:"log_output"`
+	LogRotate        bool   `mapstructure:"log_rotate"`
 
 	PostgresDSN     string        `mapstructure:"postgres_dsn"`
 	PostgresTimeout time.Duration `mapstructure:"postgres_timeout"`
@@ -33,10 +36,10 @@ type Config struct {
 	UptimeBatchSize        int    `mapstructure:"uptime_batch_size"`
 	PGUptimeRetryQueueFile string `mapstructure:"pg_uptime_retry_queue_file"`
 
-	RolloverThresholdSeconds        int `mapstructure:"rollover_threshold_seconds"`
-	MaxValueStreakThreshold         int `mapstructure:"max_value_streak_threshold"`
-	MaxConsecutiveFailures          int `mapstructure:"max_consecutive_failures"`
-	GapRebootThresholdSeconds       int `mapstructure:"gap_reboot_threshold_seconds"`
+	RolloverThresholdSeconds  int `mapstructure:"rollover_threshold_seconds"`
+	MaxValueStreakThreshold   int `mapstructure:"max_value_streak_threshold"`
+	MaxConsecutiveFailures    int `mapstructure:"max_consecutive_failures"`
+	GapRebootThresholdSeconds int `mapstructure:"gap_reboot_threshold_seconds"`
 
 	PruneRemovedDevices bool   `mapstructure:"prune_removed_devices"`
 	DefaultPort         uint16 `mapstructure:"default_port"`
@@ -58,6 +61,9 @@ func Load(cfgFile string) (*Config, error) {
 	v.SetDefault("reboot_log_dir", "./logs")
 	v.SetDefault("log_retention_days", 30)
 	v.SetDefault("log_level", "info")
+	v.SetDefault("log_format", "json")
+	v.SetDefault("log_output", "stderr")
+	v.SetDefault("log_rotate", false)
 	v.SetDefault("postgres_timeout", "10s")
 	v.SetDefault("device_query", `SELECT ip, name, COALESCE(port,161)::int, COALESCE(snmp_version,2)::int, COALESCE(community,''), COALESCE(security_name,''), COALESCE(security_level,''), COALESCE(auth_protocol,''), COALESCE(auth_key,''), COALESCE(priv_protocol,''), COALESCE(priv_key,'') FROM device`)
 	v.SetDefault("reboot_pg_timeout", "3s")
@@ -80,10 +86,10 @@ func Load(cfgFile string) (*Config, error) {
 	if cfgFile != "" {
 		v.SetConfigFile(cfgFile)
 	} else {
-		v.SetConfigName("config")
+		v.SetConfigName("poll-uptime")
 		v.SetConfigType("yaml")
 		v.AddConfigPath(".")
-		v.AddConfigPath("/etc/pms-poller")
+		v.AddConfigPath("/etc/pms")
 	}
 
 	if err := v.ReadInConfig(); err != nil {

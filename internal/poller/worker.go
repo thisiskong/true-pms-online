@@ -132,10 +132,12 @@ func handleProbe(
 		next.ConsecutiveFailures = 0
 		boots32 := boots
 		engTime32 := engTime
+		sysUptime32 := values[snmp.OIDSysUptime]
 		rec := event.PollRecord{
 			Timestamp:   event.NewLocalTime(now),
 			IP:          dev.IP,
 			Name:        dev.Name,
+			SysUptime:   &sysUptime32,
 			EngineBoots: &boots32,
 			EngineTime:  &engTime32,
 		}
@@ -193,10 +195,12 @@ func handlePathA(
 
 	boots32 := boots
 	engTime32 := engTime
+	sysUptime := values[snmp.OIDSysUptime]
 	rec := event.PollRecord{
 		Timestamp:       event.NewLocalTime(now),
 		IP:              dev.IP,
 		Name:            dev.Name,
+		SysUptime:       &sysUptime,
 		EngineBoots:     &boots32,
 		EngineTime:      &engTime32,
 		IsReboot:        result.IsReboot,

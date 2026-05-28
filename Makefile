@@ -1,4 +1,4 @@
-BINARY      := poller-uptime
+BINARY      := poll-uptime
 MODULE      := github.com/thisiskong/true-pms-online
 BUILD_DIR   := .
 DEPLOY_USER := pms
@@ -10,7 +10,7 @@ DEPLOY_PATH := /home/pms/online/sbin/$(BINARY)
 build: build-linux
 
 build-linux:
-	GOOS=linux GOARCH=386 go build -o $(BINARY) ./cmd/poller-uptime
+	GOOS=linux GOARCH=386 go build -o $(BINARY) ./cmd/poll-uptime
 
 deploy: build-linux
 	echo "put $(BINARY) $(DEPLOY_PATH)" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
