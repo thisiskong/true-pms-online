@@ -44,12 +44,11 @@ func DetectRebootEngine(prev state.DeviceState, boots, engineTime uint32, now ti
 	case boots < prev.LastEngineBoots && !(boots == 0 && prev.LastEngineBoots == 0xFFFFFFFF):
 		// boots decreased unexpectedly
 		isReboot = true
-	case boots == prev.LastEngineBoots && engineTime < prev.LastEngineTime:
-		// engineTime went backwards — could be NTP slew (small) or genuine reboot (large)
-		regression := int64(prev.LastEngineTime) - int64(engineTime)
-		if regression > int64(cfg.EngineTimeDriftToleranceSeconds) {
-			isReboot = true
-		}
+	// boots == prev: do NOT declare reboot here for backwards engTime.
+	// Small regressions are NTP slew; large regressions indicate a countdown-timer
+	// firmware bug. Both are handled by EngineTimeDecreasingStreak in worker.go,
+	// which switches the device to Path B after N consecutive decreasing polls.
+	// Emitting a reboot here (boots unchanged) produces false positives.
 	}
 
 	if !isReboot {

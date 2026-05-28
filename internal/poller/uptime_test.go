@@ -57,10 +57,11 @@ func TestDetectRebootEngine_MultipleReboots(t *testing.T) {
 }
 
 func TestDetectRebootEngine_EngineTimeBackwards(t *testing.T) {
+	// boots unchanged + backwards engTime is NOT a reboot — handled by streak in worker.go
 	prev := state.DeviceState{LastEngineBoots: 5, LastEngineTime: 500}
 	result, _ := DetectRebootEngine(prev, 5, 100, baseTime, defaultDetectCfg)
-	if !result.IsReboot {
-		t.Fatal("expected reboot (engineTime went backwards)")
+	if result.IsReboot {
+		t.Fatal("expected no reboot when boots unchanged and only engTime went backwards")
 	}
 }
 
