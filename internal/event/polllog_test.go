@@ -56,13 +56,13 @@ func TestPruneOldLogs_DeletesOldFiles(t *testing.T) {
 	for i := 0; i < 35; i++ {
 		d := now.AddDate(0, 0, -i)
 		dateStr := d.UTC().Format("2006-01-02")
-		for _, prefix := range []string{"poll.", "reboot."} {
+		for _, prefix := range []string{"uptime.", "reboot."} {
 			path := filepath.Join(dir, prefix+dateStr+".log")
 			_ = os.WriteFile(path, []byte("x"), 0644)
 		}
 	}
 
-	PruneOldLogs(dir, dir, 30, now)
+	PruneOldLogs(dir, dir, "", 30, now)
 
 	entries, _ := os.ReadDir(dir)
 	// only files within 30-day window should remain (days 0–29 = 30 files × 2 types = 60)
@@ -77,9 +77,9 @@ func TestPruneOldLogs_KeepForever(t *testing.T) {
 	now := time.Date(2026, 5, 27, 10, 0, 0, 0, time.UTC)
 	for i := 0; i < 5; i++ {
 		d := now.AddDate(0, -i, 0)
-		_ = os.WriteFile(filepath.Join(dir, "poll."+d.Format("2006-01-02")+".log"), []byte("x"), 0644)
+		_ = os.WriteFile(filepath.Join(dir, "uptime."+d.Format("2006-01-02")+".log"), []byte("x"), 0644)
 	}
-	PruneOldLogs(dir, dir, 0, now)
+	PruneOldLogs(dir, dir, "", 0, now)
 	entries, _ := os.ReadDir(dir)
 	if len(entries) != 5 {
 		t.Fatalf("expected all 5 files kept with retention=0, got %d", len(entries))

@@ -8,6 +8,7 @@ import (
 
 	"github.com/thisiskong/true-pms-online/internal/device"
 	"github.com/thisiskong/true-pms-online/internal/event"
+	"github.com/thisiskong/true-pms-online/internal/ping"
 	"github.com/thisiskong/true-pms-online/internal/snmp"
 	"github.com/thisiskong/true-pms-online/internal/state"
 )
@@ -20,11 +21,13 @@ type PollJob struct {
 
 // PollResult is the outcome of polling one device.
 type PollResult struct {
-	Device      device.Device
-	NewState    state.DeviceState
-	Record      event.PollRecord
-	RebootEvent *event.RebootEvent // nil if no reboot detected
-	Err         error
+	Device        device.Device
+	NewState      state.DeviceState
+	Record        event.PollRecord
+	RebootEvent   *event.RebootEvent // nil if no reboot detected
+	Err           error
+	PingAttempted bool
+	PingSucceeded bool
 }
 
 // runWorkers starts concurrency workers, feeds them jobs, and collects results.
@@ -45,7 +48,7 @@ func runWorkers(
 		go func() {
 			defer wg.Done()
 			for job := range jobCh {
-				resultCh <- processJob(ctx, job, cfg.SNMPTimeout, client, detectCfg, log)
+				resultCh <- processJob(ctx, job, cfg.SNMPTimeout, cfg.Pinger, client, detectCfg, log)
 			}
 		}()
 	}
@@ -71,12 +74,14 @@ func runWorkers(
 type WorkerConfig struct {
 	Concurrency int
 	SNMPTimeout time.Duration
+	Pinger      ping.Pinger // nil = ping disabled
 }
 
 func processJob(
 	ctx context.Context,
 	job PollJob,
 	timeout time.Duration,
+	pinger ping.Pinger,
 	client snmp.SNMPClient,
 	cfg DetectConfig,
 	log *slog.Logger,
@@ -89,21 +94,56 @@ func processJob(
 	devCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
+	// Optional ICMP ping — purely informational, SNMP always proceeds regardless.
+	// On success: update last ping time/RTT. On failure: carry forward from previous state.
+	lastPingSuccessAt := prev.LastPingSuccessAt
+	lastPingRTTMs := prev.LastPingRTTMs
+	pingEnabled := pinger != nil
+	var pingSucceeded bool
+	if pingEnabled {
+		pr := pinger.Ping(devCtx, dev.IP)
+		pingSucceeded = pr.Success
+		if pr.Success {
+			lastPingSuccessAt = now
+			lastPingRTTMs = pr.RTTMs
+		}
+	}
+
 	gc, ok := client.(*snmp.GoSNMPClient)
 	if !ok {
-		return PollResult{Device: dev, NewState: prev, Err: nil,
-			Record: errRecord(dev, now, "internal: client not GoSNMPClient")}
+		r := errRecord(dev, now, "internal: client not GoSNMPClient")
+		attachPing(&r, pingEnabled, lastPingSuccessAt, lastPingRTTMs)
+		return PollResult{Device: dev, NewState: prev, Record: r,
+			PingAttempted: pingEnabled, PingSucceeded: pingSucceeded}
 	}
 
 	// Determine which OIDs to fetch
+	var result PollResult
 	if !prev.EngineProbed || (!prev.EngineProbed && prev.ReprobeAt.Before(now)) {
-		return handleProbe(devCtx, gc, dev, prev, now, cfg, log)
+		result = handleProbe(devCtx, gc, dev, prev, now, cfg, log)
+	} else if prev.UseEngineOIDs {
+		result = handlePathA(devCtx, gc, dev, prev, now, cfg, log)
+	} else {
+		result = handlePathB(devCtx, gc, dev, prev, now, cfg, log)
 	}
+	result.NewState.LastPingSuccessAt = lastPingSuccessAt
+	result.NewState.LastPingRTTMs = lastPingRTTMs
+	result.PingAttempted = pingEnabled
+	result.PingSucceeded = pingSucceeded
+	attachPing(&result.Record, pingEnabled, lastPingSuccessAt, lastPingRTTMs)
+	return result
+}
 
-	if prev.UseEngineOIDs {
-		return handlePathA(devCtx, gc, dev, prev, now, cfg, log)
+// attachPing sets last ping fields on a PollRecord when ping is enabled.
+func attachPing(r *event.PollRecord, enabled bool, lastSuccessAt time.Time, lastRTTMs float64) {
+	if !enabled {
+		return
 	}
-	return handlePathB(devCtx, gc, dev, prev, now, cfg, log)
+	if !lastSuccessAt.IsZero() {
+		t := event.NewLocalTime(lastSuccessAt)
+		r.LastPingSuccessAt = &t
+		r.LastPingRTTMs = &lastRTTMs
+	}
 }
 
 func handleProbe(

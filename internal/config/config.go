@@ -46,6 +46,11 @@ type Config struct {
 
 	PushgatewayURL string `mapstructure:"pushgateway_url"`
 	PushgatewayJob string `mapstructure:"pushgateway_job"`
+
+	EnablePing      bool          `mapstructure:"enable_ping"`
+	PingTimeout     time.Duration `mapstructure:"ping_timeout"`
+	PingCount       int           `mapstructure:"ping_count"`
+	PingConcurrency int           `mapstructure:"ping_concurrency"`
 }
 
 func Load(cfgFile string) (*Config, error) {
@@ -68,7 +73,7 @@ func Load(cfgFile string) (*Config, error) {
 	v.SetDefault("device_query", `SELECT ip, name, COALESCE(port,161)::int, COALESCE(snmp_version,2)::int, COALESCE(community,''), COALESCE(security_name,''), COALESCE(security_level,''), COALESCE(auth_protocol,''), COALESCE(auth_key,''), COALESCE(priv_protocol,''), COALESCE(priv_key,'') FROM device`)
 	v.SetDefault("reboot_pg_timeout", "3s")
 	v.SetDefault("pg_retry_queue_file", "./data/pg_retry.queue")
-	v.SetDefault("uptime_pg_table", "device_last_uptime")
+	v.SetDefault("uptime_pg_table", "device_uptime")
 	v.SetDefault("uptime_batch_size", 500)
 	v.SetDefault("pg_uptime_retry_queue_file", "./data/pg_uptime_retry.queue")
 	v.SetDefault("rollover_threshold_seconds", 42520176)
@@ -78,6 +83,10 @@ func Load(cfgFile string) (*Config, error) {
 	v.SetDefault("prune_removed_devices", true)
 	v.SetDefault("default_port", 161)
 	v.SetDefault("pushgateway_job", "pms_poller")
+	v.SetDefault("enable_ping", false)
+	v.SetDefault("ping_timeout", "1s")
+	v.SetDefault("ping_count", 2)
+	v.SetDefault("ping_concurrency", 100)
 
 	v.SetEnvPrefix("POLLER")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))

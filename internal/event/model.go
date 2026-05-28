@@ -36,4 +36,6 @@ type PollRecord struct {
 	IsSuspected     bool            `json:"is_suspected,omitempty"`
 	DetectionMethod DetectionMethod `json:"detection_method,omitempty"`
 	BootTime        *LocalTime      `json:"boot_time,omitempty"`
+	LastPingSuccessAt *LocalTime `json:"last_ping_success_at,omitempty"`
+	LastPingRTTMs     *float64   `json:"last_ping_rtt_ms,omitempty"`
 }

@@ -14,6 +14,7 @@ build-linux:
 
 deploy: build-linux
 	echo "put $(BINARY) $(DEPLOY_PATH)" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
+	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) "sudo setcap cap_net_raw=+ep $(DEPLOY_PATH)"
 
 test:
 	go test ./...

@@ -38,6 +38,8 @@ true-pms-online/
 │   │   ├── model.go             # DeviceState struct
 │   │   ├── store.go             # StateStore interface
 │   │   └── leveldb.go           # LevelDB implementation
+│   ├── ping/
+│   │   └── ping.go              # Pinger interface + ICMPPinger (optional pre-check before SNMP)
 │   ├── snmp/
 │   │   ├── client.go            # SNMPClient interface + gosnmp wrapper
 │   │   └── oid.go               # OID constants + ProbeOIDs / EngineOIDs / UptimeOIDs slices
@@ -54,7 +56,7 @@ true-pms-online/
 │   │   ├── postgres.go          # reboot event → Postgres INSERT + retry queue drain
 │   │   ├── retryqueue.go        # file-based pending queue (NDJSON) for failed inserts
 │   │   ├── polllog.go           # poll result per device → daily-rotated NDJSON file
-│   │   └── uptimeupsert.go      # batch upsert poll results → device_last_uptime
+│   │   └── uptimeupsert.go      # batch upsert poll results → device_uptime
 │   └── metrics/
 │       └── pushgateway.go       # Prometheus Pushgateway client (optional)
 ├── config.yaml
@@ -106,6 +108,10 @@ type DeviceState struct {
     LastBootTime   time.Time // estimated boot time, updated on each detected reboot
 
     ConsecutiveFailures int
+
+    // Ping (only populated when enable_ping=true)
+    LastPingSuccessAt time.Time // zero if never successfully pinged
+    LastPingRTTMs     float64   // RTT from the last successful ping
 }
 ```
 
@@ -143,6 +149,8 @@ type PollRecord struct {
     IsSuspected     bool             `json:"is_suspected,omitempty"`
     DetectionMethod DetectionMethod  `json:"detection_method,omitempty"`
     BootTime        *LocalTime       `json:"boot_time,omitempty"`
+    LastPingSuccessAt *LocalTime      `json:"last_ping_success_at,omitempty"` // nil when ping disabled or never succeeded
+    LastPingRTTMs     *float64        `json:"last_ping_rtt_ms,omitempty"`     // RTT from the last successful ping
 }
 ```
 
@@ -155,10 +163,12 @@ type PollRecord struct {
 One NDJSON record per device per run. Active file has no date suffix; on UTC midnight rotation the file is renamed with the date. Deleted after `log_retention_days`.
 
 ```json
-{"timestamp":"2026-05-27T10:00:01","ip":"10.0.0.1","name":"HW-SW-01","sys_uptime":3078000,"engine_boots":3,"engine_time":7200,"is_reboot":false}
-{"timestamp":"2026-05-27T10:00:02","ip":"10.0.0.2","name":"ZTE-OLT-03","sys_uptime":500,"engine_boots":6,"engine_time":500,"is_reboot":true,"detection_method":"engine_boots","boot_time":"2026-05-27T09:58:47"}
+{"timestamp":"2026-05-27T10:00:01","ip":"10.0.0.1","name":"HW-SW-01","sys_uptime":3078000,"engine_boots":3,"engine_time":7200,"is_reboot":false,"last_ping_success_at":"2026-05-27T10:00:01","last_ping_rtt_ms":1.23}
+{"timestamp":"2026-05-27T10:00:02","ip":"10.0.0.2","name":"ZTE-OLT-03","sys_uptime":500,"engine_boots":6,"engine_time":500,"is_reboot":true,"detection_method":"engine_boots","boot_time":"2026-05-27T09:58:47","last_ping_success_at":"2026-05-27T09:45:00","last_ping_rtt_ms":2.10}
 {"timestamp":"2026-05-27T10:00:03","ip":"10.0.0.3","name":"FH-ONU-07","error":"snmp timeout","is_reboot":false}
 ```
+
+`last_ping_success_at` and `last_ping_rtt_ms` are omitted when `enable_ping: false` or the device has never responded to ping.
 
 ### Reboot event log — `<reboot_log_dir>/reboot.log` (active) / `reboot.YYYY-MM-DD.log` (archived)
 
@@ -185,7 +195,7 @@ All timestamps use `"2006-01-02T15:04:05"` format (no timezone suffix).
 | `1.3.6.1.6.3.10.2.1.3.0` | `snmpEngineTime` | Probe + every Path A poll |
 | `1.3.6.1.2.1.1.3.0` | `sysUptime` | Probe + every poll (Path A and B) |
 
-Path A GET requests 3 OIDs so `sys_uptime` is always populated in `device_last_uptime`.
+Path A GET requests 3 OIDs so `sys_uptime` is always populated in `device_uptime`.
 
 ---
 
@@ -270,10 +280,10 @@ CREATE TABLE device_reboot_event (
 CREATE INDEX ON device_reboot_event (ip, detected_at);
 ```
 
-### `device_last_uptime` (create once)
+### `device_uptime` (create once)
 
 ```sql
-CREATE TABLE device_last_uptime (
+CREATE TABLE device_uptime (
     ip              VARCHAR(45)  PRIMARY KEY,
     name            TEXT         NOT NULL,
     sys_uptime      BIGINT,                  -- always set when device responds
@@ -281,11 +291,26 @@ CREATE TABLE device_last_uptime (
     engine_time     BIGINT,                  -- NULL for Path B devices
     polled_at       TIMESTAMP    NOT NULL,
     poll_method     VARCHAR(32)  NOT NULL,   -- 'engine_oids' | 'sys_uptime'
-    last_reboot_at  TIMESTAMP
+    last_reboot_at  TIMESTAMP,
+    last_ping_success_at TIMESTAMP,          -- NULL when ping disabled or never succeeded
+    last_ping_rtt_ms     FLOAT               -- RTT (ms) from the last successful ping
 );
 ```
 
 Upsert runs in batches of 500 after each poll cycle (`pgx.Batch`).
+
+---
+
+## ICMP Ping (optional)
+
+When `enable_ping: true`, each worker sends `ping_count` ICMP echo requests (56-byte payload) before the SNMP GET. Ping is **purely informational** — SNMP always runs regardless of ping result.
+
+- A semaphore of size `ping_concurrency` caps simultaneous in-flight pings across all workers, independent of the SNMP worker pool.
+- `Success = true` if at least one reply is received within `ping_timeout`; `last_ping_rtt_ms` = average of received replies.
+- On success: `last_ping_success_at` and `last_ping_rtt_ms` are updated in `DeviceState` (LevelDB) and written to the poll log and `device_uptime`.
+- On failure: previous `last_ping_success_at` / `last_ping_rtt_ms` are carried forward from state, so the last known good values are always visible.
+- Requires `CAP_NET_RAW` (the poller runs as root). If the raw socket cannot be opened, ping is silently disabled with a warning log.
+- Per-cycle totals (`ping_success`, `ping_failed`) are included in the cycle-complete log line and omitted entirely when ping is disabled.
 
 ---
 
@@ -297,11 +322,25 @@ Upsert runs in batches of 500 after each poll cycle (`pgx.Batch`).
 - Top-level 14-minute deadline context
 - PID lock file prevents overlapping cron runs
 
+At the end of each cycle, a summary is logged:
+
+```json
+{"level":"INFO","msg":"poll cycle complete","total":12911,"success":12840,"errors":71,"reboots":0,"duration":15588998796}
+```
+
+When `enable_ping: true`, ping summary fields are inserted before `duration`:
+
+```json
+{"level":"INFO","msg":"poll cycle complete","total":12911,"success":12840,"errors":71,"reboots":0,"ping_success":12750,"ping_failed":161,"duration":15588998796}
+```
+
+`duration` is in nanoseconds.
+
 ---
 
 ## Retry Queue (Postgres outage resilience)
 
-Failed `device_reboot_event` INSERTs and `device_last_uptime` batch upserts are written to local NDJSON queue files (`pg_retry.queue`, `pg_uptime_retry.queue`). On each run start the queue is drained before the poll cycle. Files are human-readable and operator-clearable.
+Failed `device_reboot_event` INSERTs and `device_uptime` batch upserts are written to local NDJSON queue files (`pg_retry.queue`, `pg_uptime_retry.queue`). On each run start the queue is drained before the poll cycle. Files are human-readable and operator-clearable.
 
 ---
 
@@ -325,8 +364,10 @@ Pushed at end of each run if `pushgateway_url` is set:
 | `pms_poll_success_total` | Devices that responded |
 | `pms_poll_error_total` | Timeouts / errors |
 | `pms_poll_reboot_total` | Reboot events detected |
-| `pms_poll_cycle_duration_seconds` | Wall-clock cycle time |
 | `pms_poll_last_run_timestamp` | Unix timestamp of completion |
+| `pms_poll_ping_success_total` | Devices that responded to ICMP ping (0 when ping disabled) |
+| `pms_poll_ping_failed_total` | Devices that did not respond to ICMP ping (0 when ping disabled) |
+| `pms_poll_cycle_duration_seconds` | Wall-clock cycle time |
 
 ---
 
@@ -353,7 +394,7 @@ device_query: |                       # SQL to load device list
 reboot_pg_table: "device_reboot_event"
 reboot_pg_timeout: 3s
 pg_retry_queue_file: "./data/pg_retry.queue"
-uptime_pg_table: "device_last_uptime"
+uptime_pg_table: "device_uptime"
 uptime_batch_size: 500
 pg_uptime_retry_queue_file: "./data/pg_uptime_retry.queue"
 rollover_threshold_seconds: 42520176
@@ -364,6 +405,10 @@ prune_removed_devices: true
 default_port: 161
 pushgateway_url: ""
 pushgateway_job: "pms_poller"
+enable_ping:      false
+ping_timeout:     1s
+ping_count:       2     # echo requests per device; success = at least 1 reply; rtt = avg of received
+ping_concurrency: 100   # max simultaneous in-flight pings (semaphore inside Pinger)
 ```
 
 ---
@@ -372,6 +417,7 @@ pushgateway_job: "pms_poller"
 
 | Concern | Library |
 |---|---|
+| ICMP ping | `golang.org/x/net/icmp` (stdlib extension, no CGo) |
 | SNMP | `github.com/gosnmp/gosnmp` |
 | LevelDB | `github.com/syndtr/goleveldb/leveldb` |
 | PostgreSQL | `github.com/jackc/pgx/v5` |

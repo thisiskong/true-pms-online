@@ -21,4 +21,8 @@ type DeviceState struct {
 
 	// Shared
 	ConsecutiveFailures int // SNMP errors in a row; reset to 0 on success
+
+	// Ping (only populated when enable_ping=true)
+	LastPingSuccessAt time.Time // zero if never successfully pinged
+	LastPingRTTMs     float64   // RTT from the last successful ping
 }

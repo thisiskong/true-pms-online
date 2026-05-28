@@ -13,11 +13,13 @@ import (
 
 // CycleStats summarises a completed poll cycle.
 type CycleStats struct {
-	Total    int
-	Success  int
-	Errors   int
-	Reboots  int
-	Duration time.Duration
+	Total       int
+	Success     int
+	Errors      int
+	Reboots     int
+	Duration    time.Duration
+	PingSuccess int // devices that responded to ping this cycle (0 when ping disabled)
+	PingFailed  int // devices that did not respond to ping this cycle (0 when ping disabled)
 }
 
 // RunPollCycle polls all devices, writes state, emits events, and logs records.
@@ -59,6 +61,13 @@ func RunPollCycle(
 		} else {
 			stats.Success++
 		}
+		if r.PingAttempted {
+			if r.PingSucceeded {
+				stats.PingSuccess++
+			} else {
+				stats.PingFailed++
+			}
+		}
 
 		// Persist updated state
 		if err := store.Put(r.Device.IP, r.NewState); err != nil {
@@ -96,7 +105,7 @@ func RunPollCycle(
 		}
 	}
 
-	// Batch upsert to device_last_uptime
+	// Batch upsert to device_uptime
 	if upsert != nil && len(upsertRows) > 0 {
 		upsert(ctx, upsertRows)
 	}
@@ -129,5 +138,10 @@ func buildUptimeRow(r PollResult) event.UptimeRow {
 		t := r.NewState.LastBootTime
 		row.LastReboot = &t
 	}
+	if r.Record.LastPingSuccessAt != nil {
+		t := r.Record.LastPingSuccessAt.Time
+		row.LastPingSuccessAt = &t
+	}
+	row.LastPingRTTMs = r.Record.LastPingRTTMs
 	return row
 }

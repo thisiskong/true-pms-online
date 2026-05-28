@@ -17,6 +17,7 @@ import (
 	"github.com/thisiskong/true-pms-online/internal/device"
 	"github.com/thisiskong/true-pms-online/internal/event"
 	"github.com/thisiskong/true-pms-online/internal/metrics"
+	"github.com/thisiskong/true-pms-online/internal/ping"
 	"github.com/thisiskong/true-pms-online/internal/poller"
 	"github.com/thisiskong/true-pms-online/internal/snmp"
 	"github.com/thisiskong/true-pms-online/internal/state"
@@ -161,10 +162,23 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 	// SNMP client
 	snmpClient := snmp.NewGoSNMPClient(cfg.SNMPTimeout, cfg.SNMPRetries)
 
+	// Optional ICMP pinger
+	var pinger ping.Pinger
+	if cfg.EnablePing {
+		p, err := ping.NewICMPPinger(cfg.PingTimeout, cfg.PingCount, cfg.PingConcurrency)
+		if err != nil {
+			log.Warn("ICMP ping unavailable, disabling", "err", err)
+		} else {
+			pinger = p
+			defer p.Close()
+		}
+	}
+
 	// Run poll cycle
 	workerCfg := poller.WorkerConfig{
 		Concurrency: cfg.Concurrency,
 		SNMPTimeout: cfg.SNMPTimeout,
+		Pinger:      pinger,
 	}
 	detectCfg := poller.DetectConfig{
 		RolloverThresholdSeconds:  cfg.RolloverThresholdSeconds,
@@ -178,13 +192,20 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 		workerCfg, detectCfg, cfg.MaxConsecutiveFailures, log,
 	)
 
-	log.Info("poll cycle complete",
+	logArgs := []any{
 		"total", stats.Total,
 		"success", stats.Success,
 		"errors", stats.Errors,
 		"reboots", stats.Reboots,
-		"duration", stats.Duration,
-	)
+	}
+	if cfg.EnablePing {
+		logArgs = append(logArgs,
+			"ping_success", stats.PingSuccess,
+			"ping_failed", stats.PingFailed,
+		)
+	}
+	logArgs = append(logArgs, "duration", stats.Duration)
+	log.Info("poll cycle complete", logArgs...)
 
 	// Push Prometheus metrics
 	if err := metrics.Push(cfg.PushgatewayURL, cfg.PushgatewayJob, metrics.CycleMetrics{
@@ -194,6 +215,8 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 		RebootTotal:  stats.Reboots,
 		DurationSecs: time.Since(cycleStart).Seconds(),
 		CompletedAt:  time.Now(),
+		PingSuccess:  stats.PingSuccess,
+		PingFailed:   stats.PingFailed,
 	}); err != nil {
 		log.Warn("metrics push failed", "err", err)
 	}

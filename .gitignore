@@ -1,4 +1,4 @@
-pms-poller
+poll-uptime
 data/
 logs/
 *.db
