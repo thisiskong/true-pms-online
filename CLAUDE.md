@@ -2,37 +2,39 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Repository Structure
 
-A Go daemon that polls ~25,000 SNMP-enabled network devices (Huawei, ZTE, Fiberhome, Nokia, etc.) every 15 minutes to detect device reboot events. It stores persistent state in LevelDB and loads its device list from PostgreSQL, with a local file cache so polling continues even when PostgreSQL is unavailable.
+```
+true-pms-online/
+└── poller/
+    ├── uptime/    # Go daemon: polls SNMP devices every 15 min, detects reboots
+    └── snmptk/    # Go toolkit: SNMP helpers for PON/FTTx traffic collection
+```
 
-## Build & Run
+Each sub-project is an independent Go module with its own `go.mod`.
+
+## poller/uptime — SNMP reboot poller
+
+The primary sub-project. Full architecture, commands, and design constraints are documented in [poller/uptime/CLAUDE.md](poller/uptime/CLAUDE.md).
+
+Quick reference:
 
 ```bash
-make build    # cross-compile for linux/386 → ./poll-uptime
-make deploy   # build + sftp to dv02:/home/pms/online/sbin/poll-uptime
+# Run from poller/uptime/
+make build    # cross-compile linux/386 → ./poll-uptime
 make test     # run all unit tests
+make deploy   # build + sftp to dv02:/home/pms/online/sbin/poll-uptime
 
-# Run a single test
+# Single test
 go test ./internal/poller -run TestSysUptimeRollover
 ```
 
-## Architecture
+## poller/snmptk — SNMP toolkit
 
-The application has three main concerns:
+Helper library for collecting PON/FTTx traffic via SNMP. Contains `mapSnmpVar`, `mapGponSnmpVar`, OID list builders for Dot0 and PonPort. Currently contains hardcoded OID mappings that are candidates for configuration.
 
-1. **Device list management** — loads from PostgreSQL (`SELECT ip, name FROM device`), persists to a local file, falls back to the file if Postgres is unreachable on startup or reload.
+## Cross-cutting notes
 
-2. **SNMP polling engine** — polls each device's `sysUptime` OID on a 15-minute cron schedule. Must handle:
-   - Normal reboot detection (new sysUptime < previous sysUptime)
-   - **32-bit counter rollover** (~497 days): sysUptime wraps to 0 and climbs again — distinguish from a genuine reboot using elapsed wall-clock time
-   - **Firmware bug — stuck MAX value**: some devices report sysUptime frozen at `0xFFFFFFFF`; treat the first occurrence as stale and suppress false reboot events on subsequent polls
-
-3. **State store (LevelDB)** — keyed by device IP, stores last-seen sysUptime and the wall-clock timestamp of that reading so rollover math is possible across process restarts.
-
-## Key Design Constraints
-
-- Must survive PostgreSQL downtime: device list file is the source of truth once loaded.
-- 25,000 devices × 15-minute window requires concurrent polling; use a worker pool with a configurable concurrency limit.
-- Multi-vendor devices may return sysUptime in different SNMP community strings or require SNMPv3; the device struct should carry auth config.
-- Reboot events should be emitted (log line / channel / webhook) with: device IP, device name, estimated reboot time, detection timestamp.
+- **Target platform**: `GOOS=linux GOARCH=386` — no CGo anywhere in either project.
+- **Go version**: 1.26+ (see `poller/uptime/go.mod`).
+- After any code change in either sub-project, run `go build ./...` from within that sub-project's directory to verify compilation.

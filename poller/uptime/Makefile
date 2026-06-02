@@ -1,6 +1,5 @@
+MODULE      := true-pms-online
 BINARY      := poll-uptime
-MODULE      := github.com/thisiskong/true-pms-online
-BUILD_DIR   := .
 DEPLOY_USER := pms
 DEPLOY_HOST := dv02
 DEPLOY_PATH := /home/pms/online/sbin/$(BINARY)
