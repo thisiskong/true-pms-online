@@ -86,7 +86,7 @@ func processJob(
 	cfg DetectConfig,
 	log *slog.Logger,
 ) PollResult {
-	now := time.Now().UTC()
+	now := time.Now()
 	dev := job.Device
 	prev := job.State
 

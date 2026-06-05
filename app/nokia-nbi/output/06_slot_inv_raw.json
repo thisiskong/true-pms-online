@@ -1,0 +1,105 @@
+{
+  "QCENGNKMF2": {
+    "device-mf:device-mf": {
+      "device-manager": "AV-203",
+      "device-template": "default",
+      "device-version": "25.6",
+      "hardware-type": "LS-MF-LMNT-A",
+      "ihub-device-template": "default",
+      "ihub-version": "25.6",
+      "ip-address": "10.237.77.221",
+      "ip-port": 832,
+      "partition-access-profile": "PublicPAP",
+      "password": "$-0$Hx0qYCnYV93ssRoQf+usEVnsVYqqAt0Mc4B0TNwFoiU=",
+      "push-nav-configuration-to-device": "false",
+      "timezone-name": "Asia/Bangkok",
+      "transport-protocol": "ssh",
+      "username": "admin",
+      "boards": [
+        {
+          "slot-name": "LT1",
+          "admin-state": "unlocked",
+          "board-service-profile": "Embedded-ONT",
+          "device-version": "25.6",
+          "host-id": "not-configured",
+          "lt-device-template": "default",
+          "planned-type": "LWLT-C"
+        },
+        {
+          "slot-name": "FAN",
+          "host-id": "not-configured",
+          "planned-type": "LFAN-B"
+        },
+        {
+          "slot-name": "PSU1",
+          "host-id": "not-configured",
+          "planned-type": "DC"
+        },
+        {
+          "slot-name": "PSU2",
+          "host-id": "not-configured",
+          "planned-type": "DC"
+        }
+      ]
+    }
+  },
+  "SMK01058GO0": {
+    "device-mf:device-mf": {
+      "device-manager": "AV-203",
+      "device-template": "default",
+      "device-version": "25.6",
+      "hardware-type": "LS-MF-LMNT-A",
+      "ihub-device-template": "default",
+      "ihub-version": "25.6",
+      "ip-address": "10.237.205.162",
+      "ip-port": 832,
+      "partition-access-profile": "PublicPAP",
+      "password": "$-0$S2PA31d6rWv03rTiwjlwl8fw/yOSwwimeeyPHBfGjEs=",
+      "push-nav-configuration-to-device": "false",
+      "timezone-name": "Asia/Bangkok",
+      "transport-protocol": "ssh",
+      "username": "admin",
+      "boards": [
+        {
+          "slot-name": "LT1",
+          "admin-state": "unlocked",
+          "board-service-profile": "Embedded-ONT",
+          "device-version": "25.6",
+          "host-id": "not-configured",
+          "lt-device-template": "default",
+          "planned-type": "LWLT-C"
+        },
+        {
+          "slot-name": "FAN",
+          "host-id": "not-configured",
+          "planned-type": "LFAN-B"
+        },
+        {
+          "slot-name": "PSU1",
+          "host-id": "not-configured",
+          "planned-type": "DC"
+        },
+        {
+          "slot-name": "PSU2",
+          "host-id": "not-configured",
+          "planned-type": "DC"
+        },
+        {
+          "slot-name": "LT2",
+          "admin-state": "unlocked",
+          "board-service-profile": "Embedded-ONT",
+          "device-version": "25.6",
+          "host-id": "not-configured",
+          "lt-device-template": "default",
+          "planned-type": "LWLT-C"
+        }
+      ],
+      "label": [
+        {
+          "category": "City",
+          "value": "SMK : Samut sakhon"
+        }
+      ]
+    }
+  }
+}

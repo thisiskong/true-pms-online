@@ -8,9 +8,9 @@ DEPLOY_PATH := /home/pms/online/sbin
 build: build-linux
 
 build-linux:
-	GOOS=linux GOARCH=386 go build -tags gosnmp_nodebug -o snmptk  ./cmd/snmptk
-	GOOS=linux GOARCH=386 go build -tags gosnmp_nodebug -o sping    ./cmd/sping
-	GOOS=linux GOARCH=386 go build                      -o serviceapi ./cmd/serviceapi
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -tags gosnmp_nodebug -o snmptk  ./cmd/snmptk
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -tags gosnmp_nodebug -o sping    ./cmd/sping
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"                      -o serviceapi ./cmd/serviceapi
 
 deploy: build-linux
 	echo "put snmptk $(DEPLOY_PATH)/snmptk" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)

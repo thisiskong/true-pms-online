@@ -18,12 +18,12 @@ func NewLocalTime(t time.Time) LocalTime {
 }
 
 func (p LocalTime) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + p.UTC().Format(plainTimeFormat) + `"`), nil
+	return []byte(`"` + p.Local().Format(plainTimeFormat) + `"`), nil
 }
 
 func (p *LocalTime) UnmarshalJSON(data []byte) error {
 	s := strings.Trim(string(data), `"`)
-	t, err := time.ParseInLocation(plainTimeFormat, s, time.UTC)
+	t, err := time.ParseInLocation(plainTimeFormat, s, time.Local)
 	if err != nil {
 		return err
 	}

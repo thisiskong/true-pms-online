@@ -27,7 +27,7 @@ func NewRotatingWriter(dir string) (*RotatingWriter, error) {
 func (w *RotatingWriter) Write(p []byte) (int, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	if err := w.rotateIfNeeded(time.Now().UTC()); err != nil {
+	if err := w.rotateIfNeeded(time.Now()); err != nil {
 		return 0, err
 	}
 	return w.file.Write(p)

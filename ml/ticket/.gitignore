@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.python-version
+
+# secrets
+.env
+
+# generated data
+*.json
+*.jsonl

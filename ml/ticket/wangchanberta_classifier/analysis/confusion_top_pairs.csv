@@ -1,0 +1,21 @@
+﻿true_label,predicted_label,count
+กล่อง Set top boxขัดข้อง | TVS-ปัญหาอุปกรณ์ | CONFIG CHANGE,กล่อง Set top boxขัดข้อง | CMDU-ปัญหาอุปกรณ์ | Remote ไม่ทำง,27
+Proactive poor experience link loss | Proactive | เหตุเสียใช,Proactive poor experience outside plant | Proactive | สายหัก,26
+ไฟ Los ติด เป็นสีแดง | Internet เชื่อมต่อไม่ได้ | สายหัก/สาย,ไฟ Los ดับ/ไฟ PON กระพริบ | Internet เชื่อมต่อไม่ได้ | ลูกค้,24
+ไฟ Power ไม่ติด | Internet เชื่อมต่อไม่ได้ | เหตุเสียใช้ได้ ,ไฟ Los ดับ/ไฟ PON กระพริบ | Internet เชื่อมต่อไม่ได้ | ลูกค้,24
+Proactive-Change ONT | Proactive | Monitor เหตุเสียครบตามเงื,Proactive-Change ONT | Proactive | ลูกค้าต้องการเปลี่ยน Mode,23
+ลูกค้าขอเปลี่ยน Router เพื่อรองรับBridge Mode | บริการหลังกา,เปลี่ยน Router/MESH T3 เป็น Skyworth | บริการหลังการขาย | Co,19
+ภาพกระตุก ทุกช่อง/บางช่อง | TVS-ปัญหาสัญญาณ | ลูกค้าเปลี่ยนใ,มีภาพแต่ไม่มีเสียง/มีเสียงแต่ไม่มีภาพ | TVS-ปัญหาสัญญาณ | ช่,15
+ปัญหาระบบ | เปิด Website ไม่ได้บาง Web | เหตุเสียใช้ได้ ก่อน,ปัญหา Router | เปิด Web ไม่ได้ | ลูกค้าต้องการเปลี่ยน Modem,13
+Proactive ensure Fault ค่าสัญญาณดี | Proactive | Sync Speed/,Proactive ensure Fault ค่าสัญญาณดี | Proactive | ไม่พบปัญหาก,11
+ปัญหาระบบ | เปิด Website ไม่ได้บาง Web | เหตุเสียใช้ได้ ก่อน,ปัญหา Router | Internet หลุดบ่อย | Ticket มีการระบุให้เปลี่ย,10
+ภาพกระตุก ทุกช่อง/บางช่อง | TVS-ปัญหาสัญญาณ | ลูกค้าเปลี่ยนใ,ภาพแตก /ภาพเป็นเส้น/ ภาพค้าง/ภาพมาๆ หายๆ | TVS-ปัญหาสัญญาณ |,9
+Preventive Dropwire สายตกหย่อน | คุณภาพสัญญาน | ไม่ทราบสาเหต,Preventive Dropwire Connector SC-APC L2 | คุณภาพสัญญาน | มีค,8
+Proactive - Fiber degrade | Proactive | เหตุเสียใช้ได้ ก่อนช,Proactive fiber poor after install/repair | Proactive | ขัดข,8
+Proactive-Fiber broken | Proactive | เหตุเสียใช้ได้ ก่อนช่าง,Proactive Inspection  Dropwire | Proactive | Project Inspect,8
+ปัญหา Page แจ้งเตือน | เปิด Web ไม่ได้,ค่าสัญญาณไม่ดี | Internet เชื่อมต่อไม่ได้ | Modem แตกหัก/สีผ,5
+ปัญหา Page แจ้งเตือน | เปิด Web ไม่ได้,ไฟ Los ดับ/ไฟ PON กระพริบ | Internet เชื่อมต่อไม่ได้ | ลูกค้,5
+CA4: ช่องนี้ไม่รวมอยู่ในแพ็กเกจ | TVS-ปัญหาสัญญาณ | เปลี่ยน ,ER16: ไม่พบสัญญาณ | TVS-ปัญหาสัญญาณ | ข้อต่อหลวม ไม่ดี/ไม่สน,4
+Proactive-Change ONT | Proactive | Monitor เหตุเสียครบตามเงื,Proactive-Fiber broken | Proactive | เหตุเสียใช้ได้ ก่อนช่าง,4
+Proactive-Change ONT | Proactive | Wi-fi 2.4G ไม่รองรับ Spee,ขอเปลี่ยน Router Converter | บริการหลังการขาย | ลูกค้าต้องกา,4
+ปัญหา Page แจ้งเตือน | เปิด Web ไม่ได้,ขอบริการเปลี่ยน Remote | บริการหลังการขาย | ขัดข้อง/เสีย,4

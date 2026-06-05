@@ -1,0 +1,401 @@
+======================================================================
+WangchanBERTa Ticket Classifier
+======================================================================
+  model         : airesearch/wangchanberta-base-att-spm-uncased
+  output dir    : wangchanberta_classifier/
+  max_seq_len   : 64
+  batch_size    : 32
+  epochs        : 2
+  lr            : 3e-05
+  max_train     : 2,000
+  max_test      : 400
+
+[1/5] Loading & labeling tickets ...
+Loading mapping cluster_mapping.json ...
+  6,015 distinct combos loaded
+Streaming tickets.jsonl ...
+  ... 100,000 tickets scanned, 100,000 labeled
+  ... 200,000 tickets scanned, 200,000 labeled
+  ... 300,000 tickets scanned, 300,000 labeled
+  ... 400,000 tickets scanned, 400,000 labeled
+  ... 500,000 tickets scanned, 500,000 labeled
+  ... 600,000 tickets scanned, 600,000 labeled
+  ... 700,000 tickets scanned, 700,000 labeled
+  ... 800,000 tickets scanned, 800,000 labeled
+  ... 900,000 tickets scanned, 900,000 labeled
+  ... 1,000,000 tickets scanned, 1,000,000 labeled
+  1,016,845 labeled tickets collected
+
+[2/5] Sampling ...
+  total classes: 71
+  class size range: 40 to 270725
+  sampled: 2,343 (up to 33/class)
+  train: 2,109  test: 234
+  classes: 71
+
+[3/5] Loading WangchanBERTa tokenizer & model ...
+
+Loading weights:   0%|          | 0/197 [00:00<?, ?it/s]
+Loading weights: 100%|##########| 197/197 [00:00<00:00, 3868.16it/s]
+[transformers] CamembertForSequenceClassification LOAD REPORT from: airesearch/wangchanberta-base-att-spm-uncased
+Key                         | Status     | 
+----------------------------+------------+-
+lm_head.dense.bias          | UNEXPECTED | 
+lm_head.layer_norm.bias     | UNEXPECTED | 
+lm_head.bias                | UNEXPECTED | 
+lm_head.dense.weight        | UNEXPECTED | 
+roberta.pooler.dense.bias   | UNEXPECTED | 
+roberta.pooler.dense.weight | UNEXPECTED | 
+lm_head.layer_norm.weight   | UNEXPECTED | 
+classifier.dense.weight     | MISSING    | 
+classifier.out_proj.bias    | MISSING    | 
+classifier.dense.bias       | MISSING    | 
+classifier.out_proj.weight  | MISSING    | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+  loaded in 13.8s
+  device: cpu
+
+[4/5] Tokenizing & building datasets ...
+
+Map:   0%|          | 0/2109 [00:00<?, ? examples/s]
+Map: 100%|##########| 2109/2109 [00:00<00:00, 16606.26 examples/s]
+Map: 100%|##########| 2109/2109 [00:00<00:00, 16348.60 examples/s]
+
+
+Map:   0%|          | 0/234 [00:00<?, ? examples/s]
+Map: 100%|##########| 234/234 [00:00<00:00, 13000.25 examples/s]
+[5/5] Training ...
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 6, 'bos_token_id': 5}.
+
+  0%|          | 0/132 [00:00<?, ?it/s]C:\Users\ST\GitHub\true-pms-online\ml\ticket\.venv\Lib\site-packages\torch\utils\data\dataloader.py:752: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  super().__init__(loader)
+
+  1%|          | 1/132 [00:13<28:34, 13.09s/it]
+  2%|1         | 2/132 [00:25<27:44, 12.80s/it]
+  2%|2         | 3/132 [00:36<25:37, 11.92s/it]
+  3%|3         | 4/132 [00:46<23:59, 11.25s/it]
+  4%|3         | 5/132 [00:56<22:43, 10.73s/it]
+  5%|4         | 6/132 [01:05<21:06, 10.06s/it]
+  5%|5         | 7/132 [01:15<21:10, 10.16s/it]
+  6%|6         | 8/132 [01:29<23:37, 11.43s/it]
+  7%|6         | 9/132 [01:44<25:41, 12.53s/it]
+  8%|7         | 10/132 [01:57<25:47, 12.68s/it]
+  8%|8         | 11/132 [02:09<25:03, 12.43s/it]
+  9%|9         | 12/132 [02:20<24:06, 12.05s/it]
+ 10%|9         | 13/132 [02:31<23:03, 11.63s/it]
+ 11%|#         | 14/132 [02:41<21:47, 11.08s/it]
+ 11%|#1        | 15/132 [02:51<20:53, 10.71s/it]
+ 12%|#2        | 16/132 [03:00<20:02, 10.37s/it]
+ 13%|#2        | 17/132 [03:10<19:15, 10.05s/it]
+ 14%|#3        | 18/132 [03:19<18:30,  9.74s/it]
+ 14%|#4        | 19/132 [03:28<17:55,  9.52s/it]
+ 15%|#5        | 20/132 [03:37<17:34,  9.41s/it]
+ 16%|#5        | 21/132 [03:46<17:11,  9.30s/it]
+ 17%|#6        | 22/132 [03:55<16:52,  9.20s/it]
+ 17%|#7        | 23/132 [04:04<16:39,  9.17s/it]
+ 18%|#8        | 24/132 [04:13<16:30,  9.17s/it]
+ 19%|#8        | 25/132 [04:22<16:27,  9.23s/it]
+ 20%|#9        | 26/132 [04:35<18:02, 10.22s/it]
+ 20%|##        | 27/132 [04:49<19:53, 11.37s/it]
+ 21%|##1       | 28/132 [05:03<20:59, 12.11s/it]
+ 22%|##1       | 29/132 [05:16<21:16, 12.39s/it]
+ 23%|##2       | 30/132 [05:27<20:30, 12.07s/it]
+ 23%|##3       | 31/132 [05:38<19:36, 11.65s/it]
+ 24%|##4       | 32/132 [05:48<18:40, 11.21s/it]
+ 25%|##5       | 33/132 [05:58<17:49, 10.81s/it]
+ 26%|##5       | 34/132 [06:08<17:05, 10.47s/it]
+ 27%|##6       | 35/132 [06:17<16:21, 10.12s/it]
+ 27%|##7       | 36/132 [06:26<15:43,  9.83s/it]
+ 28%|##8       | 37/132 [06:35<15:20,  9.69s/it]
+ 29%|##8       | 38/132 [06:46<15:31,  9.91s/it]
+ 30%|##9       | 39/132 [06:58<16:12, 10.46s/it]
+ 30%|###       | 40/132 [07:07<15:45, 10.27s/it]
+ 31%|###1      | 41/132 [07:17<15:04,  9.94s/it]
+ 32%|###1      | 42/132 [07:26<14:30,  9.67s/it]
+ 33%|###2      | 43/132 [07:35<14:14,  9.60s/it]
+ 33%|###3      | 44/132 [07:48<15:33, 10.60s/it]
+ 34%|###4      | 45/132 [08:02<16:41, 11.51s/it]
+ 35%|###4      | 46/132 [08:15<17:23, 12.13s/it]
+ 36%|###5      | 47/132 [08:28<17:19, 12.23s/it]
+ 36%|###6      | 48/132 [08:41<17:30, 12.50s/it]
+ 37%|###7      | 49/132 [08:51<16:32, 11.96s/it]
+ 38%|###7      | 50/132 [09:02<15:39, 11.45s/it]
+                                                
+{'loss': '4.084', 'grad_norm': '6.557', 'learning_rate': '1.886e-05', 'epoch': '0.7576'}
+
+ 38%|###7      | 50/132 [09:02<15:39, 11.45s/it]
+ 39%|###8      | 51/132 [09:12<14:51, 11.01s/it]
+ 39%|###9      | 52/132 [09:21<14:05, 10.57s/it]
+ 40%|####      | 53/132 [09:31<13:36, 10.33s/it]
+ 41%|####      | 54/132 [09:40<12:59, 10.00s/it]
+ 42%|####1     | 55/132 [09:49<12:24,  9.66s/it]
+ 42%|####2     | 56/132 [09:58<11:56,  9.43s/it]
+ 43%|####3     | 57/132 [10:07<11:36,  9.29s/it]
+ 44%|####3     | 58/132 [10:45<22:10, 17.98s/it]
+ 45%|####4     | 59/132 [12:43<58:21, 47.97s/it]
+ 45%|####5     | 60/132 [14:14<1:13:03, 60.89s/it]
+ 46%|####6     | 61/132 [15:35<1:19:03, 66.81s/it]
+ 47%|####6     | 62/132 [16:58<1:23:46, 71.80s/it]
+ 48%|####7     | 63/132 [18:14<1:23:51, 72.91s/it]
+ 48%|####8     | 64/132 [19:36<1:25:38, 75.56s/it]
+ 49%|####9     | 65/132 [21:31<1:37:46, 87.55s/it]
+ 50%|#####     | 66/132 [22:34<1:28:04, 80.07s/it]
+
+  0%|          | 0/8 [00:00<?, ?it/s][A
+
+ 25%|##5       | 2/8 [00:03<00:09,  1.63s/it][A
+
+ 38%|###7      | 3/8 [00:06<00:11,  2.36s/it][A
+
+ 50%|#####     | 4/8 [00:09<00:10,  2.72s/it][A
+
+ 62%|######2   | 5/8 [00:12<00:08,  2.69s/it][A
+
+ 75%|#######5  | 6/8 [00:15<00:05,  2.62s/it][A
+
+ 88%|########7 | 7/8 [00:17<00:02,  2.70s/it][A
+
+100%|##########| 8/8 [00:19<00:00,  2.24s/it][A
+                                                  
+
+
+                                             
+{'eval_loss': '3.238', 'eval_accuracy': '0.6709', 'eval_f1_macro': '0.6227', 'eval_f1_weighted': '0.6162', 'eval_runtime': '22.34', 'eval_samples_per_second': '10.47', 'eval_steps_per_second': '0.358', 'epoch': '1'}
+[A
+ 50%|#####     | 66/132 [22:56<1:28:04, 80.07s/it]
+
+100%|##########| 8/8 [00:19<00:00,  2.24s/it][A
+
+                                             [AC:\Users\ST\GitHub\true-pms-online\ml\ticket\.venv\Lib\site-packages\torch\utils\data\dataloader.py:752: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  super().__init__(loader)
+
+ 51%|#####     | 67/132 [23:08<1:11:46, 66.26s/it]
+ 52%|#####1    | 68/132 [23:17<52:35, 49.30s/it]  
+ 52%|#####2    | 69/132 [23:28<39:30, 37.63s/it]
+ 53%|#####3    | 70/132 [23:39<30:30, 29.53s/it]
+ 54%|#####3    | 71/132 [23:49<24:06, 23.71s/it]
+ 55%|#####4    | 72/132 [23:58<19:25, 19.43s/it]
+ 55%|#####5    | 73/132 [24:09<16:37, 16.90s/it]
+ 56%|#####6    | 74/132 [24:20<14:41, 15.19s/it]
+ 57%|#####6    | 75/132 [24:34<14:07, 14.87s/it]
+ 58%|#####7    | 76/132 [24:50<14:03, 15.07s/it]
+ 58%|#####8    | 77/132 [25:05<13:40, 14.92s/it]
+ 59%|#####9    | 78/132 [25:19<13:11, 14.66s/it]
+ 60%|#####9    | 79/132 [25:33<12:47, 14.49s/it]
+ 61%|######    | 80/132 [25:44<11:51, 13.67s/it]
+ 61%|######1   | 81/132 [25:55<10:54, 12.83s/it]
+ 62%|######2   | 82/132 [26:06<10:03, 12.06s/it]
+ 63%|######2   | 83/132 [26:16<09:20, 11.44s/it]
+ 64%|######3   | 84/132 [26:23<08:16, 10.35s/it]
+ 64%|######4   | 85/132 [26:31<07:34,  9.68s/it]
+ 65%|######5   | 86/132 [26:40<07:13,  9.42s/it]
+ 66%|######5   | 87/132 [26:50<07:11,  9.60s/it]
+ 67%|######6   | 88/132 [27:02<07:30, 10.23s/it]
+ 67%|######7   | 89/132 [27:12<07:13, 10.08s/it]
+ 68%|######8   | 90/132 [27:22<07:03, 10.08s/it]
+ 69%|######8   | 91/132 [27:33<07:01, 10.28s/it]
+ 70%|######9   | 92/132 [27:45<07:19, 11.00s/it]
+ 70%|#######   | 93/132 [27:57<07:20, 11.29s/it]
+ 71%|#######1  | 94/132 [28:12<07:52, 12.43s/it]
+ 72%|#######1  | 95/132 [28:36<09:41, 15.72s/it]
+ 73%|#######2  | 96/132 [29:03<11:28, 19.13s/it]
+ 73%|#######3  | 97/132 [29:19<10:43, 18.39s/it]
+ 74%|#######4  | 98/132 [29:33<09:32, 16.85s/it]
+ 75%|#######5  | 99/132 [29:44<08:22, 15.22s/it]
+ 76%|#######5  | 100/132 [29:55<07:24, 13.88s/it]
+                                                 
+{'loss': '3.306', 'grad_norm': '5.926', 'learning_rate': '7.5e-06', 'epoch': '1.515'}
+
+ 76%|#######5  | 100/132 [29:55<07:24, 13.88s/it]
+ 77%|#######6  | 101/132 [30:05<06:34, 12.71s/it]
+ 77%|#######7  | 102/132 [30:14<05:49, 11.66s/it]
+ 78%|#######8  | 103/132 [30:23<05:14, 10.83s/it]
+ 79%|#######8  | 104/132 [30:33<04:57, 10.63s/it]
+ 80%|#######9  | 105/132 [30:42<04:34, 10.16s/it]
+ 80%|########  | 106/132 [30:51<04:13,  9.74s/it]
+ 81%|########1 | 107/132 [31:02<04:15, 10.22s/it]
+ 82%|########1 | 108/132 [31:12<04:00, 10.01s/it]
+ 83%|########2 | 109/132 [31:22<03:53, 10.16s/it]
+ 83%|########3 | 110/132 [31:32<03:40, 10.02s/it]
+ 84%|########4 | 111/132 [31:50<04:20, 12.41s/it]
+ 85%|########4 | 112/132 [32:03<04:08, 12.45s/it]
+ 86%|########5 | 113/132 [32:17<04:08, 13.07s/it]
+ 86%|########6 | 114/132 [32:29<03:49, 12.73s/it]
+ 87%|########7 | 115/132 [32:41<03:34, 12.62s/it]
+ 88%|########7 | 116/132 [32:52<03:10, 11.92s/it]
+ 89%|########8 | 117/132 [33:02<02:50, 11.34s/it]
+ 89%|########9 | 118/132 [33:12<02:33, 10.97s/it]
+ 90%|######### | 119/132 [33:22<02:21, 10.90s/it]
+ 91%|######### | 120/132 [33:37<02:24, 12.07s/it]
+ 92%|#########1| 121/132 [33:49<02:10, 11.86s/it]
+ 92%|#########2| 122/132 [33:59<01:53, 11.37s/it]
+ 93%|#########3| 123/132 [34:11<01:43, 11.49s/it]
+ 94%|#########3| 124/132 [34:22<01:32, 11.51s/it]
+ 95%|#########4| 125/132 [34:31<01:15, 10.80s/it]
+ 95%|#########5| 126/132 [34:41<01:02, 10.42s/it]
+ 96%|#########6| 127/132 [34:50<00:50, 10.08s/it]
+ 97%|#########6| 128/132 [35:07<00:48, 12.17s/it]
+ 98%|#########7| 129/132 [35:22<00:38, 12.99s/it]
+ 98%|#########8| 130/132 [35:37<00:26, 13.40s/it]
+ 99%|#########9| 131/132 [35:49<00:12, 12.99s/it]
+100%|##########| 132/132 [36:01<00:00, 12.86s/it]
+
+  0%|          | 0/8 [00:00<?, ?it/s][A
+
+ 25%|##5       | 2/8 [00:03<00:11,  1.85s/it][A
+
+ 38%|###7      | 3/8 [00:07<00:14,  2.83s/it][A
+
+ 50%|#####     | 4/8 [00:10<00:11,  2.92s/it][A
+
+ 62%|######2   | 5/8 [00:14<00:09,  3.19s/it][A
+
+ 75%|#######5  | 6/8 [00:17<00:06,  3.05s/it][A
+
+ 88%|########7 | 7/8 [00:20<00:02,  2.95s/it][A
+
+100%|##########| 8/8 [00:20<00:00,  2.28s/it][A
+                                                 
+
+
+                                             
+{'eval_loss': '2.642', 'eval_accuracy': '0.8504', 'eval_f1_macro': '0.8014', 'eval_f1_weighted': '0.8266', 'eval_runtime': '24.76', 'eval_samples_per_second': '9.453', 'eval_steps_per_second': '0.323', 'epoch': '2'}
+[A
+100%|##########| 132/132 [36:26<00:00, 12.86s/it]
+
+100%|##########| 8/8 [00:21<00:00,  2.28s/it][A
+
+                                             [A
+                                                 
+{'train_runtime': '2186', 'train_samples_per_second': '1.929', 'train_steps_per_second': '0.06', 'train_loss': '3.518', 'epoch': '2'}
+
+100%|##########| 132/132 [36:26<00:00, 12.86s/it]
+100%|##########| 132/132 [36:26<00:00, 16.56s/it]
+  training took 36.4 min
+
+Evaluating on test set ...
+C:\Users\ST\GitHub\true-pms-online\ml\ticket\.venv\Lib\site-packages\torch\utils\data\dataloader.py:752: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  super().__init__(loader)
+
+  0%|          | 0/8 [00:00<?, ?it/s]
+ 25%|##5       | 2/8 [00:02<00:07,  1.28s/it]
+ 38%|###7      | 3/8 [00:05<00:09,  1.91s/it]
+ 50%|#####     | 4/8 [00:08<00:08,  2.19s/it]
+ 62%|######2   | 5/8 [00:10<00:07,  2.43s/it]
+ 75%|#######5  | 6/8 [00:13<00:05,  2.52s/it]
+ 88%|########7 | 7/8 [00:16<00:02,  2.57s/it]
+100%|##########| 8/8 [00:17<00:00,  2.06s/it]
+100%|##########| 8/8 [00:17<00:00,  2.15s/it]
+  test accuracy : 0.8504
+  test f1_macro : 0.8014
+  test f1_weight: 0.8266
+C:\Users\ST\GitHub\true-pms-online\ml\ticket\.venv\Lib\site-packages\torch\utils\data\dataloader.py:752: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  super().__init__(loader)
+
+  0%|          | 0/8 [00:00<?, ?it/s]
+ 25%|##5       | 2/8 [00:04<00:13,  2.23s/it]
+ 38%|###7      | 3/8 [00:07<00:12,  2.44s/it]
+ 50%|#####     | 4/8 [00:10<00:11,  2.78s/it]
+ 62%|######2   | 5/8 [00:13<00:08,  2.89s/it]
+ 75%|#######5  | 6/8 [00:17<00:06,  3.07s/it]
+ 88%|########7 | 7/8 [00:20<00:03,  3.03s/it]
+100%|##########| 8/8 [00:21<00:00,  2.43s/it]
+100%|##########| 8/8 [00:21<00:00,  2.64s/it]
+
+                                        precision    recall  f1-score   support
+
+  CA14: ���ͧ�ͧ��ҹ������������ѭ�҅       1.00      1.00      1.00         2
+  CA2: ����췡������١��ͧ(����췡҅       1.00      1.00      1.00         2
+  CA4: ��ͧ����������������ࡨ | T�       1.00      1.00      1.00         2
+  Cloud CCTV-����͹��ѧ����� | IOT-��       1.00      1.00      1.00         4
+  ER16: ��辺�ѭ�ҳ | TVS-�ѭ���ѭ�ҳ�       1.00      1.00      1.00         4
+  Mesh Wifi ����Դ | Internet ���ͅ       1.00      1.00      1.00         2
+  Preventive Dropwire Connector SC-AP�       0.75      1.00      0.86         3
+  Preventive Dropwire ��µ����͹ | �؅       1.00      0.83      0.91         6
+  Proactive - Change Power Adaptor | �       1.00      1.00      1.00         5
+  Proactive - Fiber degrade | Proacti�       0.00      0.00      0.00         1
+  Proactive - PPPOE ��ش���� | Proact�       1.00      1.00      1.00         3
+  Proactive -monitor ��ѧ�Դ�ҹ Netwo�       1.00      1.00      1.00         3
+  Proactive Inspection  Dropwire | Pr�       0.62      1.00      0.77         5
+  Proactive ensure Fault ����ѭ�ҳ�� �       0.50      0.50      0.50         2
+  Proactive ensure Fault ����ѭ�ҳ�� �       1.00      1.00      1.00         3
+  Proactive fiber poor after install/�       0.75      1.00      0.86         3
+  Proactive monitor ��ѧ�Դ�ҹ���� | �       1.00      1.00      1.00         3
+  Proactive poor experience link loss�       1.00      1.00      1.00         6
+  Proactive poor experience outside p�       1.00      1.00      1.00         7
+  Proactive-Change ONT | Proactive | �       0.00      0.00      0.00         5
+  Proactive-Change ONT | Proactive | �       1.00      0.60      0.75         5
+  Proactive-Change ONT | Proactive | �       0.83      1.00      0.91         5
+  Proactive-Fiber broken | Proactive �       0.78      1.00      0.88         7
+  Remote Trueid TV ��� / ���ش | ��ԡ�       1.00      1.00      1.00         4
+  Retention Fault | �س�Ҿ�ѭ�ҹ | Mo�       1.00      1.00      1.00         4
+  Set-top box ���/���ش (¡��鹤�һ�х       1.00      1.00      1.00         3
+  ���ͧ Set top box�Ѵ��ͧ | CMDU-�ѭ�       0.60      1.00      0.75         3
+  ���ͧ Set top box�Ѵ��ͧ | TVS-�ѭ˅       0.00      0.00      0.00         2
+  �ͪ�ҧ�Դ��駡��ͧCCTV��� -��ҧ�ӡŅ       1.00      1.00      1.00         6
+  �ͪ�ҧ��ҫ��� (������١�����ͧ���       1.00      1.00      1.00         2
+  �ͪ�ҧ��ҫ��� 1-4�ػ�ó� �纤�ҺÅ       1.00      1.00      1.00         5
+  �ͺ�ԡ����ѧ��â��-��ҧ App Line | �       0.60      1.00      0.75         3
+  �ͺ�ԡ������¹ Remote | ��ԡ����ѧ�       1.00      1.00      1.00         1
+  ������¹ Mesh(T626PRO) �����ͧ�Ѻ�       1.00      0.75      0.86         4
+  ������¹ Router Converter | ��ԡ�Å       0.50      1.00      0.67         2
+  ��� SCAN/�ѭ�ҡ�� Download | TVS-��       1.00      1.00      1.00         1
+  ����ѭ�ҳ���� | Internet �������ͅ       1.00      0.75      0.86         4
+  ��ҧ����駢�����/���ú��ǹ/���Ѵ�       1.00      1.00      1.00         3
+�ѭ�� Page ����͹ | �Դ Web �����       0.75      0.75      0.75         4
+  �ѭ�� Router | Internet ��� | Wi-fi�       1.00      0.75      0.86         4
+  �ѭ�� Router | Internet ��ش���� | �       1.00      1.00      1.00         1
+  �ѭ�� Router | �Դ Web ����� | �م       0.80      1.00      0.89         4
+  �ѭ�� WiFi | Internet ��ش���� | Co�       1.00      1.00      1.00         1
+  �ѭ�� WiFi | Internet ��ش���� | �҅       0.50      0.67      0.57         3
+  �ѭ���к� | �Դ Website �����ҧ �       0.00      0.00      0.00         5
+  �ѭ���к� | ��� Game Online �����       1.00      1.00      1.00         2
+     �ѭ���к� | ����ͧǧ�ûԴ�����       1.00      1.00      1.00         5
+  �ѭ���к� | ��ҹ�ҧ Program/App �       0.00      0.00      0.00         0
+  �ѭ���ػ�ó� Router ��� T3 ST-244F�       0.71      1.00      0.83         5
+  �ѭ���Դ���ͧ���Ǩ� Reboot �ѭ�ҳ�       1.00      1.00      1.00         2
+  �Ҿ��еء �ء��ͧ/�ҧ��ͧ | TVS-�ѭ�       0.00      0.00      0.00         1
+  �Ҿᵡ /�Ҿ�����/ �Ҿ��ҧ/�Ҿ���       0.80      1.00      0.89         4
+  ���Ҿ����������§/�����§���������       1.00      1.00      1.00         3
+  ���¨ش/�Թ������㹺�ҹ �������Թ�       1.00      1.00      1.00         2
+  �Ѻ�� Live TV �����-˹�Ҩʹ�����ʴ�       1.00      1.00      1.00         3
+  �١��Ң�����¹ Router �����ͧ�ѺB�       1.00      0.25      0.40         4
+  ������Ѿ�� / �������͹ | ������µ�       1.00      1.00      1.00         5
+  ˹�ҨͿ��/˹�Ҩʹ� | TVS-�ѭ���ѭ�҅       1.00      1.00      1.00         3
+  �ػ�ó��Դ�Դ - Logo Trueid TV/And�       1.00      1.00      1.00         3
+  �ػ�ó��Դ���Դ ������� | TrueI�       1.00      1.00      1.00         1
+  ����¹ Modem �� Router gigatex |�       1.00      1.00      1.00         4
+  ����¹ Router/MESH T3 �� Skywort�       0.75      1.00      0.86         6
+  ����¹ TrueID Gen2 | ��ԡ����ѧ��Å       1.00      1.00      1.00         2
+  ����¹�ػ�ó� STB �� 4K | ��ԡ�Å       1.00      0.67      0.80         3
+  �������ҡ���� 2 ���� ���� 30 �х       1.00      1.00      1.00         3
+  ���͡�ѭ�ҳ��������ҧ | ���͡ | ��       0.50      1.00      0.67         1
+  ������͡��º������ѭ�ҳ | ����       1.00      0.75      0.86         4
+  � Los �Ѻ/� PON ��о�Ժ | Interne�       0.12      1.00      0.22         1
+  � Los �Դ ����ᴧ | Internet �ׅ       0.00      0.00      0.00         3
+  � PON �Դ���� �� User���ONLINE | �       1.00      1.00      1.00         3
+  � Power ���Դ | Internet �������       0.00      0.00      0.00         4
+
+                              accuracy                           0.85       234
+                             macro avg       0.80      0.83      0.80       234
+                          weighted avg       0.83      0.85      0.83       234
+
+
+Saving model to C:\Users\ST\GitHub\true-pms-online\ml\ticket\wangchanberta_classifier/ ...
+
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]
+Writing model shards: 100%|##########| 1/1 [00:00<00:00,  1.85it/s]
+Writing model shards: 100%|##########| 1/1 [00:00<00:00,  1.85it/s]
+
+======================================================================
+DONE
+======================================================================
+  Model saved to  : C:\Users\ST\GitHub\true-pms-online\ml\ticket\wangchanberta_classifier/
+  Summary         : C:\Users\ST\GitHub\true-pms-online\ml\ticket\wangchanberta_classifier\summary.json
+  Full report     : C:\Users\ST\GitHub\true-pms-online\ml\ticket\wangchanberta_classifier\classification_report.txt
+  Test accuracy   : 0.8504
+  Test F1 (macro) : 0.8014
+  Training time   : 36.44 min

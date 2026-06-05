@@ -1,3 +1,5 @@
+SHELL       := pwsh.exe
+.SHELLFLAGS := -NoProfile -Command
 MODULE      := true-pms-online
 BINARY      := poll-uptime
 DEPLOY_USER := pms
@@ -8,12 +10,17 @@ DEPLOY_PATH := /home/pms/online/sbin/$(BINARY)
 
 build: build-linux
 
+ifeq ($(OS),Windows_NT)
 build-linux:
-	GOOS=linux GOARCH=386 go build -o $(BINARY) ./cmd/poll-uptime
+	$$env:CGO_ENABLED=0; $$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags '-extldflags "-static"' -o $(BINARY) ./cmd/poll-uptime
+else
+build-linux:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"' -o $(BINARY) ./cmd/poll-uptime
+endif
 
 deploy: build-linux
-	echo "put $(BINARY) $(DEPLOY_PATH)" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
-	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) "sudo setcap cap_net_raw=+ep $(DEPLOY_PATH)"
+	& "$$env:SystemRoot\System32\OpenSSH\scp.exe" $(BINARY) $(DEPLOY_USER)@$(DEPLOY_HOST):$(DEPLOY_PATH)
+	& "$$env:SystemRoot\System32\OpenSSH\ssh.exe" $(DEPLOY_USER)@$(DEPLOY_HOST) "sudo setcap cap_net_raw=+ep $(DEPLOY_PATH)"
 
 test:
 	go test ./...
@@ -31,4 +38,4 @@ vet:
 	go vet ./...
 
 clean:
-	rm -f $(BINARY)
+	if (Test-Path $(BINARY)) { Remove-Item $(BINARY) }

@@ -1,0 +1,46 @@
+======================================================================
+Rebuilding super-category taxonomy (v2 � more nuanced)
+======================================================================
+
+10 super-categories (rebalanced):
+
+  [10 classes, ~ 280 tickets] TV / Set-Top Box
+      - Set-top box ���/���ش (¡��鹤�һ�Ѻ)
+      - �ͺ�ԡ������¹ Remote
+      - ��� SCAN/�ѭ�ҡ�� Download
+  [ 8 classes, ~ 224 tickets] Proactive Maintenance
+      - Proactive - Change Power Adaptor
+      - Proactive - PPPOE ��ش����
+      - Proactive -monitor ��ѧ�Դ�ҹ Network event
+  [ 5 classes, ~ 140 tickets] Installation / Provisioning
+      - �ͪ�ҧ�Դ��駡��ͧCCTV��� -��ҧ�ӡ��ͧ仵Դ���
+      - �ͪ�ҧ��ҫ��� (������١�����ͧ���¹)
+      - �ͪ�ҧ��ҫ��� 1-4�ػ�ó� �纤�Һ�ԡ�� 770�ҷ (���VAT)
+  [ 4 classes, ~ 112 tickets] Optical / PON Signal Issue
+      - ����ѭ�ҳ����
+      - �ѭ���Դ���ͧ���Ǩ� Reboot �ѭ�ҳ����
+      - � Los �Ѻ/� PON ��о�Ժ
+  [ 3 classes, ~  84 tickets] Web / System / App Issue
+      - Cloud CCTV-����͹��ѧ�����
+      - �ѭ�� Page ����͹
+      - �ѭ���к�
+  [ 3 classes, ~  84 tickets] Router / WiFi / Modem
+      - ������¹ Mesh(T626PRO) �����ͧ�Ѻ੾�� AI Package
+      - �ѭ���ػ�ó� Router ��� T3 ST-244F & ST-244Fv2 ��ͧ����¹�
+      - �١��Ң�����¹ Router �����ͧ�ѺBridge Mode
+  [ 3 classes, ~  84 tickets] Unknown / Other
+      - ER16: ��辺�ѭ�ҳ
+      - Preventive Dropwire Connector SC-APC L2
+      - Retention Fault
+  [ 2 classes, ~  56 tickets] TV / Set-Top Box (CA codes)
+      - CA14: ���ͧ�ͧ��ҹ������������ѭ�ҳ
+      - CA2: ����췡������١��ͧ(����췡��촢Ѵ��ͧ����ʡ�á)
+  [ 2 classes, ~  56 tickets] After-Sales / Service Request
+      - �ͺ�ԡ����ѧ��â��-��ҧ App Line
+      - ��ҧ����駢�����/���ú��ǹ/���Ѵਹ/���١��ͧ
+  [ 2 classes, ~  56 tickets] Phone / Voice Service
+      - ������Ѿ�� / �������͹
+      - ������͡��º������ѭ�ҳ
+
+  wrote super_category_map.json and super_category_report.md
+  updated final_report.json and summary.md

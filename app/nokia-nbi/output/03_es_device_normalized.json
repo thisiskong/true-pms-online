@@ -1,0 +1,23 @@
+{
+  "devices": [
+    {
+      "name": "QCENGNKMF2",
+      "ip": "10.237.77.221",
+      "swversion": "25.6",
+      "descr": "LS-MF-LMNT-A",
+      "olttype": "MF-2",
+      "vendor": "Nokia",
+      "sys_pollstatus": 1
+    },
+    {
+      "name": "SMK01058GO0",
+      "ip": "10.237.205.162",
+      "swversion": "25.6",
+      "descr": "LS-MF-LMNT-A",
+      "olttype": "MF-2",
+      "vendor": "Nokia",
+      "sys_pollstatus": 1
+    }
+  ],
+  "count": 2
+}

@@ -100,7 +100,7 @@ func RunPollCycle(
 
 		// Collect uptime upsert rows (only successfully polled devices)
 		if r.Err == nil {
-			row := buildUptimeRow(r)
+			row := buildUptimeRow(r, log)
 			upsertRows = append(upsertRows, row)
 		}
 	}
@@ -117,7 +117,21 @@ func RunPollCycle(
 // UpsertFunc is a callback for the uptime upsert operation.
 type UpsertFunc func(ctx context.Context, rows []event.UptimeRow)
 
-func buildUptimeRow(r PollResult) event.UptimeRow {
+// maxSysUptimeDuration is the 32-bit centisecond rollover boundary (~497 days).
+const maxSysUptimeDuration = 497 * 24 * time.Hour
+
+// maxEngineTimeDuration caps engine_time at 10 years to filter firmware garbage values.
+const maxEngineTimeDuration = 10 * 365 * 24 * time.Hour
+
+// uptimeDuration returns d if within maxDuration, else nil.
+func uptimeDuration(d time.Duration, maxDuration time.Duration) *time.Duration {
+	if d > maxDuration {
+		return nil
+	}
+	return &d
+}
+
+func buildUptimeRow(r PollResult, log *slog.Logger) event.UptimeRow {
 	row := event.UptimeRow{
 		IP:       r.Device.IP,
 		Name:     r.Device.Name,
@@ -129,8 +143,14 @@ func buildUptimeRow(r PollResult) event.UptimeRow {
 		engTime := int64(r.NewState.LastEngineTime)
 		row.EngineBoots = &boots
 		row.EngineTime = &engTime
+		engDur := time.Duration(r.NewState.LastEngineTime) * time.Second
+		if engDur > maxEngineTimeDuration {
+			log.Warn("engine_time exceeds cap, uptime will be null", "ip", r.Device.IP, "engine_time_days", int(engDur.Hours()/24))
+		}
+		row.Uptime = uptimeDuration(engDur, maxEngineTimeDuration)
 	} else {
 		row.PollMethod = "sys_uptime"
+		row.Uptime = uptimeDuration(time.Duration(r.NewState.LastSysUptime)*10*time.Millisecond, maxSysUptimeDuration)
 	}
 	up := int64(r.NewState.LastSysUptime)
 	row.SysUptime = &up

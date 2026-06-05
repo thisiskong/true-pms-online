@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.python-version
+
+# generated data
+data/
+
+# uv lock can be committed or not, depending on team preference;
+# keep it committed for reproducible installs
+# uv.lock
+
+.streamlit/
+.DS_Store
+
+# secrets
+.env

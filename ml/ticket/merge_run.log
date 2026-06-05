@@ -1,0 +1,24 @@
+======================================================================
+Improved auto-merge (lower threshold + Jaccard)
+======================================================================
+  71 full labels, 61 unique short labels
+Loading multilingual sentence-transformer ...
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights:  63%|######3   | 126/199 [00:00<00:00, 1247.54it/s]
+Loading weights: 100%|##########| 199/199 [00:00<00:00, 1452.53it/s]
+  21 edges added at threshold >= 0.7
+  11 merge groups identified
+    [6] jacc=0.50 emb=0.95  �ѭ���ػ�ó� Router ��� T3 ST-244F & ST-244Fv2 ��
+    [4] jacc=0.50 emb=0.79  �١��Ң�����¹ Router �����ͧ�ѺBridge Mode
+    [3] jacc=0.25 emb=0.81  Preventive Dropwire Connector SC-APC L2
+    [3] jacc=0.50 emb=0.83  Proactive fiber poor after install/repair
+    [2] jacc=0.00 emb=0.71  CA14: ���ͧ�ͧ��ҹ������������ѭ�ҳ
+    [2] jacc=0.44 emb=0.78  Proactive -monitor ��ѧ�Դ�ҹ Network event
+    [2] jacc=0.20 emb=0.75  �ػ�ó��Դ�Դ - Logo Trueid TV/Android TV ��ع���
+    [2] jacc=0.14 emb=0.84  Set-top box ���/���ش (¡��鹤�һ�Ѻ)
+    [2] jacc=0.00 emb=0.82  �Ҿᵡ /�Ҿ�����/ �Ҿ��ҧ/�Ҿ��� ����
+    [2] jacc=0.00 emb=0.82  ������Ѿ�� / �������͹
+    [2] jacc=0.30 emb=0.72  � Los �Ѻ/� PON ��о�Ժ
+
+Done. New label count: 42 (down from 71)

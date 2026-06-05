@@ -293,7 +293,8 @@ CREATE TABLE device_uptime (
     poll_method     VARCHAR(32)  NOT NULL,   -- 'engine_oids' | 'sys_uptime'
     last_reboot_at  TIMESTAMP,
     last_ping_success_at TIMESTAMP,          -- NULL when ping disabled or never succeeded
-    last_ping_rtt_ms     FLOAT               -- RTT (ms) from the last successful ping
+    last_ping_rtt_ms     FLOAT,              -- RTT (ms) from the last successful ping
+    uptime               INTERVAL            -- device uptime at poll time; NULL if engine_time > 10 years (firmware garbage) or sys_uptime > 497 days (rollover)
 );
 ```
 

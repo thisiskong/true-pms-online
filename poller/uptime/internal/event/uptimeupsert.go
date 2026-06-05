@@ -16,8 +16,8 @@ import (
 
 const upsertUptimeSQL = `
 INSERT INTO device_uptime
-  (ip, name, sys_uptime, engine_boots, engine_time, polled_at, poll_method, last_reboot_at, last_ping_success_at, last_ping_rtt_ms)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  (ip, name, sys_uptime, engine_boots, engine_time, polled_at, poll_method, last_reboot_at, last_ping_success_at, last_ping_rtt_ms, uptime)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 ON CONFLICT (ip) DO UPDATE SET
   name                 = EXCLUDED.name,
   sys_uptime           = EXCLUDED.sys_uptime,
@@ -27,7 +27,8 @@ ON CONFLICT (ip) DO UPDATE SET
   poll_method          = EXCLUDED.poll_method,
   last_reboot_at       = EXCLUDED.last_reboot_at,
   last_ping_success_at = EXCLUDED.last_ping_success_at,
-  last_ping_rtt_ms     = EXCLUDED.last_ping_rtt_ms`
+  last_ping_rtt_ms     = EXCLUDED.last_ping_rtt_ms,
+  uptime               = EXCLUDED.uptime`
 
 // UptimeRow holds the data for one device's uptime upsert.
 type UptimeRow struct {
@@ -41,6 +42,7 @@ type UptimeRow struct {
 	LastReboot  *time.Time
 	LastPingSuccessAt *time.Time
 	LastPingRTTMs     *float64
+	Uptime      *time.Duration // device uptime duration at poll time
 }
 
 // UptimeUpsert batch-upserts poll results into device_uptime.
@@ -78,6 +80,7 @@ func (u *UptimeUpsert) sendBatch(ctx context.Context, rows []UptimeRow) error {
 			r.SysUptime, r.EngineBoots, r.EngineTime,
 			r.PolledAt, r.PollMethod, r.LastReboot,
 			r.LastPingSuccessAt, r.LastPingRTTMs,
+			r.Uptime,
 		)
 	}
 	results := u.pool.SendBatch(ctx, b)
