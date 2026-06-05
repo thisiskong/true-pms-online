@@ -3,14 +3,17 @@ DEPLOY_USER := pms
 DEPLOY_HOST := dv02
 DEPLOY_PATH := /home/pms/online/sbin
 
+SHELL       = pwsh.exe
+.SHELLFLAGS = -NoProfile -NonInteractive -Command
+
 .PHONY: build build-linux deploy test test-verbose clean fmt vet
 
 build: build-linux
 
 build-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -tags gosnmp_nodebug -o snmptk  ./cmd/snmptk
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -tags gosnmp_nodebug -o sping    ./cmd/sping
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"                      -o serviceapi ./cmd/serviceapi
+	$$env:CGO_ENABLED='0'; $$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags="-s -w" -tags gosnmp_nodebug -o snmptk    ./cmd/snmptk
+	$$env:CGO_ENABLED='0'; $$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags="-s -w" -tags gosnmp_nodebug -o sping     ./cmd/sping
+	$$env:CGO_ENABLED='0'; $$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags="-s -w"                      -o serviceapi ./cmd/serviceapi
 
 deploy: build-linux
 	echo "put snmptk $(DEPLOY_PATH)/snmptk" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
@@ -35,4 +38,4 @@ vet:
 	go vet ./...
 
 clean:
-	rm -f snmptk sping serviceapi
+	@('snmptk','sping','serviceapi') | Where-Object { Test-Path $$_ } | ForEach-Object { Remove-Item -Force $$_ }

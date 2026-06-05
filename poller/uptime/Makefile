@@ -1,22 +1,18 @@
-SHELL       := pwsh.exe
-.SHELLFLAGS := -NoProfile -Command
 MODULE      := true-pms-online
 BINARY      := poll-uptime
 DEPLOY_USER := pms
 DEPLOY_HOST := dv02
 DEPLOY_PATH := /home/pms/online/sbin/$(BINARY)
 
+SHELL       := pwsh.exe
+.SHELLFLAGS := -NoProfile -Command
+
 .PHONY: build build-linux deploy test test-verbose clean fmt vet
 
 build: build-linux
 
-ifeq ($(OS),Windows_NT)
 build-linux:
 	$$env:CGO_ENABLED=0; $$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags '-extldflags "-static"' -o $(BINARY) ./cmd/poll-uptime
-else
-build-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"' -o $(BINARY) ./cmd/poll-uptime
-endif
 
 deploy: build-linux
 	& "$$env:SystemRoot\System32\OpenSSH\scp.exe" $(BINARY) $(DEPLOY_USER)@$(DEPLOY_HOST):$(DEPLOY_PATH)
