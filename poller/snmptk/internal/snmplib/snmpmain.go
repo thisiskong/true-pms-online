@@ -1,6 +1,8 @@
 package snmplib
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -100,6 +102,80 @@ func StartSnmpDiscovery(discfile string, discid int, ptimeout int) error {
 	return nil
 }
 
+func StartSnmpDiscoveryByFile(discfile string, discid int, devicefile string) error {
+	if discfile == "" {
+		return fmt.Errorf("error: missing discfile")
+	}
+
+	task, err := LoadDiscoveryConfigById(discfile, discid)
+	if err != nil {
+		return err
+	}
+
+	// load devices.json
+	var devices []Device
+	content, _ := os.ReadFile(devicefile)
+	err = json.Unmarshal(content, &devices)
+	if err != nil {
+		return err
+	}
+	log.Printf("load %v return %d entries", devicefile, len(devices))
+	ptime := time.Now()
+
+	// mapper
+	mapper, err := NewMapper(task.Setting)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// lookup service
+	lookupService, err := NewLookupService(task)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// lldp mapper
+	lldpMapper := NewLldpMapper(task, lookupService)
+
+	// Connect to database
+	// connStr := "postgresql://pmsonline:pmsonline@hd2.hdp:5432/pmsonline?sslmode=disable&connect_timeout=10"
+	db, err := sql.Open("postgres", task.Setting.DbConnection)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer db.Close()
+
+	for _, deviceInst := range devices {
+		// disc.go - snmp2Device
+		mapper.MapDevice(&deviceInst)
+		mapper.MapIntfs(&deviceInst)
+
+		// FTTx (after mapping.js)
+		if deviceInst.Network == "FTTx" {
+			// Set L1 Splitter
+			MapL1Splitter(task, lookupService, &deviceInst)
+		}
+
+		// disc.go = NewDiscoveryProcessor
+		saveDeviceInstance(db, &deviceInst, ptime)
+	}
+
+	// update lldp from OLT to uplink device
+	err = lldpMapper.update_lldp_uplink(db)
+	if err != nil {
+		log.Printf("Error! %v", err)
+	}
+
+	// update to db
+	tx, err := db.Begin()
+	if err != nil {
+		log.Printf("Error! %v", err)
+	}
+
+	tx.Commit()
+	return nil
+}
+
 func StartSnmpDiscoveryByIp(discfile string, discip string, ptimeout int) error {
 	var wg sync.WaitGroup
 	tasksDone := make(chan SnmpResult)
@@ -110,27 +186,30 @@ func StartSnmpDiscoveryByIp(discfile string, discip string, ptimeout int) error 
 		go timer_start(time.Duration(ptimeout)*time.Second, timer_cancel)
 	}
 
-	if discfile != "" {
-		task, err := LoadDiscoveryConfigByIp(discfile, discip)
-		if err != nil {
-			return err
-		}
-		if task == nil {
-			return fmt.Errorf("error: undefined discovery rule for ip: %v", discip)
-		}
+	if discfile == "" {
+		return fmt.Errorf("error: missing discfile")
+	}
 
-		// create rate limiter
-		globalRateLimit := ratelimit.New(task.Setting.RateLimit)
-		topoRateLimits := make(map[string]ratelimit.Limiter)
-		for _, disc := range task.Discovery.Discoveries {
-			_, ok := topoRateLimits[disc.Topology]
-			if !ok {
-				val, ok := task.Setting.TopologyRateLimit[disc.Topology]
-				if ok {
-					topoRateLimits[disc.Topology] = ratelimit.New(val)
-				} else {
-					topoRateLimits[disc.Topology] = ratelimit.New(task.Setting.TopologyRateLimitDefault)
-				}
+	task, err := LoadDiscoveryConfigByIp(discfile, discip)
+	if err != nil {
+		return err
+	}
+
+	if task == nil {
+		return fmt.Errorf("error: undefined discovery rule for ip: %v", discip)
+	}
+
+	// create rate limiter
+	globalRateLimit := ratelimit.New(task.Setting.RateLimit)
+	topoRateLimits := make(map[string]ratelimit.Limiter)
+	for _, disc := range task.Discovery.Discoveries {
+		_, ok := topoRateLimits[disc.Topology]
+		if !ok {
+			val, ok := task.Setting.TopologyRateLimit[disc.Topology]
+			if ok {
+				topoRateLimits[disc.Topology] = ratelimit.New(val)
+			} else {
+				topoRateLimits[disc.Topology] = ratelimit.New(task.Setting.TopologyRateLimitDefault)
 			}
 		}
 

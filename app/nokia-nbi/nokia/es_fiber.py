@@ -82,6 +82,7 @@ def normalize(raw: dict, olt_name: str) -> list[dict]:
       "l1_ul_max_bw": UL_BW_MAP.get(xpon_raw),
       "pon_id": (cfg.get("pon-id") or [""])[0],
       "l1sp": (cfg.get("port-profile") or [""])[0],
+      "required_network_state": src.get("required-network-state"),
     })
   return fibers
 

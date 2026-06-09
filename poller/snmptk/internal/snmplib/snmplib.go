@@ -733,7 +733,7 @@ func ParseSnmpTable(target *SnmpTarget, snmptb *SnmpTableConfig, oidmap *map[str
 			log.Printf("Error! %s|%v", target.IP, err)
 
 		} else {
-			log.Printf("Debug: %-40s %-20s %-20s %-20s %s\n", variable.Name, variable.Type, snmpOid.Name, row_id, ToString(variable))
+			// log.Printf("Debug: %-40s %-20s %-20s %-20s %s\n", variable.Name, variable.Type, snmpOid.Name, row_id, ToString(variable))
 			// FTTx: There's a case where ifIndex return invalid value (negative value) due to overflow (such as FTTx Huawei, model: MA5600V8)
 			// Therefore, for ifIndex, we use row_id as value
 			if snmpOid.Name == "ifIndex" {

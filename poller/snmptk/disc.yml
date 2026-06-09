@@ -1,0 +1,998 @@
+setting:
+  # postgres database configuration
+  dbConnection: "host=10.50.238.194 port=5432 dbname=pmsonline user=pmsonline password=pmsonline sslmode=disable connect_timeout=5"
+  # dbConnection: "host=10.50.238.84 port=5432 dbname=pmsonline user=pmsonline password=pmsonline#2022 sslmode=disable connect_timeout=5"
+  
+  # leveldb storage path
+  levelDbBaseDir: /home/pms/online/level.db
+  metricUrl: http://10.50.238.194:9091
+
+  # --- rate limit ---
+  # rate limit in IP per second
+  # global rate limit
+  rateLimit: 50
+  # topology rate limit (default if not specify)
+  topologyRateLimitDefault: 20
+  # topology rate limit for each topology
+  topologyRateLimit:
+    DN: 10
+    PN: 10
+  # snmp discovery able to send multiple request for each host
+  hostRateLimit: 1
+  
+  # --- zookeeper connection ---
+  zk:
+    host: tyb-pms-etl-dv01.pms:2181,tyb-pms-etl-dv02.pms:2181,tyb-pms-etl-dv03.pms:2181
+    timeout: 10
+
+  # --- data collector ---
+  collector:
+    # list of all data collector node
+    hosts:
+      - tyb-pms-etl-dv02.pms
+    # logical group for data collector node
+    groups:
+      - name: MB
+        nodes:
+          - tyb-pms-etl-dv02.pms
+      - name: BB
+        nodes:
+          - tyb-pms-etl-dv02.pms
+      - name: NW
+        nodes:
+          - tyb-pms-etl-dv02.pms
+      - name: FB
+        nodes:
+          - tyb-pms-etl-dv02.pms
+
+# --- discovery ---
+discovery:
+  # Count tells pinger to stop after sending (and receiving) Count echo packets.
+  icmpCount: 1
+  # Interval (milliseconds) is the wait time between each packet send.
+  icmpInterval: 500
+  # Timeout (milliseconds) specifies a timeout before ping exits, regardless of how many packets have been received.
+  icmpTimeout: 2000
+  snmpOption:
+    # snmp timeout (seconds)
+    timeout: 10
+    retries: 3
+    maxRepetition: 10
+    expTime: true
+
+  # Production (Old):   http://10.50.25.178:7105/axis2/services/IM4GisService
+  # Production (New):   http://10.50.25.128:7105/axis2/services/IM4GisService
+  # Development:        http://172.19.208.107:7105/axis2/services/IM4GisService
+  serviceApi:
+    # service end-point, if not set, disable service api calling
+    endpoint: http://10.50.25.128:7105/axis2/services/IM4GisService
+    # endpoint: http://172.19.208.107:7105/axis2/services/IM4GisService
+    # timeout in seconds
+    timeout: 10
+
+  snmpOids:
+    - oid: .1.3.6.1.2.1.1.1.0
+      name: sysDescr
+      type: OctetString
+    - oid: .1.3.6.1.2.1.1.5.0
+      name: sysName
+      type: OctetString
+    - oid: .1.3.6.1.2.1.1.3.0
+      name: sysUptime
+      type: TimeTicks
+
+  # vendor specific oids
+  extSnmpOids:
+    Default:
+      - oid: .1.3.6.1.2.1.2.1.0
+        name: ifNumber
+        type: Integer
+      - oid: .1.0.8802.1.1.2.1.3.2.0
+        name: lldpLocChassisId
+        type: OctetString
+        syntax: PhysAddress
+
+    # extras oid for network = FTTx
+    FTTx:
+      # AccessNetwork Huawei swVersion
+      - oid: .1.3.6.1.4.1.2011.6.3.1.3.0
+        name: hwSysVersion
+        type: OctetString
+      # AccessNetwork Huawei sysObjectID --> hwProducts .1.3.6.1.4.1.2011.2.X
+      - oid: .1.3.6.1.2.1.1.2.0
+        name: sysObjectID
+        type: OctetString
+      # AccessNetwork Fiberhome model
+      - oid: .1.3.6.1.4.1.5875.800.3.9.1.1.1.3.0
+        name: fbhFrameName
+        type: OctetString
+      # AccessNetwork Fiberhome swVersion
+      - oid: .1.3.6.1.4.1.5875.800.3.9.4.3.0
+        name: fbhSwVersion
+        type: OctetString
+      # AccessNetwork Raisecom chassisId
+      - oid: .1.3.6.1.4.1.8886.18.1.10.1.1.3.2.0
+        name: raisecomLocChassisId
+        syntax: PhysAddress
+  
+  ifTable:
+    name: ifTable
+    tableOid: .1.3.6.1.2.1.2.2
+    # disable numEntries because some OLT device return wrong value such as Huawei 10.238.118.6
+    # numEntriesOid: .1.3.6.1.2.1.2.1.0
+    indexes:
+      - name: ifIndex
+    columns:
+      - oid: .1.3.6.1.2.1.2.2.1.1
+        name: ifIndex
+        type: Integer
+      - oid: .1.3.6.1.2.1.2.2.1.2
+        name: ifDescr
+        type: OctetString
+      - oid: .1.3.6.1.2.1.2.2.1.3
+        name: ifType
+        type: Integer
+        enum: {
+          1:   "other",
+          2:   "regular1822",
+          3:   "hdh1822",
+          4:   "ddn-x25",
+          5:   "rfc877x25",
+          6:   "ethernetCsmacd",
+          7:   "ieee88023Csmacd",
+          8:   "ieee88024TokenBus",
+          9:   "ieee88025TokenRing",
+          10:  "iso88026Man",
+          11:  "starLan",
+          12:  "proteon10Mbit",
+          13:  "proteon80Mbit",
+          14:  "hyperchannel",
+          15:  "fddi",
+          16:  "lapb",
+          17:  "sdlc",
+          18:  "ds1",
+          19:  "e1",
+          20:  "basicISDN",
+          21:  "primaryISDN",
+          22:  "propPointToPointSerial",
+          23:  "ppp",
+          24:  "softwareLoopback",
+          25:  "eon",
+          26:  "ethernet3Mbit",
+          27:  "nsip",
+          28:  "slip",
+          29:  "ultra",
+          30:  "ds3",
+          31:  "sip",
+          32:  "frameRelay",
+          33:  "rs232",
+          34:  "para",
+          35:  "arcnet",
+          36:  "arcnetPlus",
+          37:  "atm",
+          38:  "miox25",
+          39:  "sonet",
+          40:  "x25ple",
+          41:  "iso88022llc",
+          42:  "localTalk",
+          43:  "smdsDxi",
+          44:  "frameRelayService",
+          45:  "v35",
+          46:  "hssi",
+          47:  "hippi",
+          48:  "modem",
+          49:  "aal5",
+          50:  "sonetPath",
+          51:  "sonetVT",
+          52:  "smds-icip",
+          53:  "propVirtual",
+          54:  "propMultiLink",
+          55:  "ieee80212",
+          56:  "fibre-channel",
+          57:  "hippiInterfaces",
+          58:  "frameRelayInterconnect",
+          59:  "aflane8023",
+          60:  "aflane8025",
+          61:  "cctEmul",
+          62:  "fastEther",
+          63:  "isdn",
+          64:  "v11",
+          65:  "v36",
+          66:  "g703-64k",
+          67:  "g703-2mb",
+          68:  "qllc",
+          69:  "fastEtherFX",
+          70:  "channel",
+          71:  "ieee80211",
+          72:  "ibm370parChan",
+          73:  "escon",
+          74:  "dslw",
+          75:  "isdns",
+          76:  "isdnu",
+          77:  "lapd",
+          78:  "ip-switch",
+          79:  "rsrb",
+          80:  "atm-logical",
+          81:  "ds0",
+          82:  "ds0Bundle",
+          83:  "bsc",
+          84:  "async",
+          85:  "cnr",
+          86:  "iso88025Dtr",
+          87:  "eplrs",
+          88:  "arap",
+          89:  "propCnls",
+          90:  "hostPad",
+          91:  "termPad",
+          92:  "frameRelayMPI",
+          93:  "x213",
+          94:  "adsl",
+          95:  "radsl",
+          96:  "sdsl",
+          97:  "vdsl",
+          98:  "iso88025CRFPInt",
+          99:  "myrinet",
+          100: "voiceEM",
+          101: "voiceFXO",
+          102: "voiceFXS",
+          103: "voiceEncap",
+          104: "voiceOverIp",
+          105: "atmDxi",
+          106: "atmFuni",
+          107: "atmIma",
+          108: "pppMultilinkBundle",
+          109: "ipOverCdlc",
+          110: "ipOverClaw",
+          111: "stackToStack",
+          112: "virtualIpAddress",
+          113: "mpc",
+          114: "ipOverAtm",
+          115: "iso88025Fiber",
+          116: "tdlc",
+          117: "gigabitEthernet",
+          118: "hdlc",
+          119: "lapf",
+          120: "v37",
+          121: "x25mlp",
+          122: "x25huntGroup",
+          123: "transpHdlc",
+          124: "interleave",
+          125: "fast",
+          126: "ip",
+          127: "docsCableMaclayer",
+          128: "docsCableDownstream",
+          129: "docsCableUpstream",
+          130: "a12MppSwitch",
+          131: "tunnel",
+          132: "coffee",
+          133: "ces",
+          134: "atmSubInterface",
+          135: "l2vlan",
+          136: "l3ipvlan",
+          137: "l3ipxvlan",
+          138: "digitalPowerLine",
+          139: "mediaMailOverIp",
+          140: "dtm",
+          141: "dcn",
+          142: "ipForward",
+          143: "msdsl",
+          144: "ieee1394",
+          145: "if-gsn",
+          146: "dvbRccMacLayer",
+          147: "dvbRccDownstream",
+          148: "dvbRccUpstream",
+          149: "atmVirtual",
+          150: "mplsTunnel",
+          151: "srp",
+          152: "voiceOverAtm",
+          153: "voiceOverFrameRelay",
+          154: "idsl",
+          155: "compositeLink",
+          156: "ss7SigLink",
+          157: "propWirelessP2P",
+          158: "frForward",
+          159: "rfc1483",
+          160: "usb",
+          161: "ieee8023adLag",
+          162: "bgpPolicyAccounting",
+          163: "frf16MfrBundle",
+          164: "h323Gatekeeper",
+          165: "h323Proxy",
+          166: "mpls",
+          167: "mfSigLink",
+          168: "hdsl2",
+          169: "shdsl",
+          170: "ds1FDL",
+          171: "pos",
+          172: "dvbAsiIn",
+          173: "dvbAsiOut",
+          174: "plc",
+          175: "nfas",
+          176: "tr008",
+          177: "gr303RDT",
+          178: "gr303IDT",
+          179: "isup",
+          180: "propDocsWirelessMaclayer",
+          181: "propDocsWirelessDownstream",
+          182: "propDocsWirelessUpstream",
+          183: "hiperlan2",
+          184: "propBWAp2Mp",
+          185: "sonetOverheadChannel",
+          186: "digitalWrapperOverheadChannel",
+          187: "aal2",
+          188: "radioMAC",
+          189: "atmRadio",
+          190: "imt",
+          191: "mvl",
+          192: "reachDSL",
+          193: "frDlciEndPt",
+          194: "atmVciEndPt",
+          195: "opticalChannel",
+          196: "opticalTransport",
+          197: "propAtm",
+          198: "voiceOverCable",
+          199: "infiniband",
+          200: "teLink",
+          201: "q2931",
+          202: "virtualTg",
+          203: "sipTg",
+          204: "sipSig",
+          205: "docsCableUpstreamChannel",
+          206: "econet",
+          207: "pon155",
+          208: "pon622",
+          209: "bridge",
+          210: "linegroup",
+          211: "voiceEMFGD",
+          212: "voiceFGDEANA",
+          213: "voiceDID",
+          214: "mpegTransport",
+          215: "sixToFour",
+          216: "gtp",
+          217: "pdnEtherLoop1",
+          218: "pdnEtherLoop2",
+          219: "opticalChannelGroup",
+          220: "homepna",
+          221: "gfp",
+          222: "ciscoISLvlan",
+          223: "actelisMetaLOOP",
+          224: "fcipLink",
+          225: "rpr",
+          226: "qam",
+          227: "lmp",
+          228: "cblVectaStar",
+          229: "docsCableMCmtsDownstream",
+          230: "adsl2",
+          231: "macSecControlledIF",
+          232: "macSecUncontrolledIF",
+          233: "aviciOpticalEther",
+          234: "atmbond",
+          235: "voiceFGDOS",
+          236: "mocaVersion1",
+          237: "ieee80216WMAN",
+          238: "adsl2plus",
+          239: "dvbRcsMacLayer",
+          240: "dvbTdm",
+          241: "dvbRcsTdma",
+          242: "x86Laps",
+          243: "wwanPP",
+          244: "wwanPP2",
+          245: "voiceEBS",
+          246: "ifPwType",
+          247: "ilan",
+          248: "pip",
+          249: "aluELP",
+          250: "gpon",
+          251: "vdsl2",
+          252: "capwapDot11Profile",
+          253: "capwapDot11Bss",
+          254: "capwapWtpVirtualRadio",
+          255: "bits",
+          256: "docsCableUpstreamRfPort",
+          257: "cableDownstreamRfPort",
+          258: "vmwareVirtualNic",
+          259: "ieee802154",
+          260: "otnOdu",
+          261: "otnOtu",
+          262: "ifVfiType",
+          263: "g9981",
+          264: "g9982",
+          265: "g9983",
+          266: "aluEpon",
+          267: "aluEponOnu",
+          268: "aluEponPhysicalUni",
+          269: "aluEponLogicalLink",
+          270: "aluGponOnu",
+          271: "aluGponPhysicalUni",
+          272: "vmwareNicTeam",
+          277: "docsOfdmDownstream",
+          278: "docsOfdmaUpstream",
+          279: "gfast",
+          280: "sdci",
+          287: "docsCableNdf",
+          288: "docsCableNdr",
+          301: "omni"
+        }
+      - oid: .1.3.6.1.2.1.2.2.1.5
+        name: ifSpeed
+        type: Gauge32
+      - oid: .1.3.6.1.2.1.2.2.1.6
+        name: ifPhysAddress
+        type: OctetString
+        syntax: PhysAddress
+      - oid: .1.3.6.1.2.1.2.2.1.7
+        name: ifAdminStatus
+        type: Integer
+        enum: {1: "up", 2: "down", 3: "testing"}
+      - oid: .1.3.6.1.2.1.2.2.1.8
+        name: ifOperStatus
+        type: Integer
+        enum: {1: "up", 2: "down", 3: "testing", 4: "unknown", 5: "dormant", 6: "notPresent", 7: "lowerLayerDown"}
+      
+      # --- ifXTable ---
+      - oid: .1.3.6.1.2.1.31.1.1.1.1
+        name: ifName
+        type: OctetString
+      - oid: .1.3.6.1.2.1.31.1.1.1.15
+        name: ifHighSpeed
+        type: Gauge32
+      - oid: .1.3.6.1.2.1.31.1.1.1.17
+        name: ifConnectorPresent
+        type: Integer
+      - oid: .1.3.6.1.2.1.31.1.1.1.18
+        name: ifAlias
+        type: OctetString
+
+  ipAddrTable:
+    # snmpOption:
+    #   timeout: 5
+    #   retries: 2
+    #   maxRepetition: 10
+    #   expTime: false
+    name: ipAddrTable
+    tableOid: .1.3.6.1.2.1.4.20
+    indexes:
+      - name: ipAdEntAddr
+    columns:
+      - oid: .1.3.6.1.2.1.4.20.1.1
+        name: ipAdEntAddr
+        type: OctetString
+      - oid: .1.3.6.1.2.1.4.20.1.2
+        name: ipAdEntIfIndex
+        type: Integer
+      - oid: .1.3.6.1.2.1.4.20.1.3
+        name: ipAdEntNetMask
+        type: OctetString
+      - oid: .1.3.6.1.2.1.4.20.1.4
+        name: ipAdEntBcastAddr
+        type: OctetString
+
+  lldpLocPortTable:
+    # snmpOption:
+    #   timeout: 5
+    #   retries: 2
+    #   maxRepetition: 10
+    #   expTime: false
+    name: lldpLocPortTable
+    tableOid: .1.0.8802.1.1.2.1.3.7
+    indexes:
+      - name: lldpLocPortNum
+    columns:
+      - oid: .1.0.8802.1.1.2.1.3.7.1.2
+        name: lldpLocPortIdSubtype
+        type: Integer
+        enum: {1: chassisComponent, 2: interfaceAlias, 3: portComponent, 4: macAddress, 5: networkAddress, 6: interfaceName, 7: local}
+      - oid: .1.0.8802.1.1.2.1.3.7.1.3
+        name: lldpLocPortId
+        type: OctetString
+
+  lldpRemTable:
+    # snmpOption:
+    #   timeout: 5
+    #   retries: 2
+    #   maxRepetition: 10
+    #   expTime: false
+
+    name: lldpRemTable
+    tableOid: .1.0.8802.1.1.2.1.4.1
+    indexes:
+      - name: lldpRemTimeMark
+      - name: lldpRemLocalPortNum
+      - name: lldpRemIndex
+    columns:
+      # - oid: .1.0.8802.1.1.2.1.4.1.1.1
+      #   name: lldpRemTimeMark
+      #   type: TimeTicks
+      # - oid: .1.0.8802.1.1.2.1.4.1.1.2
+      #   name: lldpRemLocalPortNum
+      #   type: Integer
+      # - oid: .1.0.8802.1.1.2.1.4.1.1.3
+      #   name: lldpRemIndex
+      #   type: Integer
+      - oid: .1.0.8802.1.1.2.1.4.1.1.4
+        name: lldpRemChassisIdSubtype
+        type: Integer
+        enum: {1: chassisComponent, 2: interfaceAlias, 3: portComponent, 4: macAddress, 5: networkAddress, 6: interfaceName, 7: local}
+      - oid: .1.0.8802.1.1.2.1.4.1.1.5
+        name: lldpRemChassisId
+        type: OctetString
+        syntax: PhysAddress
+      - oid: .1.0.8802.1.1.2.1.4.1.1.6
+        name: lldpRemPortIdSubtype
+        type: Integer
+        enum: {1: interfaceAlias, 2: portComponent, 3: macAddress, 4: networkAddress, 5: interfaceName, 6: agentCircuitId, 7: local}
+      - oid: .1.0.8802.1.1.2.1.4.1.1.7
+        name: lldpRemPortId
+        type: OctetString
+      - oid: .1.0.8802.1.1.2.1.4.1.1.8
+        name: lldpRemPortDesc
+        type: OctetString
+      - oid: .1.0.8802.1.1.2.1.4.1.1.9
+        name: lldpRemSysName
+        type: OctetString
+      # - oid: .1.0.8802.1.1.2.1.4.1.1.10
+      #   name: lldpRemSysDesc
+      #   type: OctetString
+      # - oid: .1.0.8802.1.1.2.1.4.1.1.11
+      #   name: lldpRemSysCapSupported
+      #   type: Integer
+      #   enum: {0: other, 1: repeater, 2: bridge, 3: wlanAccessPoint, 4: router, 5: telephone, 6: docsisCableDevice, 7: stationOnly}
+      # - oid: .1.0.8802.1.1.2.1.4.1.1.12
+      #   name: lldpRemSysCapEnabled
+      #   type: Integer
+      #   enum: {0: other, 1: repeater, 2: bridge, 3: wlanAccessPoint, 4: router, 5: telephone, 6: docsisCableDevice, 7: stationOnly}
+
+  extSnmpTables:
+    lldpRemTable_FTTx_Dasan:
+      name: lldpRemTable_FTTx_Dasan
+      tableOid: .1.3.6.1.4.1.6296.101.3.20
+      columns:
+        - oid: .1.3.6.1.4.1.6296.101.3.20.1.1.6
+          name: sleLldpRemPortId
+          type: OctetString
+        - oid: .1.3.6.1.4.1.6296.101.3.20.1.1.8
+          name: sleLldpRemSysName
+          type: OctetString
+
+    lldpRemTable_FTTx_Fiberhome:
+      name: lldpRemTable_FTTx_Fiberhome
+      tableOid: .1.3.6.1.4.1.5875.800.3.61.2.1.1.1
+      columns:
+        - oid: .1.3.6.1.4.1.5875.800.3.61.2.1.1.1.2
+          name: lldpLocPortId
+          type: OctetString
+        - oid: .1.3.6.1.4.1.5875.800.3.61.2.1.1.1.7
+          name: lldpRemPortId
+          type: OctetString
+        - oid: .1.3.6.1.4.1.5875.800.3.61.2.1.1.1.9
+          name: lldpRemSysName
+          type: OctetString
+
+    lldpLocTable_FTTx_Raisecom:
+      name: lldpLocTable_FTTx_Raisecom
+      tableOid: .1.3.6.1.4.1.8886.18.1.10.1.1.3.7
+      columns:
+        - oid: .1.3.6.1.4.1.8886.18.1.10.1.1.3.7.1.3
+          name: lldpLocPortId
+          type: OctetString
+
+    lldpRemTable_FTTx_Raisecom:
+      name: lldpRemTable_FTTx_Raisecom
+      tableOid: .1.3.6.1.4.1.8886.18.1.10.1.1.4.1
+      columns:
+        - oid: .1.3.6.1.4.1.8886.18.1.10.1.1.4.1.1.7
+          name: lldpRemPortId
+          type: OctetString
+        - oid: .1.3.6.1.4.1.8886.18.1.10.1.1.4.1.1.9
+          name: lldpRemSysName
+          type: OctetString
+    
+    lldpRemTable_FTTx_GCOM:
+      name: lldpRemTable_FTTx_GCOM
+      tableOid: .1.0.8802.1.1.2.1.4.1
+      columns:
+        - oid: .1.0.8802.1.1.2.1.4.1.1.7
+          name: lldpRemPortId
+          type: OctetString
+        - oid: .1.0.8802.1.1.2.1.4.1.1.9
+          name: lldpRemSysName
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c adsl 10.237.153.6 1.3.6.1.4.1.5875.800.3.9.3.5.1.2
+    # snmpbulkwalk -v2c -c adsl 10.237.153.6 1.3.6.1.4.1.5875.800.3.9.3.5.1.12
+    # snmpbulkwalk -v2c -c adsl 10.237.153.6 1.3.6.1.4.1.5875.800.3.9.3.5.1.14
+    intf_moduleclass_FTTx_Fiberhome:
+      name: intf_moduleclass_FTTx_Fiberhome
+      columns:
+        - oid: .1.3.6.1.4.1.5875.800.3.9.3.5.1.2
+          name: ifName
+          type: OctetString
+        - oid: .1.3.6.1.4.1.5875.800.3.9.3.5.1.12
+          name: moduleclass
+          type: Integer
+          enum: {
+            1:  unknown,
+            2:  classbplus,
+            3:  classcplus (C+),
+            4:  classb,
+            5:  px20,
+            6:  px20plus,
+            7:  pr30,
+            8:  pr20,
+            9:  prx30,
+            10: prx20,
+            11: invalid,
+            12: absent,
+            13: classcplusplus,
+            14: sfp,
+            15: sfpplus,
+            16: xfp,
+            17: sfp/sfpplus,
+            18: n1,
+            19: n2a,
+            20: n2b,
+            21: e1,
+            22: e2a,
+            23: e2b,
+            24: prx40,
+            25: pr40,
+            26: 1000BASE-SX,
+            27: 1000BASE-LX,
+            28: 1000BASE-EX,
+            29: 1000BASE-ZX1,
+            30: 1000BASE-ZX2,
+            31: 10GBASE-SR/SW,
+            32: 10GBASE-LR/LW,
+            33: 10GBASE-ER/EW,
+            34: 10GBASE-ZR/ZW,
+            35: Class B+/Class C+,
+            36: N1/N2a/E1/E2a,
+            37: N2b/E2b,
+            38: N1/N2/E1,
+            39: D1,
+            40: D2,
+            41: D1+,
+            42: N2a/C+,
+            43: N2,
+            44: 100GBASE-LR4,
+            45: 100GBASE-ER4,
+            46: 100GBASE-SR4,
+            47: Class D
+          }
+
+        - oid: .1.3.6.1.4.1.5875.800.3.9.3.5.1.14
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public 10.239.152.25 1.3.6.1.4.1.3902.1082.30.40.2.4.1.15
+    # snmpbulkwalk -v2c -c public 10.239.152.25 1.3.6.1.4.1.3902.1082.30.40.2.4.1.11
+    # snmpbulkwalk -v2c -c public 10.239.83.8 1.3.6.1.4.1.3902.1082.30.40.2.4.1.15
+    intf_moduleclass_FTTx_ZTE:
+      name: intf_moduleclass_FTTx_ZTE
+      columns:
+        - oid: .1.3.6.1.4.1.3902.1082.30.40.2.4.1.15
+          name: moduleclass
+          type: OctetString
+        - oid: .1.3.6.1.4.1.3902.1082.30.40.2.4.1.11
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public123 10.238.152.16 1.3.6.1.4.1.2011.5.14.6.2.1.3
+    # snmpbulkwalk -v2c -c public123 10.238.152.16 1.3.6.1.4.1.2011.5.14.6.1.1.13
+    intf_moduleclass_FTTx_Huawei:
+      name: intf_moduleclass_FTTx_Huawei
+      columns:
+        - oid: .1.3.6.1.4.1.2011.5.14.6.2.1.3
+          name: moduleclass
+          type: Integer
+          enum: {
+            1: en1000BASET,
+            2: en1000BASECX,
+            3: en1000BASELX,
+            4: en1000BASESX,
+            5: enMULTILX,
+            6: en100BASELX,
+            7: en100BASEFX,
+            8: en1000BASEBX,
+            9: en1000BASEPX,
+            10: en10GBASELRM,
+            11: en10GBASELR,
+            12: en10GBASESR,
+            13: en100BASEBX,
+            14: en10GBASEER,
+            15: en1000BASEZX,
+            16: en100GBASESR4,
+            17: en100GBASELR4,
+            18: en100GBASEER4,
+            19: en100GBASESR10,
+            20: en100GBASECWDM4,
+            -1: invalid,
+            255: invalid
+          }
+        - oid: .1.3.6.1.4.1.2011.5.14.6.1.1.13
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public 10.178.153.10 1.3.6.1.4.1.6296.101.2.2.5.1.4
+    intf_moduleclass_FTTx_Dasan:
+      name: intf_moduleclass_FTTx_Dasan
+      columns:
+        - oid: .1.3.6.1.4.1.6296.101.2.2.5.1.4
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public 10.237.205.147 1.3.6.1.4.1.637.61.1.56.6.1.13.4353
+    # snmpbulkwalk -v2c -c public 10.237.205.147 1.3.6.1.4.1.637.61.1.56.6.1.5.4353
+    intf_moduleclass_FTTx_Nokia:
+      name: intf_moduleclass_FTTx_Nokia
+      columns:
+        - oid: .1.3.6.1.4.1.637.61.1.56.6.1.13.4353
+          name: moduleclass
+          type: Integer
+          enum: {
+            13: 10gbase_lr,
+            15: 1000base_lx
+          }
+        - oid: .1.3.6.1.4.1.637.61.1.56.6.1.5.4353
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c adsl 10.237.153.6 1.3.6.1.4.1.5875.800.3.9.3.4.1.2
+    # snmpbulkwalk -v2c -c adsl 10.237.153.6 1.3.6.1.4.1.5875.800.3.9.3.4.1.15
+    # snmpbulkwalk -v2c -c adsl 10.237.153.6 1.3.6.1.4.1.5875.800.3.9.3.4.1.17
+    ponport_moduleclass_FTTx_Fiberhome:
+      name: ponport_moduleclass_FTTx_Fiberhome
+      columns:
+        - oid: .1.3.6.1.4.1.5875.800.3.9.3.4.1.2
+          name: ifName
+          type: OctetString
+        - oid: .1.3.6.1.4.1.5875.800.3.9.3.4.1.15
+          name: moduleclass
+          type: Integer
+          enum: {
+            1:  unknown,
+            2:  classbplus,
+            3:  classcplus (C+),
+            4:  classb,
+            5:  px20,
+            6:  px20plus,
+            7:  pr30,
+            8:  pr20,
+            9:  prx30,
+            10: prx20,
+            11: invalid,
+            12: absent,
+            13: classcplusplus,
+            14: sfp,
+            15: sfpplus,
+            16: xfp,
+            17: sfp/sfpplus,
+            18: n1,
+            19: n2a,
+            20: n2b,
+            21: e1,
+            22: e2a,
+            23: e2b,
+            24: prx40,
+            25: pr40,
+            26: 1000BASE-SX,
+            27: 1000BASE-LX,
+            28: 1000BASE-EX,
+            29: 1000BASE-ZX1,
+            30: 1000BASE-ZX2,
+            31: 10GBASE-SR/SW,
+            32: 10GBASE-LR/LW,
+            33: 10GBASE-ER/EW,
+            34: 10GBASE-ZR/ZW,
+            35: Class B+/Class C+,
+            36: N1/N2a/E1/E2a,
+            37: N2b/E2b,
+            38: N1/N2/E1,
+            39: D1,
+            40: D2,
+            41: D1+,
+            42: N2a/C+,
+            43: N2,
+            44: 100GBASE-LR4,
+            45: 100GBASE-ER4,
+            46: 100GBASE-SR4,
+            47: Class D
+          }
+        - oid: .1.3.6.1.4.1.5875.800.3.9.3.4.1.17
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public 10.239.77.246 1.3.6.1.4.1.3902.1082.30.40.2.4.1.20
+    # snmpbulkwalk -v2c -c public 10.239.77.246 1.3.6.1.4.1.3902.1082.30.40.2.4.1.11
+    ponport_moduleclass_FTTx_ZTE:
+      name: ponport_moduleclass_FTTx_ZTE
+      columns:
+        - oid: .1.3.6.1.4.1.3902.1082.30.40.2.4.1.20
+          name: moduleclass
+          type: OctetString
+        - oid: .1.3.6.1.4.1.3902.1082.30.40.2.4.1.11
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public123 10.238.152.16 1.3.6.1.4.1.2011.6.128.1.1.2.22.1.28
+    # snmpbulkwalk -v2c -c public123 10.238.152.16 1.3.6.1.4.1.2011.6.128.1.1.2.22.1.13
+    ponport_moduleclass_FTTx_Huawei:
+      name: ponport_moduleclass_FTTx_Huawei
+      columns:
+        - oid: .1.3.6.1.4.1.2011.6.128.1.1.2.22.1.27
+          name: moduletype
+          type: Integer
+          enum: {
+            1: unknown,
+            2: gpon,
+            3: epon,
+            4: epon10g,
+            5: gpon10g,
+            6: wdmpon,
+            7: hybridpon,
+            8: gponepon,
+            9: xgspon,
+            10: gponandxgpon,
+            11: gponandxgspon,
+            15: twdmpon,
+            -1: invalid
+          }
+          
+        - oid: .1.3.6.1.4.1.2011.6.128.1.1.2.22.1.28
+          name: moduleclass
+          type: Integer
+          enum: {
+            1:   unknown,
+            101: classbplus,
+            102: classcplus,
+            103: classb,
+            104: classcplusplus,
+            105: classcd,
+            201: px20,
+            202: px20plus,
+            203: px20plusplus,
+            301: pr30,
+            302: pr20,
+            303: prx30,
+            304: prx20,
+            305: prx40, 
+            306: pr40,
+            307: prx30e,
+            308: prx40e,
+            309: pr30plus,
+            405: n2a,
+            406: n2b,
+            407: n1,
+            408: e1,
+            409: e2a,
+            410: e2b,
+            411: d1,
+            412: d2,
+            413: n2,
+            414: e2,		
+            501: classbPlusAndPx20Plus,
+            502: classbAndPx20,	 
+            -1:  invalid
+          }
+        - oid: .1.3.6.1.4.1.2011.6.128.1.1.2.22.1.13
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public 10.178.153.10 1.3.6.1.4.1.6296.101.2.2.5.1.23
+    # snmpbulkwalk -v2c -c public 10.178.153.10 1.3.6.1.4.1.6296.101.2.2.5.1.4
+    ponport_moduleclass_FTTx_Dasan:
+      name: ponport_moduleclass_FTTx_Dasan
+      columns:
+        - oid: .1.3.6.1.4.1.6296.101.2.2.5.1.23
+          name: moduleclass
+          type: OctetString
+        - oid: .1.3.6.1.4.1.6296.101.2.2.5.1.4
+          name: vendorPn
+          type: OctetString
+
+    # snmpbulkwalk -v2c -c public 10.237.205.147 1.3.6.1.4.1.637.61.1.56.6.1.13.4355
+    # snmpbulkwalk -v2c -c public 10.237.205.147 1.3.6.1.4.1.637.61.1.56.6.1.5.4355
+    ponport_moduleclass_FTTx_Nokia:
+      name: ponport_moduleclass_FTTx_Nokia
+      columns:
+        - oid: .1.3.6.1.4.1.637.61.1.56.6.1.13.4355
+          name: moduleclass
+          type: Integer
+          enum: {
+            7:  bPlusC, 
+            8:  bPlusI, 
+            9:  cPlusC,
+            10: cPlusI
+          }
+        - oid: .1.3.6.1.4.1.637.61.1.56.6.1.5.4355
+          name: vendorPn
+          type: OctetString
+    
+    # snmpbulkwalk -v2c -c public 10.237.165.131 1.3.6.1.4.1.637.61.1.6.5.1.1
+    intf_dstsite_FTTx_Nokia:
+      name: intf_dstsite_FTTx_Nokia
+      columns:
+        - oid: .1.3.6.1.4.1.637.61.1.6.5.1.1
+          name: nokiaDstSite
+          type: OctetString
+
+    # board
+    board_FTTx_Huawei:
+      name: board_FTTx_Huawei
+      columns:
+        - oid: .1.3.6.1.4.1.2011.6.3.3.2.1.3
+          name: hwSlotDesc
+          type: OctetString
+        - oid: .1.3.6.1.4.1.2011.6.3.3.2.1.21
+          name: hwSlotTypeName
+          type: OctetString          
+        - oid: .1.3.6.1.4.1.2011.6.3.3.2.1.8
+          name: hwSlotOperStatus
+          type: Integer
+          enum: {
+            1: invalid, 2: normal, 3: fault, 4: forbidden, 5: autofind, 6: config, 7: offline, 8: abnormal,
+            9: versionerr, 10: autoload, 11: outofservice, 12: graceful, 13: shutdown, 14: energysavingshutdown,
+            15: hightempshutdown, 16: manualshutdown, 17: mismatch, 18: acoffshutdown, 19: highpowershutdown, 20: isolated
+          }
+        # - oid: .1.3.6.1.4.1.2011.6.3.3.2.1.9
+        #   name: hwSlotAdminStatus
+        #   type: Integer
+        #   enum: {
+        #     -1: nooperation, 1: disable, 2: enable, 3: reset, 4: test, 5: confirm,
+        #     6: switch, 7: delete, 8: forbidden, 9: unforbidden, 10: endservice,
+        #     11: startservice, 12: poweron, 13: poweroff, 14: is, 15: oos, 16: hotreset
+        #   }
+    
+    board_FTTx_ZTE:
+      name: board_FTTx_ZTE
+      columns:
+        - oid: .1.3.6.1.4.1.3902.1082.10.1.2.4.1.4
+          name: zxAnCardActualType
+          type: OctetString
+        # - oid: .1.3.6.1.4.1.3902.1082.10.1.2.4.1.42
+        #   name: zxAnCardName
+        #   type: OctetString
+        - oid: .1.3.6.1.4.1.3902.1082.10.1.2.4.1.5
+          name: zxAnCardOperStatus
+          type: Integer
+          enum: {
+            1: inService, 2: notInService, 3: hwOnline, 4: hwOffline, 5: configuring, 6: configFailed, 7: typeMismatch, 8: deactived,
+            9: faulty, 10: invalid, 11: noPower, 12: unauthorized, 13: adminDown, 34: powerSaving
+          }
+        # - oid: .1.3.6.1.4.1.3902.1082.10.1.2.4.1.6
+        #   name: zxAnCardAdminStatus
+        #   type: Integer
+        #   enum: {1: reset, 2: switch, 3: stopService, 4: active, 5: deactive}
+
+    board_FTTx_Fiberhome:
+      name: board_FTTx_Fiberhome
+      columns:
+        - oid: .1.3.6.1.4.1.5875.800.3.9.5.1.1.1
+          name: slotInfoIndex
+          type: OctetString
+        - oid: .1.3.6.1.4.1.5875.800.3.9.5.1.1.2
+          name: occupiedStatus
+          type: Integer
+          enum: { 1: present, 0: absent }
+        - oid: .1.3.6.1.4.1.5875.800.3.9.5.1.1.4
+          name: occupiedCardType
+          type: Integer
+          enum: {
+            374: HSUB,
+            435: HU2P,
+            444: HU6P,
+            527: GC8B,
+            550: GOOB,
+            652: PWRD,
+            660: PIDD,
+            661: PWR,
+            741: FAN,
+            2013: GPOP,
+            2014: GPOA,
+            2023: GNOA,
+            2037: GPOP,
+            3002: HSCP,
+            3006: HSUD,
+            3009: GFOA,
+            3011: HSCV
+          }

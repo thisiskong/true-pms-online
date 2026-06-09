@@ -92,50 +92,87 @@ def build_device(devices: list[dict], slots: dict[str, dict]) -> list[dict]:
 # intf  (32 fields — from Nokia-Device-Discovery.md §intf table)
 # ---------------------------------------------------------------------------
 
-def build_intf(devices: list[dict]) -> list[dict]:
+# Maps port-id type token to module class string
+_PORT_TYPE_TO_MODULECLASS = {
+  "xfp":  "10GE-XFP",
+  "qsfp": "100GE-QSFP28",
+  "sfp":  "1GE-SFP",
+}
+
+# Maps wavelength (nm string) to media type
+_WAVELENGTH_TO_MEDIATYPE = {
+  "850":  "MM",
+  "1310": "SM",
+  "1490": "SM",
+  "1550": "SM",
+}
+
+
+def _port_moduleclass(port_id: str) -> str | None:
+  """Derive moduleclass from port_id token e.g. 'nt-a:xfp:1' -> '10GE-XFP'."""
+  for token, cls in _PORT_TYPE_TO_MODULECLASS.items():
+    if f":{token}:" in port_id or port_id.endswith(f":{token}"):
+      return cls
+  return None
+
+
+def _vendorpn(part_number: str) -> str | None:
+  """Return first whitespace token of part_number as the vendor PN."""
+  pn = (part_number or "").strip()
+  return pn.split()[0] if pn and pn != "-" else None
+
+
+def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[dict]:
   ts = _now()
+  device_map = {d["name"]: d for d in devices}
   rows = []
-  for dev in devices:
-    # One placeholder row per OLT — all RC-Proxy fields are NotImplement.
-    # Will be replaced with real rows once RC-INTF (item 9) is unblocked.
-    rows.append({
-      # --- available from device table ---
-      "device_ip":        dev.get("ip"),
-      "device_name":      dev.get("name"),
-      "iftype":           "ethernetCsmacd",   # fixed for all uplink ports
-      "sys_pollstatus":   1,
-      "usr_pollstatus":   1,
-      "last_modify_by":   "nokia-discovery",
-      "last_modify_at":   ts,
-      "lastseen":         ts,
-      "first":            ts,
-      # --- NotImplement: available via RC-INTF (item 9 — RC-Proxy blocked) ---
-      "id":               NI,   # compose: {device.id}.{ifindex}
-      "device_id":        NI,   # FK from device.id
-      "ifname":           NI,   # RC-Proxy interface[].name
-      "ifdescr":          NI,   # RC-Proxy interface[].description
-      "ifspeed":          NI,   # RC-Proxy interface[].speed
-      "ifadmin":          NI,   # RC-Proxy interface[].admin-status
-      "ifoper":           NI,   # RC-Proxy interface[].oper-status
-      "ifindex":          NI,   # RC-Proxy interface[].if-index
-      "ifphyaddr":        NI,   # RC-Proxy interface[].phys-address
-      "ifalias":          NI,   # RC-Proxy interface[].description
-      "ifconn":           NI,   # derived from ifoper
-      "name":             NI,   # compose: {device_name}:{ifname}
-      # --- NotImplement: available via UPLINK-SFP (item 7 — eqpt action blocked) ---
-      "moduleclass":      NI,   # eqpt:show-uplink-sfp-diag-inv → module-class
-      "vendorpn":         NI,   # eqpt:show-uplink-sfp-diag-inv → part-number
-      "mediatype":        NI,   # derived from moduleclass (SM/MM)
-      # --- NotSupported: not available from Nokia NBI ---
-      "altname":          NS,   # optional alternate name — not in Altiplano
-      "dstport":          NS,   # neighbor port — LLDP or manual
-      "dstsite":          NS,   # neighbor site — manual mapping
-      "dsttype":          NS,   # neighbor device type — manual mapping
-      "dstname":          NS,   # neighbor device name — LLDP or manual
-      "dstsite2":         NS,   # secondary neighbor site — manual
-      "dsttype2":         NS,   # secondary neighbor device type — manual
-      "remdstsite":       NS,   # remote destination site — manual
-    })
+
+  for olt, sfp_list in uplink_sfp.items():
+    dev = device_map.get(olt, {})
+    for sfp in sfp_list:
+      port_id = sfp.get("port_id", "")
+      pn = _vendorpn(sfp.get("part_number", ""))
+      wave = (sfp.get("wave_length") or "").strip().lstrip("0") or None
+      oper = sfp.get("oper_state")
+      admin = sfp.get("admin_state")
+      rows.append({
+        # --- available from ES-DEVICE ---
+        "device_ip":        dev.get("ip"),
+        "device_name":      olt,
+        "iftype":           "ethernetCsmacd",
+        "sys_pollstatus":   1,
+        "usr_pollstatus":   1,
+        "last_modify_by":   "nokia-discovery",
+        "last_modify_at":   ts,
+        "lastseen":         ts,
+        "first":            ts,
+        # --- available from UPLINK-SFP (item 7) ---
+        "ifname":           port_id,
+        "ifdescr":          port_id,
+        "name":             f"{olt}:{port_id}",
+        "ifadmin":          "down" if admin == "disable" else "up" if admin else NI,
+        "ifoper":           oper if oper and oper != "-" else NI,
+        "moduleclass":      _port_moduleclass(port_id),
+        "vendorpn":         pn,
+        "mediatype":        _WAVELENGTH_TO_MEDIATYPE.get(wave) if wave else NI,
+        # --- NotImplement: available via RC-INTF (item 9 — RC-Proxy blocked) ---
+        "id":               NI,   # composite {device.id}.{ifindex}
+        "device_id":        NI,   # FK from device table
+        "ifspeed":          NI,   # RC-Proxy interface[].speed
+        "ifindex":          NI,   # RC-Proxy interface[].if-index
+        "ifphyaddr":        NI,   # RC-Proxy interface[].phys-address (MAC)
+        "ifalias":          NI,   # RC-Proxy interface[].description
+        "ifconn":           NI,   # derived from ifoper
+        # --- NotSupported: not available from Nokia NBI ---
+        "altname":          NS,
+        "dstport":          NS,
+        "dstsite":          NS,
+        "dsttype":          NS,
+        "dstname":          NS,
+        "dstsite2":         NS,
+        "dsttype2":         NS,
+        "remdstsite":       NS,
+      })
   return rows
 
 
@@ -185,11 +222,12 @@ def build_ponport(
         "last_modify_at":   ts,
         "lastseen":         ts,
         "first":            ts,
+        # --- available from PON-SFP (fiber:fiber AC) and ES-FIBER ---
+        "ifadmin":          "down" if sfp.get("admin_state") == "locked" else "up",
+        "ifoper":           "up" if fiber.get("required_network_state") == "active" else "down" if fiber.get("required_network_state") else NI,
         # --- NotImplement: available via RC-INTF-ONE (item 10 — RC-Proxy blocked) ---
         "id":               NI,   # compose: {device.id}.{ifindex}
         "device_id":        NI,   # FK from device.id
-        "ifadmin":          NI,   # RC-Proxy interface.admin-status
-        "ifoper":           NI,   # RC-Proxy interface.oper-status
         "ifindex":          NI,   # RC-Proxy interface.if-index
         # --- NotImplement: optional, requires PON utilization monitoring enabled ---
         "dl_bw_remaining":  NI,   # OpenTSDB PON utilization — requires §4.2.15 enabled
@@ -212,11 +250,12 @@ def run(
   fibers_by_olt: dict[str, list[dict]],
   pon_sfp: dict[str, dict],
   ont_counts: dict[str, int],
+  uplink_sfp: dict[str, list[dict]] | None = None,
 ) -> None:
   print("[ASSEMBLE] building tables ...")
 
   device_rows = build_device(devices, slots)
-  intf_rows = build_intf(devices)
+  intf_rows = build_intf(devices, uplink_sfp or {})
   ponport_rows = build_ponport(fibers_by_olt, pon_sfp, ont_counts, devices)
 
   _save_jsonl(output_dir / "device.jsonl", device_rows)
@@ -224,5 +263,5 @@ def run(
   _save_jsonl(output_dir / "ponport.jsonl", ponport_rows)
 
   print(f"  device:  {len(device_rows)} rows")
-  print(f"  intf:    {len(intf_rows)} rows (placeholder per OLT — RC-Proxy blocked)")
+  print(f"  intf:    {len(intf_rows)} rows")
   print(f"  ponport: {len(ponport_rows)} rows")

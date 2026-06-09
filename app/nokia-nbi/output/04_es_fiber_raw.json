@@ -17,87 +17,8 @@
       "hits": [
         {
           "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_QCENGNKMF2-1-16",
-          "_score": 3.242592,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "QCENGNKMF2"
-              ],
-              "pon-id": [
-                "LT1.PON16"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default_Port_Mix_authentication"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "QCENGNKMF2-1-16",
-              "fiber-name": "QCENGNKMF2-1-16"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_QCENGNKMF2-1-6",
-          "_score": 3.242592,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "QCENGNKMF2"
-              ],
-              "pon-id": [
-                "LT1.PON6"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ]
-            },
-            "target": {
-              "raw": "QCENGNKMF2-1-6",
-              "fiber-name": "QCENGNKMF2-1-6"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-11",
-          "_score": 3.2108436,
+          "_score": 3.242592,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -137,131 +58,8 @@
         },
         {
           "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_QCENGNKMF2-1-10",
-          "_score": 2.4589312,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "QCENGNKMF2"
-              ],
-              "pon-id": [
-                "LT1.PON10"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "QCENGNKMF2-1-10",
-              "fiber-name": "QCENGNKMF2-1-10"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_QCENGNKMF2-1-1",
-          "_score": 2.4589312,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "QCENGNKMF2"
-              ],
-              "pon-id": [
-                "LT1.PON1"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "QCENGNKMF2-1-1",
-              "fiber-name": "QCENGNKMF2-1-1"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_QCENGNKMF2-1-2",
-          "_score": 2.4589312,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "QCENGNKMF2"
-              ],
-              "pon-id": [
-                "LT1.PON2"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "QCENGNKMF2-1-2",
-              "fiber-name": "QCENGNKMF2-1-2"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-14",
-          "_score": 2.3707933,
+          "_score": 2.7725885,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -302,7 +100,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-13",
-          "_score": 2.3707933,
+          "_score": 2.7725885,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -343,7 +141,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-7",
-          "_score": 2.3707933,
+          "_score": 2.7725885,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -384,7 +182,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-8",
-          "_score": 2.3707933,
+          "_score": 2.7725885,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -424,8 +222,210 @@
         },
         {
           "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_QCENGNKMF2-1-16",
+          "_score": 2.6855774,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "QCENGNKMF2"
+              ],
+              "pon-id": [
+                "LT1.PON16"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default_Port_Mix_authentication"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "QCENGNKMF2-1-16",
+              "fiber-name": "QCENGNKMF2-1-16"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_QCENGNKMF2-1-6",
+          "_score": 2.6855774,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "QCENGNKMF2"
+              ],
+              "pon-id": [
+                "LT1.PON6"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ]
+            },
+            "target": {
+              "raw": "QCENGNKMF2-1-6",
+              "fiber-name": "QCENGNKMF2-1-6"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_QCENGNKMF2-1-10",
+          "_score": 2.534917,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "QCENGNKMF2"
+              ],
+              "pon-id": [
+                "LT1.PON10"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "QCENGNKMF2-1-10",
+              "fiber-name": "QCENGNKMF2-1-10"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_QCENGNKMF2-1-1",
+          "_score": 2.534917,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "QCENGNKMF2"
+              ],
+              "pon-id": [
+                "LT1.PON1"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "QCENGNKMF2-1-1",
+              "fiber-name": "QCENGNKMF2-1-1"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_QCENGNKMF2-1-2",
+          "_score": 2.534917,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "QCENGNKMF2"
+              ],
+              "pon-id": [
+                "LT1.PON2"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "QCENGNKMF2-1-2",
+              "fiber-name": "QCENGNKMF2-1-2"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-9",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -466,7 +466,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-15",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -507,7 +507,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-12",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -548,7 +548,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-3",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -589,7 +589,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-4",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -630,7 +630,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_QCENGNKMF2-1-5",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -685,12 +685,12 @@
         "value": 32,
         "relation": "eq"
       },
-      "max_score": 2.6548054,
+      "max_score": 2.6855774,
       "hits": [
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-9",
-          "_score": 2.6548054,
+          "_score": 2.6855774,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -731,7 +731,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-6",
-          "_score": 2.6548054,
+          "_score": 2.6855774,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -772,7 +772,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-3",
-          "_score": 2.6548054,
+          "_score": 2.6855774,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -813,7 +813,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-16",
-          "_score": 2.6548054,
+          "_score": 2.6855774,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -853,251 +853,8 @@
         },
         {
           "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_SMK01058GO0-1-13",
-          "_score": 2.6390574,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "SMK01058GO0"
-              ],
-              "pon-id": [
-                "LT1.PON13"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "SMK01058GO0-1-13",
-              "fiber-name": "SMK01058GO0-1-13"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_SMK01058GO0-2-10",
-          "_score": 2.6390574,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "SMK01058GO0"
-              ],
-              "pon-id": [
-                "LT2.PON10"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "SMK01058GO0-2-10",
-              "fiber-name": "SMK01058GO0-2-10"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_SMK01058GO0-2-13",
-          "_score": 2.6390574,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "SMK01058GO0"
-              ],
-              "pon-id": [
-                "LT2.PON13"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "SMK01058GO0-2-13",
-              "fiber-name": "SMK01058GO0-2-13"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_SMK01058GO0-1-11",
-          "_score": 2.6390574,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "SMK01058GO0"
-              ],
-              "pon-id": [
-                "LT1.PON11"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "SMK01058GO0-1-11",
-              "fiber-name": "SMK01058GO0-1-11"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_SMK01058GO0-2-7",
-          "_score": 2.6390574,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "SMK01058GO0"
-              ],
-              "pon-id": [
-                "LT2.PON7"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ]
-            },
-            "target": {
-              "raw": "SMK01058GO0-2-7",
-              "fiber-name": "SMK01058GO0-2-7"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
-          "_id": "fiber_$$_SMK01058GO0-2-1",
-          "_score": 2.6390574,
-          "_source": {
-            "required-network-state": "active",
-            "configuration": {
-              "xpon-type": [
-                "mpm-gpon-xgs"
-              ],
-              "device-name": [
-                "SMK01058GO0"
-              ],
-              "pon-id": [
-                "LT2.PON1"
-              ],
-              "cage-mode": [
-                "auto"
-              ],
-              "wavelength-profile": [
-                "auto"
-              ],
-              "port-profile": [
-                "Default Port Profile"
-              ],
-              "line-rate": [
-                "auto"
-              ],
-              "model-name": [
-                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
-              ],
-              "admin-state": [
-                "unlocked"
-              ]
-            },
-            "target": {
-              "raw": "SMK01058GO0-2-1",
-              "fiber-name": "SMK01058GO0-2-1"
-            }
-          }
-        },
-        {
-          "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-8",
-          "_score": 2.623057,
+          "_score": 2.6548054,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1138,7 +895,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-15",
-          "_score": 2.623057,
+          "_score": 2.6548054,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1179,7 +936,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-7",
-          "_score": 2.623057,
+          "_score": 2.6548054,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1220,7 +977,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-14",
-          "_score": 2.623057,
+          "_score": 2.6548054,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1261,7 +1018,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-1",
-          "_score": 2.4589312,
+          "_score": 2.534917,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1302,7 +1059,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-5",
-          "_score": 2.4589312,
+          "_score": 2.534917,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1343,7 +1100,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-10",
-          "_score": 2.4589312,
+          "_score": 2.534917,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1384,7 +1141,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-11",
-          "_score": 2.4589312,
+          "_score": 2.534917,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1425,7 +1182,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-6",
-          "_score": 2.4589312,
+          "_score": 2.534917,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1466,7 +1223,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-9",
-          "_score": 2.4589312,
+          "_score": 2.534917,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1506,8 +1263,251 @@
         },
         {
           "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_SMK01058GO0-1-13",
+          "_score": 2.4048636,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "SMK01058GO0"
+              ],
+              "pon-id": [
+                "LT1.PON13"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "SMK01058GO0-1-13",
+              "fiber-name": "SMK01058GO0-1-13"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_SMK01058GO0-2-10",
+          "_score": 2.4048636,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "SMK01058GO0"
+              ],
+              "pon-id": [
+                "LT2.PON10"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "SMK01058GO0-2-10",
+              "fiber-name": "SMK01058GO0-2-10"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_SMK01058GO0-2-13",
+          "_score": 2.4048636,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "SMK01058GO0"
+              ],
+              "pon-id": [
+                "LT2.PON13"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "SMK01058GO0-2-13",
+              "fiber-name": "SMK01058GO0-2-13"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_SMK01058GO0-1-11",
+          "_score": 2.4048636,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "SMK01058GO0"
+              ],
+              "pon-id": [
+                "LT1.PON11"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "SMK01058GO0-1-11",
+              "fiber-name": "SMK01058GO0-1-11"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_SMK01058GO0-2-7",
+          "_score": 2.4048636,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "SMK01058GO0"
+              ],
+              "pon-id": [
+                "LT2.PON7"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ]
+            },
+            "target": {
+              "raw": "SMK01058GO0-2-7",
+              "fiber-name": "SMK01058GO0-2-7"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
+          "_id": "fiber_$$_SMK01058GO0-2-1",
+          "_score": 2.4048636,
+          "_source": {
+            "required-network-state": "active",
+            "configuration": {
+              "xpon-type": [
+                "mpm-gpon-xgs"
+              ],
+              "device-name": [
+                "SMK01058GO0"
+              ],
+              "pon-id": [
+                "LT2.PON1"
+              ],
+              "cage-mode": [
+                "auto"
+              ],
+              "wavelength-profile": [
+                "auto"
+              ],
+              "port-profile": [
+                "Default Port Profile"
+              ],
+              "line-rate": [
+                "auto"
+              ],
+              "model-name": [
+                "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)"
+              ],
+              "admin-state": [
+                "unlocked"
+              ]
+            },
+            "target": {
+              "raw": "SMK01058GO0-2-1",
+              "fiber-name": "SMK01058GO0-2-1"
+            }
+          }
+        },
+        {
+          "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-8",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1548,7 +1548,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-4",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1589,7 +1589,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-2",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1630,7 +1630,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-16",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1671,7 +1671,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-15",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1712,7 +1712,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-1-12",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1753,7 +1753,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-12",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1794,7 +1794,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-5",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1835,7 +1835,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-3",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1873,7 +1873,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-4",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1914,7 +1914,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-2",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {
@@ -1952,7 +1952,7 @@
         {
           "_index": "intents-fiber-v11",
           "_id": "fiber_$$_SMK01058GO0-2-14",
-          "_score": 1.8437192,
+          "_score": 1.8180766,
           "_source": {
             "required-network-state": "active",
             "configuration": {

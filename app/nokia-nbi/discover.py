@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from nokia.client import AltiplanoClient
-from nokia import es_device, es_fiber, es_ont, slot_inv, pon_sfp, assemble
+from nokia import es_device, es_fiber, es_ont, slot_inv, pon_sfp, uplink_sfp, assemble, mapper
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,9 +40,11 @@ def main():
   ont_counts = es_ont.run(client, out, fibers)
   slots = slot_inv.run(client, out, devices)
   sfp = pon_sfp.run(client, out, fibers)
+  uplink = uplink_sfp.run(client, out, devices)
 
   print()
-  assemble.run(out, devices, slots, fibers, sfp, ont_counts)
+  assemble.run(out, devices, slots, fibers, sfp, ont_counts, uplink)
+  mapper.run(out, slots)
 
 
 if __name__ == "__main__":

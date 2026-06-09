@@ -3,30 +3,6 @@
     "QCENGNKMF2": [
       {
         "olt_name": "QCENGNKMF2",
-        "fiber_name": "QCENGNKMF2-1-16",
-        "ponport": "1-1-1-16",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT1.PON16",
-        "l1sp": "Default_Port_Mix_authentication"
-      },
-      {
-        "olt_name": "QCENGNKMF2",
-        "fiber_name": "QCENGNKMF2-1-6",
-        "ponport": "1-1-1-6",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT1.PON6",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "QCENGNKMF2",
         "fiber_name": "QCENGNKMF2-1-11",
         "ponport": "1-1-1-11",
         "xpon_type_raw": "mpm-gpon-xgs",
@@ -35,43 +11,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON11",
-        "l1sp": "Default_Port_Mix_authentication"
-      },
-      {
-        "olt_name": "QCENGNKMF2",
-        "fiber_name": "QCENGNKMF2-1-10",
-        "ponport": "1-1-1-10",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT1.PON10",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "QCENGNKMF2",
-        "fiber_name": "QCENGNKMF2-1-1",
-        "ponport": "1-1-1-1",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT1.PON1",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "QCENGNKMF2",
-        "fiber_name": "QCENGNKMF2-1-2",
-        "ponport": "1-1-1-2",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT1.PON2",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default_Port_Mix_authentication",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -83,7 +24,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON14",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -95,7 +37,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON13",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -107,7 +50,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON7",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -119,7 +63,73 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON8",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "QCENGNKMF2",
+        "fiber_name": "QCENGNKMF2-1-16",
+        "ponport": "1-1-1-16",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT1.PON16",
+        "l1sp": "Default_Port_Mix_authentication",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "QCENGNKMF2",
+        "fiber_name": "QCENGNKMF2-1-6",
+        "ponport": "1-1-1-6",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT1.PON6",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "QCENGNKMF2",
+        "fiber_name": "QCENGNKMF2-1-10",
+        "ponport": "1-1-1-10",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT1.PON10",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "QCENGNKMF2",
+        "fiber_name": "QCENGNKMF2-1-1",
+        "ponport": "1-1-1-1",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT1.PON1",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "QCENGNKMF2",
+        "fiber_name": "QCENGNKMF2-1-2",
+        "ponport": "1-1-1-2",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT1.PON2",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -131,7 +141,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON9",
-        "l1sp": "Default_Port_Mix_authentication"
+        "l1sp": "Default_Port_Mix_authentication",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -143,7 +154,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON15",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -155,7 +167,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON12",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -167,7 +180,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON3",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -179,7 +193,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON4",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "QCENGNKMF2",
@@ -191,7 +206,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON5",
-        "l1sp": "Test_FEC_disabled"
+        "l1sp": "Test_FEC_disabled",
+        "required_network_state": "active"
       }
     ],
     "SMK01058GO0": [
@@ -205,7 +221,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON9",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -217,7 +234,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON6",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -229,7 +247,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON3",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -241,79 +260,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON16",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "SMK01058GO0",
-        "fiber_name": "SMK01058GO0-1-13",
-        "ponport": "1-1-1-13",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT1.PON13",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "SMK01058GO0",
-        "fiber_name": "SMK01058GO0-2-10",
-        "ponport": "1-1-2-10",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT2.PON10",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "SMK01058GO0",
-        "fiber_name": "SMK01058GO0-2-13",
-        "ponport": "1-1-2-13",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT2.PON13",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "SMK01058GO0",
-        "fiber_name": "SMK01058GO0-1-11",
-        "ponport": "1-1-1-11",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT1.PON11",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "SMK01058GO0",
-        "fiber_name": "SMK01058GO0-2-7",
-        "ponport": "1-1-2-7",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT2.PON7",
-        "l1sp": "Default Port Profile"
-      },
-      {
-        "olt_name": "SMK01058GO0",
-        "fiber_name": "SMK01058GO0-2-1",
-        "ponport": "1-1-2-1",
-        "xpon_type_raw": "mpm-gpon-xgs",
-        "iftype": "xgs-pon",
-        "ifspeed": 10000000000,
-        "l1_dl_max_bw": 10240,
-        "l1_ul_max_bw": 10240,
-        "pon_id": "LT2.PON1",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -325,7 +273,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON8",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -337,7 +286,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON15",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -349,7 +299,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON7",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -361,7 +312,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON14",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -373,7 +325,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON1",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -385,7 +338,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON5",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -397,7 +351,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON10",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -409,7 +364,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON11",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -421,7 +377,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON6",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -433,7 +390,86 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON9",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "SMK01058GO0",
+        "fiber_name": "SMK01058GO0-1-13",
+        "ponport": "1-1-1-13",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT1.PON13",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "SMK01058GO0",
+        "fiber_name": "SMK01058GO0-2-10",
+        "ponport": "1-1-2-10",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT2.PON10",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "SMK01058GO0",
+        "fiber_name": "SMK01058GO0-2-13",
+        "ponport": "1-1-2-13",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT2.PON13",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "SMK01058GO0",
+        "fiber_name": "SMK01058GO0-1-11",
+        "ponport": "1-1-1-11",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT1.PON11",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "SMK01058GO0",
+        "fiber_name": "SMK01058GO0-2-7",
+        "ponport": "1-1-2-7",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT2.PON7",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
+      },
+      {
+        "olt_name": "SMK01058GO0",
+        "fiber_name": "SMK01058GO0-2-1",
+        "ponport": "1-1-2-1",
+        "xpon_type_raw": "mpm-gpon-xgs",
+        "iftype": "xgs-pon",
+        "ifspeed": 10000000000,
+        "l1_dl_max_bw": 10240,
+        "l1_ul_max_bw": 10240,
+        "pon_id": "LT2.PON1",
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -445,7 +481,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON8",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -457,7 +494,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON4",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -469,7 +507,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON2",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -481,7 +520,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON16",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -493,7 +533,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON15",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -505,7 +546,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT1.PON12",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -517,7 +559,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON12",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -529,7 +572,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON5",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -541,7 +585,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON3",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -553,7 +598,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON4",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -565,7 +611,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON2",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       },
       {
         "olt_name": "SMK01058GO0",
@@ -577,7 +624,8 @@
         "l1_dl_max_bw": 10240,
         "l1_ul_max_bw": 10240,
         "pon_id": "LT2.PON14",
-        "l1sp": "Default Port Profile"
+        "l1sp": "Default Port Profile",
+        "required_network_state": "active"
       }
     ]
   },

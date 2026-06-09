@@ -1,37 +1,4 @@
 {
-  "QCENGNKMF2-1-16": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "QCENGNKMF2",
-          "pon-id": "LT1.PON16",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default_Port_Mix_authentication",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "QCENGNKMF2-1-6": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "QCENGNKMF2",
-          "pon-id": "LT1.PON6",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
   "QCENGNKMF2-1-11": {
     "fiber:fiber": {
       "xpon-type": "mpm-gpon-xgs",
@@ -44,57 +11,6 @@
           "line-rate": "auto",
           "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
           "port-profile": "Default_Port_Mix_authentication",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "QCENGNKMF2-1-10": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "QCENGNKMF2",
-          "pon-id": "LT1.PON10",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "QCENGNKMF2-1-1": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "QCENGNKMF2",
-          "pon-id": "LT1.PON1",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "QCENGNKMF2-1-2": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "QCENGNKMF2",
-          "pon-id": "LT1.PON2",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
           "wavelength-profile": "auto"
         }
       ]
@@ -158,6 +74,90 @@
         {
           "device-name": "QCENGNKMF2",
           "pon-id": "LT1.PON8",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "QCENGNKMF2-1-16": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "QCENGNKMF2",
+          "pon-id": "LT1.PON16",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default_Port_Mix_authentication",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "QCENGNKMF2-1-6": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "QCENGNKMF2",
+          "pon-id": "LT1.PON6",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "QCENGNKMF2-1-10": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "QCENGNKMF2",
+          "pon-id": "LT1.PON10",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "QCENGNKMF2-1-1": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "QCENGNKMF2",
+          "pon-id": "LT1.PON1",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "QCENGNKMF2-1-2": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "QCENGNKMF2",
+          "pon-id": "LT1.PON2",
           "admin-state": "unlocked",
           "cage-mode": "auto",
           "line-rate": "auto",
@@ -338,107 +338,6 @@
       ]
     }
   },
-  "SMK01058GO0-1-13": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "SMK01058GO0",
-          "pon-id": "LT1.PON13",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "SMK01058GO0-2-10": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "SMK01058GO0",
-          "pon-id": "LT2.PON10",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "SMK01058GO0-2-13": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "SMK01058GO0",
-          "pon-id": "LT2.PON13",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "SMK01058GO0-1-11": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "SMK01058GO0",
-          "pon-id": "LT1.PON11",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "SMK01058GO0-2-7": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "SMK01058GO0",
-          "pon-id": "LT2.PON7",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
-  "SMK01058GO0-2-1": {
-    "fiber:fiber": {
-      "xpon-type": "mpm-gpon-xgs",
-      "pon-port": [
-        {
-          "device-name": "SMK01058GO0",
-          "pon-id": "LT2.PON1",
-          "admin-state": "unlocked",
-          "cage-mode": "auto",
-          "line-rate": "auto",
-          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
-          "port-profile": "Default Port Profile",
-          "wavelength-profile": "auto"
-        }
-      ]
-    }
-  },
   "SMK01058GO0-2-8": {
     "fiber:fiber": {
       "xpon-type": "mpm-gpon-xgs",
@@ -599,6 +498,107 @@
         {
           "device-name": "SMK01058GO0",
           "pon-id": "LT2.PON9",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "SMK01058GO0-1-13": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "SMK01058GO0",
+          "pon-id": "LT1.PON13",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "SMK01058GO0-2-10": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "SMK01058GO0",
+          "pon-id": "LT2.PON10",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "SMK01058GO0-2-13": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "SMK01058GO0",
+          "pon-id": "LT2.PON13",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "SMK01058GO0-1-11": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "SMK01058GO0",
+          "pon-id": "LT1.PON11",
+          "admin-state": "unlocked",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "SMK01058GO0-2-7": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "SMK01058GO0",
+          "pon-id": "LT2.PON7",
+          "cage-mode": "auto",
+          "line-rate": "auto",
+          "model-name": "XGS/GPON SFP-DD C+ (I-temp) OLT MPM GEN2 (3FE47581BD)",
+          "port-profile": "Default Port Profile",
+          "wavelength-profile": "auto"
+        }
+      ]
+    }
+  },
+  "SMK01058GO0-2-1": {
+    "fiber:fiber": {
+      "xpon-type": "mpm-gpon-xgs",
+      "pon-port": [
+        {
+          "device-name": "SMK01058GO0",
+          "pon-id": "LT2.PON1",
           "admin-state": "unlocked",
           "cage-mode": "auto",
           "line-rate": "auto",

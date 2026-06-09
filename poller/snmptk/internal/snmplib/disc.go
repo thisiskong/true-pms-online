@@ -54,12 +54,6 @@ func NewDiscoveryProcessor(task *DiscoveryConfig, wg *sync.WaitGroup, tasksDone 
 	}
 	defer db.Close()
 
-	// // mapper
-	// mapper, err := NewMapper(task.Setting)
-	// if err != nil {
-	// 	log.Panic(err)
-	// }
-
 	// lookup service
 	lookupService, err := NewLookupService(task)
 	if err != nil {
@@ -70,7 +64,6 @@ func NewDiscoveryProcessor(task *DiscoveryConfig, wg *sync.WaitGroup, tasksDone 
 	lldpMapper := NewLldpMapper(task, lookupService)
 
 	ptime := time.Now()
-	ptime_str := ptime.Format("2006-01-02 15:04:05")
 	cnt_ok := 0
 	cnt_err := 0
 	cnt_target := 0
@@ -103,77 +96,7 @@ func NewDiscoveryProcessor(task *DiscoveryConfig, wg *sync.WaitGroup, tasksDone 
 		rec.success++
 
 		deviceInst := snmpResult.Device
-		// // Convert snmp result to device instance
-		// deviceInst, err := snmp2Device(&snmpResult, task, mapper, lldpMapper, lookupService)
-		// if err != nil {
-		// 	log.Printf("Error! %s: %v", snmpResult.Target.IP, err)
-		// 	continue
-		// }
-		// if debug {
-		// 	logDevice(deviceInst)
-		// }
-
-		// Begin Tx
-		tx, err := db.Begin()
-		if err != nil {
-			log.Printf("Error! %v", err)
-			continue
-		}
-
-		// save device
-		last_err_sql, err := saveDevice(tx, deviceInst, &snmpResult, ptime)
-		if err != nil {
-			tx.Rollback()
-			log.Printf("Error! sql=%v", last_err_sql)
-			log.Fatalf("Error !%v", err)
-		}
-
-		// map dn & cpe
-		last_err_sql, err = update_device_mapping(tx, deviceInst)
-		if err != nil {
-			tx.Rollback()
-			log.Printf("Error! sql=%v", last_err_sql)
-			log.Fatalf("Error! %v", err)
-		}
-
-		// save interfaces
-		last_err_sql, err = saveIntf(tx, deviceInst, ptime_str)
-		if err != nil {
-			tx.Rollback()
-			log.Printf("Error! sql=%v", last_err_sql)
-			log.Fatalf("Error! %v", err)
-		}
-
-		// save intf_rev, ponport_rev
-		last_err_sql, err = saveIntfRev(tx, deviceInst, ptime)
-		if err != nil {
-			tx.Rollback()
-			log.Printf("Error! sql=%v", last_err_sql)
-			log.Fatalf("Error! %v", err)
-		}
-
-		// save card
-		last_err_sql, err = saveBoards(tx, deviceInst, ptime_str)
-		if err != nil {
-			tx.Rollback()
-			log.Printf("Error! sql=%v", last_err_sql)
-			log.Fatalf("Error! %v", err)
-		}
-
-		// update uplinkIp, uplinkSite, uplinkModel
-		last_err_sql, err = update_device_uplink(tx, deviceInst)
-		if err != nil {
-			log.Printf("Error! sql=%v", last_err_sql)
-			log.Fatalf("Error! %v", err)
-		}
-
-		// update lldp from OLT --> CPE for GCOM & Raisecome
-
-		// Commit
-		err = tx.Commit()
-		if err != nil {
-			log.Printf("Error! %v", err)
-		}
+		saveDeviceInstance(db, deviceInst, ptime)
 	}
 
 	log.Printf("Completed: %d total, %d success, %d error in %s", cnt_target, cnt_ok, cnt_err, time.Since(start))
@@ -197,6 +120,72 @@ func NewDiscoveryProcessor(task *DiscoveryConfig, wg *sync.WaitGroup, tasksDone 
 
 	tx.Commit()
 	return nil
+}
+
+func saveDeviceInstance(db *sql.DB, deviceInst *Device, ptime time.Time) {
+	ptime_str := ptime.Format("2006-01-02 15:04:05")
+
+	// Begin Tx
+	tx, err := db.Begin()
+	if err != nil {
+		log.Printf("Error! %v", err)
+		return
+	}
+
+	// save device
+	last_err_sql, err := saveDevice(tx, deviceInst, ptime)
+	if err != nil {
+		tx.Rollback()
+		log.Printf("Error! sql=%v", last_err_sql)
+		log.Fatalf("Error !%v", err)
+	}
+
+	// map dn & cpe
+	last_err_sql, err = update_device_mapping(tx, deviceInst)
+	if err != nil {
+		tx.Rollback()
+		log.Printf("Error! sql=%v", last_err_sql)
+		log.Fatalf("Error! %v", err)
+	}
+
+	// save interfaces
+	last_err_sql, err = saveIntf(tx, deviceInst, ptime_str)
+	if err != nil {
+		tx.Rollback()
+		log.Printf("Error! sql=%v", last_err_sql)
+		log.Fatalf("Error! %v", err)
+	}
+
+	// save intf_rev, ponport_rev
+	last_err_sql, err = saveIntfRev(tx, deviceInst, ptime)
+	if err != nil {
+		tx.Rollback()
+		log.Printf("Error! sql=%v", last_err_sql)
+		log.Fatalf("Error! %v", err)
+	}
+
+	// save card
+	last_err_sql, err = saveBoards(tx, deviceInst, ptime_str)
+	if err != nil {
+		tx.Rollback()
+		log.Printf("Error! sql=%v", last_err_sql)
+		log.Fatalf("Error! %v", err)
+	}
+
+	// update uplinkIp, uplinkSite, uplinkModel
+	last_err_sql, err = update_device_uplink(tx, deviceInst)
+	if err != nil {
+		log.Printf("Error! sql=%v", last_err_sql)
+		log.Fatalf("Error! %v", err)
+	}
+
+	// update lldp from OLT --> CPE for GCOM & Raisecome
+
+	// Commit
+	err = tx.Commit()
+	if err != nil {
+		log.Printf("Error! %v", err)
+	}
 }
 
 func (snmpResult *SnmpResult) getSnmpValue(name string) string {
@@ -497,24 +486,36 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 		pollStatus = 1
 	}
 
+	var discAgent, discId string
+	var discPollInt int
+	if snmpResult.Discovery != nil {
+		discAgent = snmpResult.Discovery.Agent
+		discId = snmpResult.Discovery.Id
+		if snmpResult.Discovery.PollInt != nil {
+			discPollInt = *snmpResult.Discovery.PollInt
+		}
+	}
+
 	deviceInst := Device{
-		DeviceIp:    deviceIp,
-		ChassisId:   lldpLocChassisId,
-		SysName:     sysName,
-		SysDescr:    sysDescr,
-		SysObjectID: sysObjectID,
-		SysUptime:   sysUptime,
-		Network:     snmpResult.Target.Network,
-		Topology:    snmpResult.Target.Topology,
-		Community:   snmpResult.Target.Community,
-		Agent:       snmpResult.Discovery.Agent,
-		Descr:       descr,
-		Vendor:      "",
-		Model:       model,
-		SwVersion:   swVersion,
-		Sitename:    "",
-		Province:    province,
-		PollStatus:  pollStatus,
+		DeviceIp:         deviceIp,
+		ChassisId:        lldpLocChassisId,
+		SysName:          sysName,
+		SysDescr:         sysDescr,
+		SysObjectID:      sysObjectID,
+		SysUptime:        sysUptime,
+		Network:          snmpResult.Target.Network,
+		Topology:         snmpResult.Target.Topology,
+		Community:        snmpResult.Target.Community,
+		Agent:            discAgent,
+		DiscoveryId:      discId,
+		DiscoveryPollInt: discPollInt,
+		Descr:            descr,
+		Vendor:           "",
+		Model:            model,
+		SwVersion:        swVersion,
+		Sitename:         "",
+		Province:         province,
+		PollStatus:       pollStatus,
 	}
 
 	mapper.MapDevice(&deviceInst)
@@ -688,7 +689,7 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 	return &deviceInst, nil
 }
 
-func saveDevice(tx *sql.Tx, deviceInst *Device, snmpResult *SnmpResult, ptime time.Time) (string, error) {
+func saveDevice(tx *sql.Tx, deviceInst *Device, ptime time.Time) (string, error) {
 	// There's a case when update existing device with following scenario
 	// 	IP				ChassisId				State
 	//	--------------------------------------------------
@@ -781,7 +782,7 @@ func saveDevice(tx *sql.Tx, deviceInst *Device, snmpResult *SnmpResult, ptime ti
 		return sql, err
 	}
 
-	disc_id, _ := strconv.ParseInt(snmpResult.Discovery.Id, 10, 64)
+	disc_id, _ := strconv.ParseInt(deviceInst.DiscoveryId, 10, 64)
 	err = stmt.QueryRow(
 		deviceInst.DeviceIp,
 		deviceInst.ChassisId,
@@ -796,7 +797,7 @@ func saveDevice(tx *sql.Tx, deviceInst *Device, snmpResult *SnmpResult, ptime ti
 		deviceInst.Topology,
 		deviceInst.Sitename,
 		deviceInst.Province,
-		snmpResult.Discovery.PollInt,
+		deviceInst.DiscoveryPollInt,
 		deviceInst.PollStatus,
 		disc_id,
 		deviceInst.Agent,
@@ -1083,29 +1084,31 @@ func GetProvince(snmpResult *SnmpResult, sysName string, provinceCode *map[strin
 }
 
 type Device struct {
-	DeviceId    int64
-	DeviceIp    string
-	ChassisId   string
-	SysName     string
-	SysDescr    string
-	SysObjectID string // Huawei OLT for extract device model
-	SysUptime   uint64 // CR2026 - sysUptime (1/100 seconds, 0 means None)
-	Network     string
-	Topology    string
-	Community   string
-	Agent       string // discovery.agent
-	Descr       string // formatted sysDescr
-	Vendor      string
-	Model       string
-	SwVersion   string
-	Sitename    string
-	Province    string
-	PollStatus  int64
-	Latitude    float64 // CR2026 - FTTx
-	Longitude   float64 // CR2026 - FTTx
-	OltType     string  // CR2026 - FTTx
-	Interfaces  []*Interface
-	Boards      []*Board // CR2026 - FTTx
+	DeviceId         int64
+	DeviceIp         string
+	ChassisId        string
+	SysName          string
+	SysDescr         string
+	SysObjectID      string // Huawei OLT for extract device model
+	SysUptime        uint64 // CR2026 - sysUptime (1/100 seconds, 0 means None)
+	Network          string
+	Topology         string
+	Community        string
+	Agent            string // discovery.agent
+	DiscoveryId      string // discovery.id
+	DiscoveryPollInt int    // discovery.pollInt
+	Descr            string // formatted sysDescr
+	Vendor           string
+	Model            string
+	SwVersion        string
+	Sitename         string
+	Province         string
+	PollStatus       int64
+	Latitude         float64 // CR2026 - FTTx
+	Longitude        float64 // CR2026 - FTTx
+	OltType          string  // CR2026 - FTTx
+	Interfaces       []*Interface
+	Boards           []*Board // CR2026 - FTTx
 }
 
 type Interface struct {
