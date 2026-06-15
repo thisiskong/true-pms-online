@@ -118,7 +118,7 @@ func getSpl1(config *ServiceApi, name string) (*Spl1Info, error) {
 	}
 
 	gponInfo, err := parseGetSpl1(string(body))
-	log.Printf("GetSpl1: return in %s", time.Since(t))
+	log.Printf("GetSpl1: %s return in %s", name, time.Since(t))
 	return gponInfo, err
 }
 

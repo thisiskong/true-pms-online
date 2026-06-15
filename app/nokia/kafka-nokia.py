@@ -7,7 +7,6 @@ import logging, traceback
 import threading
 import queue
 import pmslib
-import rocksdb
 from types import SimpleNamespace
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -16,65 +15,37 @@ from confluent_kafka.admin import AdminClient
 from logging.handlers import TimedRotatingFileHandler
 
 datadir   = f'{os.getenv("PMS_ONLINE_HOME")}/data/nokia'
-# rockdbdir = f'{datadir}/counter.db'
-# queue_    = queue.Queue(maxsize=10000)  # prevent unlimited memory growth
-# lock_     = threading.Lock()
-# db_       = rocksdb.DB(rockdbdir, rocksdb.Options(create_if_missing=True))
-
 REPORT_INTERVAL = 5
   
-class JsonTimedRotatingHandler(TimedRotatingFileHandler):
-  def __init__(self, directory, prefix, **kwargs):
-    self.hostname = socket.gethostname()
-    self.directory = directory
-    self.prefix = prefix
-
-    os.makedirs(directory, exist_ok=True)
-
-    # Active file name
-    current_file = os.path.join(
-      directory,
-      f"{prefix}-{self.hostname}.current"
-    )
-
-    super().__init__(current_file, **kwargs)
-    
-    # base_filename = os.path.join(directory, f"{prefix}-{self.hostname}.json")
-    # super().__init__(base_filename, **kwargs)
-
-  def rotation_filename(self, default_name):
-    # default_name example:
-    # nokia-node01.current.2026-03-04_09-00
-    timestamp_str = default_name.split(".")[-1]
-
-    dt = datetime.strptime(timestamp_str, "%Y-%m-%d_%H-%M")
-    formatted = dt.strftime("%Y%m%dT%H%M")
-
-    return os.path.join(
-      self.directory,
-      f"{self.prefix}-{self.hostname}-{formatted}.json"
-    )
-
 def create_file_writer():
   logger = logging.getLogger("nokia_data")
   logger.setLevel(logging.INFO)
   logger.propagate = False
-  logdir = f'{os.getenv("PMS_ONLINE_HOME")}/data/nokia'
-  handler = JsonTimedRotatingHandler(
-    directory=logdir,
-    prefix="nokia",
-    when="M",
-    interval=5,
-    backupCount=10,
-    encoding="utf-8",
-    utc=False
+
+  hostname = socket.gethostname()
+  logdir   = f'{os.getenv("PMS_ONLINE_HOME")}/data/nokia'
+  os.makedirs(logdir, exist_ok=True)
+
+  handler = TimedRotatingFileHandler(
+    filename    = os.path.join(logdir, f"nokia-{hostname}.current"),
+    when        = "M",
+    interval    = 5,
+    backupCount = 10,
+    encoding    = "utf-8",
+    utc         = False,
   )
-  
+
+  def namer(default_name):
+    timestamp_str = default_name.split(".")[-1]
+    dt = datetime.strptime(timestamp_str, "%Y-%m-%d_%H-%M")
+    return os.path.join(logdir, f"nokia-{hostname}-{dt.strftime('%Y%m%dT%H%M')}.json")
+
+  handler.namer = namer
   handler.setFormatter(logging.Formatter("%(message)s"))
-  
+
   if not logger.handlers:
     logger.addHandler(handler)
-    
+
   return logger
 
 def kafka_getconfig():
@@ -107,9 +78,6 @@ def kafka_getconfig():
 
 def kafka_gettopic():
   return pmslib.getconfig().get('fttx', dict()).get('kafka_nokia', dict()).get('kafka_topic')
-
-# def kafka_debug_serials():
-#   return pmslib.getconfig().get('fttx', dict()).get('kafka_nokia', dict()).get('debug_serials')
 
 def kafka_list_topics():
   kafa_config = kafka_getconfig()
@@ -170,56 +138,7 @@ def handle_message(file_writer, msg):
   try:
     data = json.loads(msg.value().decode('utf-8'))
     # logging.info(json.dumps(data, indent=2))
-    
-    # tstamp = data.get('@timestamp')
-    # serial = data.get('serial')
-    # model  = data.get('productClass')
-    # params = data.get('params')
-    
-    # if serial is None and debug_serials.contains(serial):
-    #   logging.debug(json.dumps(data, indent=2))
-    
-    # if tstamp is None or serial is None or params is None:
-    #   return
-    
-    # # params
-    # in_pkt    = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.Stats.PacketsReceived',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.PacketsReceived'])
-    # out_pkt   = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.Stats.PacketsSent',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.PacketsSent'])
-    # txpwr     = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.TXPower',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.TXPower'])
-    # rxpwr     = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.RXPower',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.RXPower'])    
-    # current   = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.BiasCurrent',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.BiasCurrent'])
-    # voltage   = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.SupplyVoltage',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.SupplyVoltage'])
-    # temp      = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.TransceiverTemperature',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.TransceiverTemperature'])
-    # status    = coalesce(params, ['InternetGatewayDevice.WANDevice.1.X_TRUE_WANPONInterfaceConfig.Status',
-    #                               'InternetGatewayDevice.WANDevice.1.X_GponInterafceConfig.Status'])
-    
-    # # protect RocksDB read/write
-    # in_pkt_delta = None
-    # out_pkt_delta = None
-    # with lock_:
-    #   in_pkt_delta  = compute_delta(serial, 'in_pkt', in_pkt) if in_pkt else None
-    #   out_pkt_delta = compute_delta(serial, 'out_pkt', out_pkt) if out_pkt else None
-      
-    # rec = {
-    #   'tstamp': tstamp,
-    #   'serial': serial,
-    #   'model': model,
-    #   'in_pkt': in_pkt_delta,
-    #   'out_pkt': out_pkt_delta,
-    #   'txpwr': to_float(txpwr),
-    #   'rxpwr': to_float(rxpwr),     
-    #   'current': to_float(current),
-    #   'voltage': to_float(voltage),
-    #   'temp': to_float(temp),
-    #   'status': status,
-    # }
+
     # # print(json.dumps(rec))
     file_writer.info(json.dumps(data))
     
@@ -236,7 +155,6 @@ def kafka_consumer_event(partition_list):
     client_id     = f'{socket.gethostname()}-{os.getcwd()}'
     kafka_config  = kafka_getconfig().copy()
     kafka_topic   = kafka_gettopic()
-    # debug_serials = kafka_debug_serials()
     kafka_config['client.id'] = client_id
         
     logging.info(f'kafka_config={kafka_config}')
@@ -262,7 +180,6 @@ def kafka_consumer_event(partition_list):
     # start workers
     for _ in range(2):
       threading.Thread(target=worker, args=(file_writer, queue_), daemon=True).start()
-    
     
     msg_count = 0
     interval_count = 0
@@ -362,6 +279,11 @@ def decode_onu(onu_data):
       lastchange   = intf.get('last-change')
       print(f'{name}|{type}|{admin_status}|{oper_status}|{lastchange}')
 
+def decode_file(infile):
+  with open(infile, 'r') as fin:
+    for line in fin:
+      rec = json.dump(line.strip())
+      
 #-----------------------------------
 # Main
 #-----------------------------------

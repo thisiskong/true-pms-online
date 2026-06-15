@@ -480,44 +480,49 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 	// format sysDescr
 	descr := mapSysDescr(task.Discovery, sysDescr, swVersion)
 	model := GetDeviceModel(snmpResult)
-	province := GetProvince(snmpResult, sysName, &lookupService.ProvinceCode)
-	var pollStatus int64 = 0
-	if snmpResult.Target.PollStatus {
-		pollStatus = 1
-	}
 
-	var discAgent, discId string
-	var discPollInt int
-	if snmpResult.Discovery != nil {
-		discAgent = snmpResult.Discovery.Agent
-		discId = snmpResult.Discovery.Id
-		if snmpResult.Discovery.PollInt != nil {
-			discPollInt = *snmpResult.Discovery.PollInt
-		}
-	}
+	// var discAgent, discId string
+	// var discPollInt int
+	// var pollStatus int64 = 0
+	// if snmpResult.Discovery != nil {
+	// 	discAgent = snmpResult.Discovery.Agent
+	// 	discId = snmpResult.Discovery.Id
+	// 	if snmpResult.Discovery.PollInt != nil {
+	// 		discPollInt = *snmpResult.Discovery.PollInt
+	// 	}
+	// 	if snmpResult.Discovery.PollStatus {
+	// 		pollStatus = 1
+	// 	}
+	// }
 
 	deviceInst := Device{
-		DeviceIp:         deviceIp,
-		ChassisId:        lldpLocChassisId,
-		SysName:          sysName,
-		SysDescr:         sysDescr,
-		SysObjectID:      sysObjectID,
-		SysUptime:        sysUptime,
-		Network:          snmpResult.Target.Network,
-		Topology:         snmpResult.Target.Topology,
-		Community:        snmpResult.Target.Community,
-		Agent:            discAgent,
-		DiscoveryId:      discId,
-		DiscoveryPollInt: discPollInt,
-		Descr:            descr,
-		Vendor:           "",
-		Model:            model,
-		SwVersion:        swVersion,
-		Sitename:         "",
-		Province:         province,
-		PollStatus:       pollStatus,
+		DeviceIp:    deviceIp,
+		ChassisId:   lldpLocChassisId,
+		SysName:     sysName,
+		SysDescr:    sysDescr,
+		SysObjectID: sysObjectID,
+		SysUptime:   sysUptime,
+		Network:     snmpResult.Target.Network,
+		Topology:    snmpResult.Target.Topology,
+		Community:   snmpResult.Target.Community,
+		Descr:       descr,
+		Vendor:      "",
+		Model:       model,
+		SwVersion:   swVersion,
+		Sitename:    "",
+		// Agent:            discAgent,
+		// DiscoveryId:      discId,
+		// DiscoveryPollInt: discPollInt,
+		// PollStatus:       pollStatus,
 	}
 
+	// device.Province
+	mapper.SetProvince(&deviceInst, &lookupService.ProvinceCode)
+
+	// set discovery fields
+	mapper.SetDiscoveryFields(&deviceInst, snmpResult.Discovery)
+
+	// map device
 	mapper.MapDevice(&deviceInst)
 
 	// lookup disc_device_info using device name to get model & swversion
@@ -681,7 +686,7 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 		// // Set OLT PonPort cardtype
 		// set_fttx_ponport_cardtype(task, &snmpResult.Target, &deviceInst)
 
-		// Card
+		// Board
 		set_fttx_board(task, &snmpResult.Target, &deviceInst, mapper)
 	}
 
@@ -1075,14 +1080,6 @@ func GetDeviceModel(snmpResult *SnmpResult) string {
 	return ""
 }
 
-func GetProvince(snmpResult *SnmpResult, sysName string, provinceCode *map[string]string) string {
-	code := sysName
-	if (len(sysName)) >= 5 {
-		code = sysName[:5]
-	}
-	return (*provinceCode)[code]
-}
-
 type Device struct {
 	DeviceId         int64
 	DeviceIp         string
@@ -1094,6 +1091,7 @@ type Device struct {
 	Network          string
 	Topology         string
 	Community        string
+	Engine           string // discovery.engine
 	Agent            string // discovery.agent
 	DiscoveryId      string // discovery.id
 	DiscoveryPollInt int    // discovery.pollInt
@@ -1108,7 +1106,8 @@ type Device struct {
 	Longitude        float64 // CR2026 - FTTx
 	OltType          string  // CR2026 - FTTx
 	Interfaces       []*Interface
-	Boards           []*Board // CR2026 - FTTx
+	Boards           []*Board               // CR2026 - FTTx
+	Data             map[string]interface{} // CR2026 - nokia-altiplano discovery
 }
 
 type Interface struct {

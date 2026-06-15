@@ -1,7 +1,10 @@
 """Item 3: ES-DEVICE — list all OLTs from Elasticsearch intent index."""
 
+import logging
 from pathlib import Path
 from .client import AltiplanoClient, save
+
+log = logging.getLogger(__name__)
 
 
 ES_PATH = "/altiplano-indexsearch/intents/_search/"
@@ -48,11 +51,11 @@ def normalize(raw: dict) -> list[dict]:
 
 
 def run(client: AltiplanoClient, output_dir: Path) -> list[dict]:
-  print("[ES-DEVICE] fetching OLT list ...")
+  log.info("[ES-DEVICE] fetching OLT list ...")
   raw = fetch(client)
   total = raw.get("hits", {}).get("total", {}).get("value", 0)
-  print(f"  total hits: {total}")
+  log.info("  total hits: %d", total)
   normalized = normalize(raw)
   save(output_dir, "03_es_device", raw, {"devices": normalized, "count": len(normalized)})
-  print(f"  devices found: {len(normalized)}")
+  log.info("  devices found: %d", len(normalized))
   return normalized

@@ -5,9 +5,12 @@ Equivalent data (xpon-type, model-name, vendorpn) is available via fiber:fiber G
 vendorpn is parsed from model-name field: '... (3FE47581BD)' -> '3FE47581BD'
 """
 
+import logging
 import re
 from pathlib import Path
 from .client import AltiplanoClient, save
+
+log = logging.getLogger(__name__)
 
 
 XPON_TO_MODULECLASS = {
@@ -56,7 +59,7 @@ def run(client: AltiplanoClient, output_dir: Path, fibers_by_olt: dict[str, list
   all_normalized: dict[str, dict] = {}
 
   for olt, fibers in fibers_by_olt.items():
-    print(f"[PON-SFP] OLT={olt} ({len(fibers)} fibers) ...")
+    log.info("[PON-SFP] OLT=%s (%d fibers) ...", olt, len(fibers))
     for fiber in fibers:
       fname = fiber["fiber_name"]
       raw = fetch(client, fname)
@@ -64,7 +67,7 @@ def run(client: AltiplanoClient, output_dir: Path, fibers_by_olt: dict[str, list
       all_raw[fname] = raw
       all_normalized[fname] = norm
     sample = list(all_normalized.values())[-1] if all_normalized else {}
-    print(f"  moduleclass={sample.get('moduleclass')} vendorpn={sample.get('vendorpn')}")
+    log.info("  moduleclass=%s vendorpn=%s", sample.get("moduleclass"), sample.get("vendorpn"))
 
   save(output_dir, "08_pon_sfp", all_raw, {"pon_sfp": all_normalized, "count": len(all_normalized)})
   return all_normalized

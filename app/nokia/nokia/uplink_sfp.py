@@ -1,7 +1,10 @@
 """Item 7: UPLINK-SFP — list uplink connections via ES, then fetch SFP diagnostics/inventory."""
 
+import logging
 from pathlib import Path
 from .client import AltiplanoClient, save
+
+log = logging.getLogger(__name__)
 
 ES_PATH = "/altiplano-indexsearch/intents/_search/"
 SFP_ACTION = "sfp-status:show-sfp-diagnostics-and-inventory"
@@ -81,24 +84,24 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
 
   for dev in devices:
     olt = dev["name"]
-    print(f"[UPLINK-SFP] OLT={olt} — fetching uplink-connection intents ...")
+    log.info("[UPLINK-SFP] OLT=%s — fetching uplink-connection intents ...", olt)
     ul_raw = fetch_uplinks(client, olt)
     all_uplinks_raw[olt] = ul_raw
     uplinks = normalize_uplinks(ul_raw, olt)
-    print(f"  uplink intents: {len(uplinks)}")
+    log.info("  uplink intents: %d", len(uplinks))
 
     sfp_list = []
     all_sfp_raw[olt] = {}
     for ul in uplinks:
       ul_name = ul["uplink_name"]
       for port_id in ul["port_ids"]:
-        print(f"  fetching SFP: intent={ul_name} port={port_id}")
+        log.info("  fetching SFP: intent=%s port=%s", ul_name, port_id)
         try:
           sfp_raw = fetch_sfp(client, client.rel, ul_name, port_id)
           all_sfp_raw[olt][f"{ul_name}:{port_id}"] = sfp_raw
           sfp_list.append(normalize_sfp(sfp_raw, ul_name, port_id))
         except Exception as e:
-          print(f"  [WARN] {e}")
+          log.warning("  [WARN] %s", e)
           all_sfp_raw[olt][f"{ul_name}:{port_id}"] = {"error": str(e)}
           sfp_list.append({"uplink_name": ul_name, "port_id": port_id, "error": str(e)})
     result[olt] = sfp_list

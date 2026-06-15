@@ -1,0 +1,17 @@
+[project]
+name = "nokia"
+version = "0.1.0"
+description = "Nokia"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "confluent-kafka>=2.14.2",
+    "kazoo>=2.11.0",
+    "lmdb>=2.2.1",
+    "openpyxl>=3.1.5",
+    "paramiko>=5.0.0",
+    "psycopg2-binary>=2.9.12",
+    "pyyaml>=6.0.3",
+    "requests>=2.34.2",
+    "termcolor>=3.3.0",
+]

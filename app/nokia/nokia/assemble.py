@@ -6,8 +6,11 @@ Field value conventions:
 """
 
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 NS = "NotSupported"   # not available from Nokia NBI
 NI = "NotImplement"   # available from Nokia NBI but not yet implemented/unblocked
@@ -22,7 +25,7 @@ def _save_jsonl(path: Path, rows: list[dict]) -> None:
   with path.open("w", encoding="utf-8") as f:
     for row in rows:
       f.write(json.dumps(row, ensure_ascii=False) + "\n")
-  print(f"  saved: {path.name} ({len(rows)} rows)")
+  log.info("  saved: %s (%d rows)", path.name, len(rows))
 
 
 # ---------------------------------------------------------------------------
@@ -53,18 +56,16 @@ def build_device(devices: list[dict], slots: dict[str, dict]) -> list[dict]:
       "last_modify_at":   ts,
       "lastseen":         ts,
       "first":            ts,
-      # --- NotImplement: available via eqpt action (blocked on fw 25.6) ---
-      "model":            NI,   # eqpt:slot-inventory → Chassis.model
+      "model":            slot.get("hardware_type") or dev.get("descr"),
       "chassisid":        NI,   # eqpt:slot-inventory → Chassis.serial-num
       "pn":               NI,   # eqpt:slot-inventory → Chassis.code
       # --- NotSupported: not available from Nokia NBI ---
       "network":          NS,   # static topology config
       "region":           NS,   # static site mapping
-      "province":         NS,   # static site mapping
-      "sitename":         NS,   # static site mapping
+      "province":         None,
+      "sitename":         None,
       "latitude":         NS,   # static site coordinates
       "longitude":        NS,   # static site coordinates
-      "sysuptime":        NS,   # SNMP OID 1.3.6.1.2.1.1.3.0 only
       "community":        NS,   # SNMP community string — external credential
       "dn":               NS,   # domain name — not in Altiplano
       "hop":              NS,   # network hop count — not in Altiplano
@@ -154,7 +155,7 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "ifoper":           oper if oper and oper != "-" else NI,
         "moduleclass":      _port_moduleclass(port_id),
         "vendorpn":         pn,
-        "mediatype":        _WAVELENGTH_TO_MEDIATYPE.get(wave) if wave else NI,
+        "mediatype":        _WAVELENGTH_TO_MEDIATYPE.get(wave) if wave else None,
         # --- NotImplement: available via RC-INTF (item 9 — RC-Proxy blocked) ---
         "id":               NI,   # composite {device.id}.{ifindex}
         "device_id":        NI,   # FK from device table
@@ -164,14 +165,14 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "ifalias":          NI,   # RC-Proxy interface[].description
         "ifconn":           NI,   # derived from ifoper
         # --- NotSupported: not available from Nokia NBI ---
-        "altname":          NS,
-        "dstport":          NS,
-        "dstsite":          NS,
-        "dsttype":          NS,
-        "dstname":          NS,
-        "dstsite2":         NS,
-        "dsttype2":         NS,
-        "remdstsite":       NS,
+        "altname":          None,
+        "dstport":          None,
+        "dstsite":          None,
+        "dsttype":          None,
+        "dstname":          None,
+        "dstsite2":         None,
+        "dsttype2":         None,
+        "remdstsite":       None,
       })
   return rows
 
@@ -233,9 +234,50 @@ def build_ponport(
         "dl_bw_remaining":  NI,   # OpenTSDB PON utilization — requires §4.2.15 enabled
         "ul_bw_remaining":  NI,   # OpenTSDB PON utilization — requires §4.2.15 enabled
         # --- NotSupported: not applicable for PON ports ---
-        "ifphyaddr":        NS,   # PON ports have no MAC address
+        "ifphyaddr":        None,   # PON ports have no MAC address
         "ifalias":          NS,   # not applicable for PON
       })
+  return rows
+
+
+# ---------------------------------------------------------------------------
+# ont  (per-ONT operational info from show-ont-info)
+# ---------------------------------------------------------------------------
+
+def build_ont(
+  fibers_by_olt: dict[str, list[dict]],
+  ont_names_by_fiber: dict[str, list[str]],
+  ont_info: dict[str, dict],
+  devices: list[dict],
+) -> list[dict]:
+  device_map = {d["name"]: d for d in devices}
+  rows = []
+  ts = _now()
+  for olt, fibers in fibers_by_olt.items():
+    dev = device_map.get(olt, {})
+    for fiber in fibers:
+      fname = fiber["fiber_name"]
+      for ont_name in ont_names_by_fiber.get(fname, []):
+        info = ont_info.get(ont_name, {})
+        rows.append({
+          "device_name":   olt,
+          "device_ip":     dev.get("ip"),
+          "fiber_name":    fname,
+          "ponport":       fiber.get("ponport"),
+          "ont_name":      ont_name,
+          "oper_state":    info.get("oper_state"),
+          "admin_state":   info.get("admin_state"),
+          "rxpwr":         info.get("rx_signal"),
+          "txpwr":         info.get("tx_signal"),
+          "distance":      info.get("distance"),
+          "serial_number": info.get("serial_number"),
+          "hw_type":       info.get("hw_type"),
+          "sw_version":    info.get("sw_version"),
+          "last_modify_by": "nokia-discovery",
+          "last_modify_at": ts,
+          "lastseen":       ts,
+          "first":          ts,
+        })
   return rows
 
 
@@ -251,8 +293,10 @@ def run(
   pon_sfp: dict[str, dict],
   ont_counts: dict[str, int],
   uplink_sfp: dict[str, list[dict]] | None = None,
+  ont_names_by_fiber: dict[str, list[str]] | None = None,
+  ont_info: dict[str, dict] | None = None,
 ) -> None:
-  print("[ASSEMBLE] building tables ...")
+  log.info("[ASSEMBLE] building tables ...")
 
   device_rows = build_device(devices, slots)
   intf_rows = build_intf(devices, uplink_sfp or {})
@@ -262,6 +306,11 @@ def run(
   _save_jsonl(output_dir / "intf.jsonl", intf_rows)
   _save_jsonl(output_dir / "ponport.jsonl", ponport_rows)
 
-  print(f"  device:  {len(device_rows)} rows")
-  print(f"  intf:    {len(intf_rows)} rows")
-  print(f"  ponport: {len(ponport_rows)} rows")
+  log.info("  device:  %d rows", len(device_rows))
+  log.info("  intf:    %d rows", len(intf_rows))
+  log.info("  ponport: %d rows", len(ponport_rows))
+
+  if ont_names_by_fiber is not None and ont_info is not None:
+    ont_rows = build_ont(fibers_by_olt, ont_names_by_fiber, ont_info, devices)
+    _save_jsonl(output_dir / "ont.jsonl", ont_rows)
+    log.info("  ont:     %d rows", len(ont_rows))

@@ -102,7 +102,7 @@ func StartSnmpDiscovery(discfile string, discid int, ptimeout int) error {
 	return nil
 }
 
-func StartSnmpDiscoveryByFile(discfile string, discid int, devicefile string) error {
+func StartSnmpDiscoveryByEngine(discfile string, discid int, devicefile string) error {
 	if discfile == "" {
 		return fmt.Errorf("error: missing discfile")
 	}
@@ -110,6 +110,10 @@ func StartSnmpDiscoveryByFile(discfile string, discid int, devicefile string) er
 	task, err := LoadDiscoveryConfigById(discfile, discid)
 	if err != nil {
 		return err
+	}
+
+	if len(task.Discovery.Discoveries) == 0 {
+		return fmt.Errorf("error: invalid discid")
 	}
 
 	// load devices.json
@@ -135,7 +139,7 @@ func StartSnmpDiscoveryByFile(discfile string, discid int, devicefile string) er
 	}
 
 	// lldp mapper
-	lldpMapper := NewLldpMapper(task, lookupService)
+	// lldpMapper := NewLldpMapper(task, lookupService)
 
 	// Connect to database
 	// connStr := "postgresql://pmsonline:pmsonline@hd2.hdp:5432/pmsonline?sslmode=disable&connect_timeout=10"
@@ -147,6 +151,8 @@ func StartSnmpDiscoveryByFile(discfile string, discid int, devicefile string) er
 
 	for _, deviceInst := range devices {
 		// disc.go - snmp2Device
+		mapper.SetProvince(&deviceInst, &lookupService.ProvinceCode)
+		mapper.SetDiscoveryFields(&deviceInst, &task.Discovery.Discoveries[0])
 		mapper.MapDevice(&deviceInst)
 		mapper.MapIntfs(&deviceInst)
 
@@ -154,17 +160,27 @@ func StartSnmpDiscoveryByFile(discfile string, discid int, devicefile string) er
 		if deviceInst.Network == "FTTx" {
 			// Set L1 Splitter
 			MapL1Splitter(task, lookupService, &deviceInst)
+
+			// Set OLT Uplink moduleclass & vendorPn
+			// set_fttx_intf_moduleclass(task, &snmpResult.Target, &deviceInst)
+
+			// Set OLT PonPort moduleclass & vendorPn
+			// set_fttx_ponport_moduleclass(task, &snmpResult.Target, &deviceInst)
+
+			// Board
+			// set_fttx_board(task, &snmpResult.Target, &deviceInst, mapper)
+			mapper.MapBoards(&deviceInst, nil)
 		}
 
-		// disc.go = NewDiscoveryProcessor
+		// disc.go
 		saveDeviceInstance(db, &deviceInst, ptime)
 	}
 
-	// update lldp from OLT to uplink device
-	err = lldpMapper.update_lldp_uplink(db)
-	if err != nil {
-		log.Printf("Error! %v", err)
-	}
+	// // update lldp from OLT to uplink device
+	// err = lldpMapper.update_lldp_uplink(db)
+	// if err != nil {
+	// 	log.Printf("Error! %v", err)
+	// }
 
 	// update to db
 	tx, err := db.Begin()

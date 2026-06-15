@@ -1,8 +1,11 @@
 """Item 4: ES-FIBER — list all fibers (PON ports) for each OLT."""
 
+import logging
 import re
 from pathlib import Path
 from .client import AltiplanoClient, save
+
+log = logging.getLogger(__name__)
 
 
 ES_PATH = "/altiplano-indexsearch/intents/_search/"
@@ -93,13 +96,15 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
 
   for dev in devices:
     olt = dev["name"]
-    print(f"[ES-FIBER] OLT={olt} ...")
+    log.info("[ES-FIBER] OLT=%s ...", olt)
     raw = fetch(client, olt)
     total = raw.get("hits", {}).get("total", {}).get("value", 0)
     fibers = normalize(raw, olt)
     all_raw[olt] = raw
     all_fibers[olt] = fibers
-    print(f"  fibers: {total}")
+    log.info("  fibers: %d", total)
 
-  save(output_dir, "04_es_fiber", all_raw, {"fibers_by_olt": all_fibers, "total": sum(len(v) for v in all_fibers.values())})
+  total_fibers = sum(len(v) for v in all_fibers.values())
+  save(output_dir, "04_es_fiber", all_raw, {"fibers_by_olt": all_fibers, "total": total_fibers})
+  log.info("[ES-FIBER] total fibers: %d", total_fibers)
   return all_fibers

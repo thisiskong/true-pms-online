@@ -36,7 +36,7 @@ func loadDiscoveryRuleFromDB(setting *AppSetting, task *DiscoveryTask, discid in
 	var cond string
 	var rows *sql.Rows
 	if discid != -1 {
-		sql := fmt.Sprintf(`select id, coalesce(ip_range, ''), local_addr, pollint, pollstatus, coalesce(network, ''), coalesce(topology, ''), coalesce(agent, 'default')
+		sql := fmt.Sprintf(`select id, coalesce(ip_range, ''), local_addr, pollint, pollstatus, coalesce(network, ''), coalesce(topology, ''), coalesce(agent, 'default'), engine
 													from disc
 													where enabled=true and id=%d`, discid)
 
@@ -49,23 +49,12 @@ func loadDiscoveryRuleFromDB(setting *AppSetting, task *DiscoveryTask, discid in
 			log.Fatalf("Error! %v", err)
 		}
 
-		sql := fmt.Sprintf(`select id, coalesce(ip_range, ''), local_addr, pollint, pollstatus, coalesce(network, ''), coalesce(topology, ''), coalesce(agent, 'default')
+		sql := fmt.Sprintf(`select id, coalesce(ip_range, ''), local_addr, pollint, pollstatus, coalesce(network, ''), coalesce(topology, ''), coalesce(agent, 'default'), engine
 													from disc
 													where enabled=true and %s`, cond)
 
 		log.Printf("sql = %s", sql)
 		rows, err = db.Query(sql)
-		// rows, err = db.Query(fmt.Sprintf(`select id, coalesce(ip_range, ''), local_addr, pollint, pollstatus, coalesce(network, ''), coalesce(topology, ''), coalesce(agent, ''),
-		// 																		('x'|| md5(id::text))::bit(32)::bigint
-		// 																		from disc
-		// 																		where enabled=true and
-		// 																		(
-		// 																			(
-		// 																				('x'|| md5(id::text))::bit(32)::bigint %% %d = %d and agent is null
-		// 																			)
-		// 																			or coalesce(agent, 'default') in %s
-		// 																		)`,
-		// csize, cid, pq.Array(agents)))
 	}
 	if err != nil {
 		return err
@@ -87,7 +76,7 @@ func loadDiscoveryRuleFromDB(setting *AppSetting, task *DiscoveryTask, discid in
 
 	for rows.Next() {
 		var disc Discovery
-		err := rows.Scan(&disc.Id, &disc.IpRange, &disc.LocalAddr, &disc.PollInt, &disc.PollStatus, &disc.Network, &disc.Topology, &disc.Agent)
+		err := rows.Scan(&disc.Id, &disc.IpRange, &disc.LocalAddr, &disc.PollInt, &disc.PollStatus, &disc.Network, &disc.Topology, &disc.Agent, &disc.Engine)
 		if err != nil {
 			log.Printf("Error! %v", err)
 			return err

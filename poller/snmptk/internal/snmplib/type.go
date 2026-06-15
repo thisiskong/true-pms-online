@@ -138,6 +138,7 @@ type Discovery struct {
 	Network     string
 	Topology    string
 	Agent       string
+	Engine      string
 }
 
 type IcmpPingResult struct {
@@ -194,7 +195,7 @@ func (snmpOid *SnmpOid) GetSnmpType() gosnmp.Asn1BER {
 	case "IPAddress":
 		return gosnmp.IPAddress
 	default:
-		log.Fatalf("Not Support SnmpType: " + snmpOid.Type)
+		log.Fatalf("Not Support SnmpType: %v", snmpOid.Type)
 		return gosnmp.UnknownType
 	}
 }

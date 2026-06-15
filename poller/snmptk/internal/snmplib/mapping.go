@@ -254,3 +254,39 @@ func (m *Mapper) GetAltDstSite(dstsite string, dsttype string) (string, string) 
 	}
 	return dstsite2, dsttype2
 }
+
+func (m *Mapper) SetProvince(deviceInst *Device, provinceCode *map[string]string) {
+	code := deviceInst.SysName
+	if (len(deviceInst.SysName)) >= 5 {
+		code = deviceInst.SysName[:5]
+	}
+	deviceInst.Province = (*provinceCode)[code]
+}
+
+func (m *Mapper) SetDiscoveryFields(deviceInst *Device, disc *Discovery) {
+	deviceInst.DiscoveryPollInt = 0
+	if disc != nil {
+		deviceInst.Engine = disc.Engine
+		deviceInst.Agent = disc.Agent
+		deviceInst.DiscoveryId = disc.Id
+		if disc.PollInt != nil {
+			deviceInst.DiscoveryPollInt = *disc.PollInt
+		}
+		if disc.PollStatus {
+			deviceInst.PollStatus = 1
+		}
+	}
+	// var discAgent, discId string
+	// var discPollInt int
+	// var pollStatus int64 = 0
+	// if snmpResult.Discovery != nil {
+	// 	discAgent = snmpResult.Discovery.Agent
+	// 	discId = snmpResult.Discovery.Id
+	// 	if snmpResult.Discovery.PollInt != nil {
+	// 		discPollInt = *snmpResult.Discovery.PollInt
+	// 	}
+	// 	if snmpResult.Discovery.PollStatus {
+	// 		pollStatus = 1
+	// 	}
+	// }
+}

@@ -3,4 +3,6 @@ sping
 serviceapi
 data/
 logs/
+input/
 *.db
+*.exe

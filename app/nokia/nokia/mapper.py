@@ -1,5 +1,4 @@
 """Map discovery JSONL output to Device/Interface struct format.
-
 Mirrors the Go structs:
   Device     — device.jsonl + slot_inv boards
   Interface  — intf.jsonl (uplink ports) + ponport.jsonl (PON ports)
@@ -10,14 +9,17 @@ coerced to 0 so callers can distinguish "unknown" from "zero".
 """
 
 import json
+import logging
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
 
-def _int_or(v, default=0):
+def _int_or(v, default=None):
   try:
     return int(v)
   except (TypeError, ValueError):
@@ -49,28 +51,28 @@ def _load_jsonl(path: Path) -> list[dict]:
 
 def _map_intf(row: dict) -> dict:
   return {
-    "IfIndex":       _str(row.get("ifindex")),
+    "IfIndex":       _str(row.get("ifname")),
     "IfName":        _str(row.get("ifname")),
     "IfSpeed":       _int_or(row.get("ifspeed")),
     "IfAdmin":       _str(row.get("ifadmin")),
     "IfOper":        _str(row.get("ifoper")),
     "IfDescr":       _str(row.get("ifdescr")),
-    "IfAlias":       _str(row.get("ifalias")),
+    "IfAlias":       None,
     "IfTopology":    None,
     "IfDstIp":       None,
     "IfType":        _str(row.get("iftype")),
-    "IfPhyAddr":     _str(row.get("ifphyaddr")),
+    "IfPhyAddr":     None,
     "IfConn":        _int_or(row.get("ifconn")),
-    "Name":          _str(row.get("name")),
+    "Name":          None,
     "DstName":       _str(row.get("dstname")),
     "DstPort":       _str(row.get("dstport")),
     "DstSite":       _str(row.get("dstsite")),
     "DstType":       _str(row.get("dsttype")),
     "RemDstSite":    _str(row.get("remdstsite")),
-    "MediaType":     _str(row.get("mediatype")),
+    "MediaType":     None,
     "PollStatus":    None,
     "PonPort":       None,
-    "Save":          None,
+    "Save":          True,
     "DstSite2":      None,
     "DstType2":      None,
     # Service API (uplink has no L1 fields)
@@ -84,7 +86,7 @@ def _map_intf(row: dict) -> dict:
     "ModuleClass":   _str(row.get("moduleclass")),
     # CR2026
     "AltName":       _str(row.get("altname")),
-    "NokiaDstSite":  _str(row.get("dstsite")),
+    "NokiaDstSite":  None,
   }
 
 
@@ -94,13 +96,13 @@ def _map_intf(row: dict) -> dict:
 
 def _map_ponport(row: dict) -> dict:
   return {
-    "IfIndex":       _str(row.get("ifname")),
+    "IfIndex":       _str(row.get("pon_id")),
     "IfName":        _str(row.get("ifname")),
     "IfSpeed":       _int_or(row.get("ifspeed")),
     "IfAdmin":       _str(row.get("ifadmin")),
     "IfOper":        _str(row.get("ifoper")),
     "IfDescr":       _str(row.get("ifdescr")),
-    "IfAlias":       _str(row.get("ifalias")),
+    "IfAlias":       None,
     "IfTopology":    None,
     "IfDstIp":       None,
     "IfType":        _str(row.get("iftype")),
@@ -114,7 +116,7 @@ def _map_ponport(row: dict) -> dict:
     "RemDstSite":    None,
     "MediaType":     None,
     "PollStatus":    None,
-    "PonPort":       None,
+    "PonPort":       _str(row.get("ponport")),
     "Save":          True,
     "DstSite2":      None,
     "DstType2":      None,
@@ -139,10 +141,10 @@ def _map_ponport(row: dict) -> dict:
 
 def _map_board(slot: dict) -> dict:
   return {
-    "SlotName":    _str(slot.get("slot_name")),
-    "PlannedType": _str(slot.get("planned_type")),
-    "SwVersion":   _str(slot.get("device_version")),
-    "AdminState":  _str(slot.get("admin_state")),
+    "slot-name":              _str(slot.get("slot-name")),
+    "planned-type":           _str(slot.get("planned-type")),
+    "board-service-profile":  _str(slot.get("board-service-profile")),
+    "admin-state":            _str(slot.get("admin-state")),
   }
 
 
@@ -162,25 +164,26 @@ def _map_device(
     "SysName":          _str(row.get("name")),
     "SysDescr":         _str(row.get("descr")),
     "SysObjectID":      None,                        # not available from Nokia NBI
-    "SysUptime":        None,
     "Network":          "FTTx",
-    "Topology":         None,
+    "Topology":         "OLT",
     "Community":        None,
     "Agent":            None,
     "DiscoveryId":      None,
     "DiscoveryPollInt": None,
     "Descr":            _str(row.get("descr")),
     "Vendor":           _str(row.get("vendor")),
-    "Model":            _str(row.get("model")),
+    "Model":            None,
     "SwVersion":        _str(row.get("swversion")),
-    "Sitename":         _str(row.get("sitename")),
-    "Province":         _str(row.get("province")),
+    "Sitename":         None,
+    "Province":         None,
     "PollStatus":       None,
     "Latitude":         None,
     "Longitude":        None,
     "OltType":          None,
+    "Engine":           "nokia-altiplano",
+    "Save":             True,
     "Interfaces":       interfaces,
-    # "Boards":           boards,
+    "Data":             {"Boards": boards},
   }
 
 
@@ -211,15 +214,14 @@ def run(output_dir: Path, slots: dict[str, dict]) -> list[dict]:
   for row in device_rows:
     name = row.get("name", "")
     slot = slots.get(name, {})
-    boards = [_map_board(s) for s in slot.get("lt_slots", [])]
+    boards = [_map_board(s) for s in slot.get("boards", [])]
     interfaces = intf_by_device.get(name, []) + ponport_by_device.get(name, [])
     devices.append(_map_device(row, interfaces, boards))
 
   out_path = output_dir / "devices.json"
   out_path.write_text(json.dumps(devices, indent=2, ensure_ascii=False), encoding="utf-8")
-  print(f"  saved: devices.json ({len(devices)} devices, "
-        f"{sum(len(d['Interfaces']) for d in devices)} interfaces")
-        # f"{sum(len(d['Boards']) for d in devices)} boards)")
+  log.info("  saved: devices.json (%d devices, %d interfaces)",
+           len(devices), sum(len(d["Interfaces"]) for d in devices))
   return devices
 
 

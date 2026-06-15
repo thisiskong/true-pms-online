@@ -1,9 +1,12 @@
 """Shared HTTP client and auth for Nokia Altiplano NBI."""
 
 import json
+import logging
 import time
 import warnings
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 import requests
 from urllib3.exceptions import InsecureRequestWarning
@@ -57,12 +60,14 @@ class AltiplanoClient:
 
   def get(self, path: str) -> dict:
     url = f"{self._base()}{path}"
+    log.debug("GET %s", url)
     resp = requests.get(url, headers=self._headers_json(), verify=self.verify_ssl, timeout=60)
     resp.raise_for_status()
     return resp.json()
 
   def post(self, path: str, body: dict | None = None, es: bool = False) -> dict:
     url = f"{self._base()}{path}"
+    log.debug("POST %s", url)
     headers = self._headers_es() if es else self._headers_json()
     resp = requests.post(url, headers=headers, json=body, verify=self.verify_ssl, timeout=60)
     resp.raise_for_status()
@@ -73,4 +78,4 @@ def save(output_dir: Path, stem: str, raw: dict, normalized: dict) -> None:
   output_dir.mkdir(parents=True, exist_ok=True)
   (output_dir / f"{stem}_raw.json").write_text(json.dumps(raw, indent=2), encoding="utf-8")
   (output_dir / f"{stem}_normalized.json").write_text(json.dumps(normalized, indent=2), encoding="utf-8")
-  print(f"  saved: {stem}_raw.json + {stem}_normalized.json")
+  log.info("  saved: %s_raw.json + %s_normalized.json", stem, stem)
