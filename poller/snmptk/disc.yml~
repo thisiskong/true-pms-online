@@ -77,6 +77,9 @@ discovery:
     - oid: .1.3.6.1.2.1.1.5.0
       name: sysName
       type: OctetString
+    - oid: .1.3.6.1.2.1.1.3.0
+      name: sysUptime
+      type: TimeTicks
 
   # vendor specific oids
   extSnmpOids:

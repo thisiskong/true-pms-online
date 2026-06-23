@@ -1,28 +1,18 @@
-"""Item 7: UPLINK-SFP — list uplink connections via ES, then fetch SFP diagnostics/inventory."""
+"""Item 7: UPLINK-SFP — list uplink connections via AC, then fetch SFP diagnostics/inventory."""
 
 import logging
 from pathlib import Path
 from .client import AltiplanoClient, save
+from . import ac
 
 log = logging.getLogger(__name__)
 
-ES_PATH = "/altiplano-indexsearch/intents/_search/"
+UPLINK_INTENT_TYPE = "uplink-connection"
 SFP_ACTION = "sfp-status:show-sfp-diagnostics-and-inventory"
 
 
-def fetch_uplinks(client: AltiplanoClient, olt_name: str) -> dict:
-  body = {
-    "from": "0",
-    "size": "9999",
-    "query": {
-      "bool": {
-        "filter": [{"term": {"intent-type": "uplink-connection"}}],
-        "must": [{"match": {"target.device-name": olt_name}}],
-      }
-    },
-    "_source": ["target", "configuration"],
-  }
-  return client.post(ES_PATH, body=body, es=True)
+def fetch_uplink(client: AltiplanoClient, olt_name: str) -> dict:
+  return ac.get_intent(client, olt_name, UPLINK_INTENT_TYPE)
 
 
 def fetch_sfp(client: AltiplanoClient, rel: str, uplink_name: str, port_id: str) -> dict:
@@ -31,22 +21,18 @@ def fetch_sfp(client: AltiplanoClient, rel: str, uplink_name: str, port_id: str)
   return client.post(path, body=body)
 
 
-def normalize_uplinks(raw: dict, olt_name: str) -> list[dict]:
-  hits = raw.get("hits", {}).get("hits", [])
-  uplinks = []
-  for hit in hits:
-    src = hit.get("_source", {})
-    cfg = src.get("configuration", {})
-    target = src.get("target", {})
-    port_ids = cfg.get("port-id", [])
-    uplinks.append({
-      "olt_name": olt_name,
-      "uplink_name": target.get("device-name", olt_name),
-      "port_ids": port_ids,
-      "agg_system_name": (cfg.get("agg-system-name") or [""])[0],
-      "l1_profile": (cfg.get("l1-profile") or [""])[0],
-    })
-  return uplinks
+def normalize_uplinks(intent: dict, olt_name: str) -> list[dict]:
+  isd = intent.get("intent-specific-data", {})
+  ports = isd.get("uplink-connection:uplink-connection", {}).get("uplink-ports", [])
+  if not ports:
+    return []
+  return [{
+    "olt_name": olt_name,
+    "uplink_name": olt_name,
+    "port_ids": [p.get("port-id") for p in ports if p.get("port-id")],
+    "agg_system_name": (ports[0].get("agg-system-name") or ""),
+    "l1_profile": (ports[0].get("l1-profile") or ""),
+  }]
 
 
 def normalize_sfp(sfp_raw: dict, uplink_name: str, port_id: str) -> dict:
@@ -84,11 +70,11 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
 
   for dev in devices:
     olt = dev["name"]
-    log.info("[UPLINK-SFP] OLT=%s — fetching uplink-connection intents ...", olt)
-    ul_raw = fetch_uplinks(client, olt)
+    log.info("[UPLINK-SFP] OLT=%s — fetching uplink-connection intent ...", olt)
+    ul_raw = fetch_uplink(client, olt)
     all_uplinks_raw[olt] = ul_raw
     uplinks = normalize_uplinks(ul_raw, olt)
-    log.info("  uplink intents: %d", len(uplinks))
+    log.info("  uplink ports: %d", sum(len(u["port_ids"]) for u in uplinks))
 
     sfp_list = []
     all_sfp_raw[olt] = {}
@@ -107,6 +93,6 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
     result[olt] = sfp_list
 
   save(output_dir, "07_uplink_sfp",
-       {"uplinks_es": all_uplinks_raw, "sfp_calls": all_sfp_raw},
+       {"uplinks_ac": all_uplinks_raw, "sfp_calls": all_sfp_raw},
        {"uplink_sfp_by_olt": result})
   return result

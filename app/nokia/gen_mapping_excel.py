@@ -38,7 +38,7 @@ MAPPING = {
     "name":             ("Populated",    "ES-DEVICE (3)",       "target.device-name",                                              "QCENGNKMF2",               ""),
     "network":          ("NotSupported", "—",                   "—",                                                               "",                          "Static topology config — not in Altiplano NBI"),
     "pn":               ("NotImplement", "SLOT-INV (6)",        "eqpt:slot-inventory → Chassis.code",                              "",                          "eqpt module not available on firmware 25.6"),
-    "sys_pollstatus":   ("Populated",    "ES-DEVICE (3)",       "required-network-state == active → 1 else 0",                     "1",                         "Intent state, not live device poll status"),
+    "required-network-state": ("Populated", "ES-DEVICE (3)",     "required-network-state (raw value)",                              "active",                    "Intent state, not live device poll status"),
     "usr_pollstatus":   ("Populated",    "Hardcoded",           "—",                                                               "1",                         ""),
     "pollint":          ("Populated",    "Hardcoded",           "—",                                                               "86400",                     "Seconds (24 hours)"),
     "province":         ("NotSupported", "—",                   "—",                                                               "",                          "Static site mapping — not in Altiplano NBI"),
@@ -60,7 +60,7 @@ MAPPING = {
     "swversion":        ("Populated",    "SLOT-INV (6)",        "swversion (fallback: ES-DEVICE configuration.device-version)",    "25.6",                      ""),
     "latitude":         ("NotSupported", "—",                   "—",                                                               "",                          "Site coordinates — not in Altiplano NBI"),
     "longitude":        ("NotSupported", "—",                   "—",                                                               "",                          "Site coordinates — not in Altiplano NBI"),
-    "olttype":          ("Populated",    "SLOT-INV (6)",        "hardware-type mapped via HARDWARE_TYPE_TO_OLTTYPE",               "MF-2",                      "LS-MF-LANT-A/LS-MF-LMNT-A→MF-2, LS-DF-CFXR-H→DF-16GM"),
+    "olttype":          ("NotImplement", "mapping.py",          "Set to None in mapping.py; not derived during discovery",         "",                          "olttype mapping removed from discovery — assigned downstream at mapping stage"),
     "sysuptime":        ("NotSupported", "—",                   "—",                                                               "",                          "SNMP OID 1.3.6.1.2.1.1.3.0 only — no equivalent in Altiplano NBI"),
   },
 

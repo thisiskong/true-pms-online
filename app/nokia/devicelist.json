@@ -1,0 +1,811 @@
+{
+  "took": 145,
+  "timed_out": false,
+  "_shards": {
+    "total": 6,
+    "successful": 4,
+    "skipped": 0,
+    "failed": 2,
+    "failures": [
+      {
+        "shard": 0,
+        "index": "inv_ls-df-ihub-cfxr-f-25.6_ls-ihub_1.0.0_2026-06-16_20-56",
+        "node": "9T3RqfFJSQ-Au8U1ZXDDiA",
+        "reason": {
+          "type": "query_shard_exception",
+          "reason": "failed to create query: [nested] failed to find nested object under path [inventorydata.ietf-hardware:hardware.component]",
+          "index": "inv_ls-df-ihub-cfxr-f-25.6_ls-ihub_1.0.0_2026-06-16_20-56",
+          "index_uuid": "0JktmAZJRvWUOPjS7iO3iw",
+          "caused_by": {
+            "type": "illegal_state_exception",
+            "reason": "[nested] failed to find nested object under path [inventorydata.ietf-hardware:hardware.component]"
+          }
+        }
+      },
+      {
+        "shard": 0,
+        "index": "inv_ls-mf-ihub-lmnt-a-25.6_ls-ihub_1.0.0_2026-06-16_20-56",
+        "node": "9T3RqfFJSQ-Au8U1ZXDDiA",
+        "reason": {
+          "type": "query_shard_exception",
+          "reason": "failed to create query: [nested] failed to find nested object under path [inventorydata.ietf-hardware:hardware.component]",
+          "index": "inv_ls-mf-ihub-lmnt-a-25.6_ls-ihub_1.0.0_2026-06-16_20-56",
+          "index_uuid": "hxtUIcs-TaCjWVU0MdAMqA",
+          "caused_by": {
+            "type": "illegal_state_exception",
+            "reason": "[nested] failed to find nested object under path [inventorydata.ietf-hardware:hardware.component]"
+          }
+        }
+      }
+    ]
+  },
+  "hits": {
+    "total": {
+      "value": 20,
+      "relation": "eq"
+    },
+    "max_score": 0.0,
+    "hits": [
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "QCENGNK32GM",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "QCENGNK32GM",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET11015G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET11015G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET13004G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET13004G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET02002G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET02002G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET19004G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET19004G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET13002G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET13002G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET06004G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET06004G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET06006GO0",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET06006GO0",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET11004G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET11004G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET06007G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET06007G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET11007G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET11007G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET06003G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET06003G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET13001G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET13001G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "RET11010G00",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-f-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "RET11010G00",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-F",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-df-cfxr-h-25.6_ls-df_1.0.0_2026-06-16_20-56",
+        "_id": "QCENGNK16GM",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-df-cfxr-h-25.6_ls-df_1.0.0_2026-06-16_20-56",
+                  "_id": "QCENGNK16GM",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "CFXR-H",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-mf-lmnt-a-25.6_fiber-nt_1.0.0_2026-06-16_20-56",
+        "_id": "SMK01058GO0",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-mf-lmnt-a-25.6_fiber-nt_1.0.0_2026-06-16_20-56",
+                  "_id": "SMK01058GO0",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "LMXR-A",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-mf-lmnt-a-25.6_fiber-nt_1.0.0_2026-06-16_20-56",
+        "_id": "QCENGNKMF2",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-mf-lmnt-a-25.6_fiber-nt_1.0.0_2026-06-16_20-56",
+                  "_id": "QCENGNKMF2",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "LMXR-A",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-mf-lwlt-c-25.6_fiber-lt_1.0.0_2026-06-16_20-56",
+        "_id": "QCENGNKMF2.LT1",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-mf-lwlt-c-25.6_fiber-lt_1.0.0_2026-06-16_20-56",
+                  "_id": "QCENGNKMF2.LT1",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "LMXR-A",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-mf-lwlt-c-25.6_fiber-lt_1.0.0_2026-06-16_20-56",
+        "_id": "SMK01058GO0.LT2",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-mf-lwlt-c-25.6_fiber-lt_1.0.0_2026-06-16_20-56",
+                  "_id": "SMK01058GO0.LT2",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "LMXR-A",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "_index": "inv_ls-mf-lwlt-c-25.6_fiber-lt_1.0.0_2026-06-16_20-56",
+        "_id": "SMK01058GO0.LT1",
+        "_score": 0.0,
+        "inner_hits": {
+          "inventorydata.ietf-hardware:hardware.component": {
+            "hits": {
+              "total": {
+                "value": 1,
+                "relation": "eq"
+              },
+              "max_score": 0.0,
+              "hits": [
+                {
+                  "_index": "inv_ls-mf-lwlt-c-25.6_fiber-lt_1.0.0_2026-06-16_20-56",
+                  "_id": "SMK01058GO0.LT1",
+                  "_nested": {
+                    "field": "inventorydata.ietf-hardware:hardware",
+                    "offset": 0,
+                    "_nested": {
+                      "field": "component",
+                      "offset": 0
+                    }
+                  },
+                  "_score": 0.0,
+                  "_source": {
+                    "bbf-hardware-extension:model-name": "LMXR-A",
+                    "mfg-name": "ALCL",
+                    "name": "Chassis",
+                    "admin-state": "unlocked",
+                    "class": "iana-hardware:chassis"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

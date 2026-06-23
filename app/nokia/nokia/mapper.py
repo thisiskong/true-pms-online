@@ -172,7 +172,7 @@ def _map_device(
     "DiscoveryPollInt": None,
     "Descr":            _str(row.get("descr")),
     "Vendor":           _str(row.get("vendor")),
-    "Model":            None,
+    "Model":            _str(row.get("model")),
     "SwVersion":        _str(row.get("swversion")),
     "Sitename":         None,
     "Province":         None,

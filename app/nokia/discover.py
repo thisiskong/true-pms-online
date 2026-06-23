@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 
 from nokia.client import AltiplanoClient
-from nokia import es_device, es_fiber, slot_inv, pon_sfp, uplink_sfp, assemble, mapper
+from nokia import ac, ac_device, ac_fiber, pon_sfp, uplink_sfp, assemble, mapper
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -44,12 +44,15 @@ def main():
   client.login()
   log.info("Login OK")
 
-  devices = es_device.run(client, out)
-  fibers = es_fiber.run(client, out, devices)
+  log.info("Listing intents (AC) ...")
+  intents = ac.list_intents(client, out)
+  log.info("  intents: %d", len(intents))
+
+  devices, slots = ac_device.run(client, out, intents)
+  fibers, fiber_cfg = ac_fiber.run(client, out, devices, intents)
   # ont_counts, ont_names_by_fiber = es_ont.run(client, out, fibers)
   ont_counts, ont_names_by_fiber = {}, {}
-  slots = slot_inv.run(client, out, devices)
-  sfp = pon_sfp.run(client, out, fibers)
+  sfp = pon_sfp.run(client, out, fibers, fiber_cfg)
   uplink = uplink_sfp.run(client, out, devices)
   # ont_info = ac_ont.run(client, out, ont_names_by_fiber)
   ont_info = {}

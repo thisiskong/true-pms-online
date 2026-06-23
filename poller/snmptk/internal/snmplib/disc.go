@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -461,7 +460,6 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 	sysName := snmpResult.getSnmpValue("sysName")
 	sysDescr := snmpResult.getSnmpValue("sysDescr")
 	sysObjectID := snmpResult.getSnmpValue("sysObjectID")
-	sysUptime := GetSysUptime(snmpResult)
 	lldpLocChassisId := GetLldpChassisId(snmpResult)
 	swVersion := GetSwVersion(snmpResult)
 
@@ -501,7 +499,6 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 		SysName:     sysName,
 		SysDescr:    sysDescr,
 		SysObjectID: sysObjectID,
-		SysUptime:   sysUptime,
 		Network:     snmpResult.Target.Network,
 		Topology:    snmpResult.Target.Topology,
 		Community:   snmpResult.Target.Community,
@@ -730,7 +727,7 @@ func saveDevice(tx *sql.Tx, deviceInst *Device, ptime time.Time) (string, error)
 	log.Printf("%v|%v|%v", deviceInst.ChassisId, deviceInst.Latitude, deviceInst.Longitude)
 	sql := `INSERT INTO device(
 				id, ip, chassisid,
-				community, name, descr, sysuptime,
+				community, name, descr,
 				vendor, model, swversion, network, topology, sitename,
 				province, pollint, sys_pollstatus,
 				disc_id, agent, first, lastseen,
@@ -742,30 +739,28 @@ func saveDevice(tx *sql.Tx, deviceInst *Device, ptime time.Time) (string, error)
 				$3,
 				NULLIF($4, ''),
 				$5,
-				NULLIF($6::BIGINT, 0),
-				$7,
+				$6,
+				NULLIF($7, ''),
 				NULLIF($8, ''),
 				NULLIF($9, ''),
 				NULLIF($10, ''),
 				NULLIF($11, ''),
 				NULLIF($12, ''),
-				NULLIF($13, ''),
+				$13,
 				$14,
 				$15,
-				$16,
-				NULLIF($17, ''),
+				NULLIF($16, ''),
+				$17,
 				$18,
-				$19,
-				NULLIF($20, ''),
-				NULLIF($21, 0.0),
-				NULLIF($22, 0.0)
+				NULLIF($19, ''),
+				NULLIF($20, 0.0),
+				NULLIF($21, 0.0)
 			)
 			ON CONFLICT (ip, chassisid) DO UPDATE
 			SET
 				community 			= EXCLUDED.community,
 				name						= EXCLUDED.name,
 				descr						= EXCLUDED.descr,
-				sysuptime				= NULLIF(EXCLUDED.sysuptime, 0),
 				vendor					= NULLIF(EXCLUDED.vendor, ''),
 				model						= NULLIF(EXCLUDED.model, ''),
 				swversion				= NULLIF(EXCLUDED.swversion, ''),
@@ -794,7 +789,6 @@ func saveDevice(tx *sql.Tx, deviceInst *Device, ptime time.Time) (string, error)
 		deviceInst.Community,
 		deviceInst.SysName,
 		deviceInst.Descr,
-		deviceInst.SysUptime,
 		deviceInst.Vendor,
 		deviceInst.Model,
 		deviceInst.SwVersion,
@@ -1028,19 +1022,6 @@ func GetIfSpeed(ifHighSpeed *SnmpVar, ifSpeed *SnmpVar, deviceInst Device) uint6
 	return 0
 }
 
-func GetSysUptime(snmpResult *SnmpResult) uint64 {
-	for _, snmpVar := range *snmpResult.SnmpVars {
-		if snmpVar.Name == "sysUptime" {
-			if snmpVar.Value != nil {
-				log.Printf("sysUptime=%d [%s]", snmpVar.Value, reflect.TypeOf(snmpVar.Value))
-				return snmpVar.Value.(uint64)
-			}
-		}
-	}
-	log.Printf("sysUptime=nil")
-	return 0
-}
-
 func GetLldpChassisId(snmpResult *SnmpResult) string {
 	// Some OLT device such as GCOM (FTTx) return first 3 bytes "9c:65:ee" of mac-address which cause many duplicated chassisId
 	lldpChassisId := snmpResult.getSnmpValue("lldpLocChassisId")
@@ -1087,7 +1068,6 @@ type Device struct {
 	SysName          string
 	SysDescr         string
 	SysObjectID      string // Huawei OLT for extract device model
-	SysUptime        uint64 // CR2026 - sysUptime (1/100 seconds, 0 means None)
 	Network          string
 	Topology         string
 	Community        string

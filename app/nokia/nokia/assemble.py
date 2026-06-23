@@ -44,47 +44,44 @@ def build_device(devices: list[dict], slots: dict[str, dict]) -> list[dict]:
       "ip":               dev.get("ip"),
       "vendor":           "Nokia",
       "descr":            slot.get("hardware_type") or dev.get("descr"),
-      "olttype":          slot.get("olttype") or dev.get("olttype"),
       "swversion":        slot.get("swversion") or dev.get("swversion"),
       "transport_protocol": slot.get("transport_protocol"),
       "lt_slots":         slot.get("lt_slot_names", []),
-      "agent":            "altiplano",
-      "sys_pollstatus":   dev.get("sys_pollstatus", 1),
-      "usr_pollstatus":   1,
-      "pollint":          86400,
-      "last_modify_by":   "nokia-discovery",
+      "agent":            "nokia-altiplano",
+      "required-network-state": dev.get("required-network-state"),
+      "last_modify_by":   "nokia-altiplano",
       "last_modify_at":   ts,
       "lastseen":         ts,
       "first":            ts,
       "model":            slot.get("hardware_type") or dev.get("descr"),
       "chassisid":        NI,   # eqpt:slot-inventory → Chassis.serial-num
-      "pn":               NI,   # eqpt:slot-inventory → Chassis.code
       # --- NotSupported: not available from Nokia NBI ---
-      "network":          NS,   # static topology config
-      "region":           NS,   # static site mapping
-      "province":         None,
-      "sitename":         None,
-      "latitude":         NS,   # static site coordinates
-      "longitude":        NS,   # static site coordinates
-      "community":        NS,   # SNMP community string — external credential
-      "dn":               NS,   # domain name — not in Altiplano
-      "hop":              NS,   # network hop count — not in Altiplano
-      "rn":               NS,   # ring node ID — static topology
-      "ringid":           NS,   # ring ID — static topology
-      "ringtopo":         NS,   # ring topology type — static topology
-      "topology":         NS,   # static topology config
-      "uplink_ip1":       NS,   # upstream device IP — LLDP or manual
-      "uplink_ip2":       NS,   # secondary uplink IP — LLDP or manual
-      "uplink_model1":    NS,   # upstream device model — LLDP or manual
-      "uplink_model2":    NS,   # secondary uplink model — LLDP or manual
-      "uplink_site1":     NS,   # upstream site — manual mapping
-      "uplink_site2":     NS,   # secondary uplink site — manual mapping
-      "a_homing_id":      NS,   # aggregation homing ID — topology config
-      "a_homing_site":    NS,   # aggregation homing site — topology config
-      "b_homing_id":      NS,   # backup homing ID — topology config
-      "b_homing_site":    NS,   # backup homing site — topology config
-      "c_homing_id":      NS,   # topology config
-      "c_homing_site":    NS,   # topology config
+      # "network":          None,
+      # "region":           None,
+      # "province":         None,
+      # "sitename":         None,
+      # "latitude":         None,   # static site coordinates
+      # "longitude":        None,   # static site coordinates
+      # "community":        None,   # SNMP community string — external credential
+      # "dn":               None,
+      # "pn":               None,
+      # "hop":              None,
+      # "rn":               None,
+      # "ringid":           None,
+      # "ringtopo":         None,
+      # "topology":         None,
+      # "uplink_ip1":       None,
+      # "uplink_ip2":       None,
+      # "uplink_model1":    None,
+      # "uplink_model2":    None,
+      # "uplink_site1":     None,
+      # "uplink_site2":     None,
+      # "a_homing_id":      None,
+      # "a_homing_site":    None,
+      # "b_homing_id":      None,
+      # "b_homing_site":    None,
+      # "c_homing_id":      None,
+      # "c_homing_site":    None,
     })
   return rows
 
@@ -132,7 +129,7 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
     dev = device_map.get(olt, {})
     for sfp in sfp_list:
       port_id = sfp.get("port_id", "")
-      pn = _vendorpn(sfp.get("part_number", ""))
+      part_no = _vendorpn(sfp.get("part_number", ""))
       wave = (sfp.get("wave_length") or "").strip().lstrip("0") or None
       oper = sfp.get("oper_state")
       admin = sfp.get("admin_state")
@@ -141,9 +138,7 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "device_ip":        dev.get("ip"),
         "device_name":      olt,
         "iftype":           "ethernetCsmacd",
-        "sys_pollstatus":   1,
-        "usr_pollstatus":   1,
-        "last_modify_by":   "nokia-discovery",
+        "last_modify_by":   "nokia-altiplano",
         "last_modify_at":   ts,
         "lastseen":         ts,
         "first":            ts,
@@ -154,7 +149,7 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "ifadmin":          "down" if admin == "disable" else "up" if admin else NI,
         "ifoper":           oper if oper and oper != "-" else NI,
         "moduleclass":      _port_moduleclass(port_id),
-        "vendorpn":         pn,
+        "vendorpn":         part_no,
         "mediatype":        _WAVELENGTH_TO_MEDIATYPE.get(wave) if wave else None,
         # --- NotImplement: available via RC-INTF (item 9 — RC-Proxy blocked) ---
         "id":               NI,   # composite {device.id}.{ifindex}
@@ -165,14 +160,14 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "ifalias":          NI,   # RC-Proxy interface[].description
         "ifconn":           NI,   # derived from ifoper
         # --- NotSupported: not available from Nokia NBI ---
-        "altname":          None,
-        "dstport":          None,
-        "dstsite":          None,
-        "dsttype":          None,
-        "dstname":          None,
-        "dstsite2":         None,
-        "dsttype2":         None,
-        "remdstsite":       None,
+        # "altname":          None,
+        # "dstport":          None,
+        # "dstsite":          None,
+        # "dsttype":          None,
+        # "dstname":          None,
+        # "dstsite2":         None,
+        # "dsttype2":         None,
+        # "remdstsite":       None,
       })
   return rows
 
@@ -204,9 +199,9 @@ def build_ponport(
         "ponport":          fiber.get("ponport"),
         "iftype":           fiber.get("iftype"),
         "ifspeed":          fiber.get("ifspeed"),
-        "l1_dl_max_bw":     fiber.get("l1_dl_max_bw"),
-        "l1_ul_max_bw":     fiber.get("l1_ul_max_bw"),
-        "l1sp":             fiber.get("l1sp"),
+        # "l1_dl_max_bw":     fiber.get("l1_dl_max_bw"),
+        # "l1_ul_max_bw":     fiber.get("l1_ul_max_bw"),
+        # "l1sp":             fiber.get("l1sp"),
         "xpon_type":        fiber.get("xpon_type_raw"),
         "pon_id":           fiber.get("pon_id"),
         "name":             f"{olt}:{fiber.get('ponport')}",
@@ -217,9 +212,9 @@ def build_ponport(
         # --- available from ES-ONT (item 5) ---
         "ifconn":           ont_counts.get(fname, 0),
         # --- available (defaults) ---
-        "sys_pollstatus":   1,
-        "usr_pollstatus":   1,
-        "last_modify_by":   "nokia-discovery",
+        # "sys_pollstatus":   1,
+        # "usr_pollstatus":   1,
+        "last_modify_by":   "nokia-altiplano",
         "last_modify_at":   ts,
         "lastseen":         ts,
         "first":            ts,
@@ -273,7 +268,7 @@ def build_ont(
           "serial_number": info.get("serial_number"),
           "hw_type":       info.get("hw_type"),
           "sw_version":    info.get("sw_version"),
-          "last_modify_by": "nokia-discovery",
+          "last_modify_by": "nokia-altiplano",
           "last_modify_at": ts,
           "lastseen":       ts,
           "first":          ts,
