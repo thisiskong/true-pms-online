@@ -9,3 +9,7 @@ __pycache__/
 # generated data
 *.json
 *.jsonl
+
+# models
+wangchanberta_classifier
+wangchanberta_classifier_v2
