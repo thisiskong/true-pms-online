@@ -7,7 +7,7 @@ No Elasticsearch is used in the discovery path.
 ## Run
 
 ```bash
-uv run python discover.py --server <IP> --password <pass> --no-verify-ssl
+uv run python -m nokia.discovery --server <IP> --password <pass> --no-verify-ssl
 ```
 
 Output is written to `output/` as raw + normalized JSON per step, plus the

@@ -1,17 +1,18 @@
 #!/bin/bash
 
 # get token
-# uv run python main.py --server 10.50.238.203 --username adminuser --password password --no-verify-ssl
+# uv run python -m nokia.main --server 10.50.238.203 --username adminuser --password password --no-verify-ssl
 
 # full response
-# uv run python main.py --server 10.50.238.203 --username adminuser --password password --no-verify-ssl --output json
+# uv run python -m nokia.main --server 10.50.238.203 --username adminuser --password password --no-verify-ssl --output json
 
 # discovery
-uv run python discover.py --server 10.50.238.203 --username adminuser --password password --no-verify-ssl
+uv run python -m nokia.discovery --server 10.50.238.203 --username adminuser --password password --no-verify-ssl --output-dir output
 
 # mapper
-# output/devices.jsonl
-uv run python mapper.py
+# input:  output/device.jsonl, output/intf.jsonl, output/ponport.jsonl
+# output: output/devices.jsonl
+uv run python -m nokia.mapper --output-dir output
 
 # cd C:\Users\ST\GitHub\true-pms-online\poller\snmptk
 # make build-win

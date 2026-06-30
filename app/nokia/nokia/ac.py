@@ -9,6 +9,7 @@ returns both `intent-specific-data` config/state and top-level `required-network
 import logging
 from collections import Counter
 from pathlib import Path
+from typing import Optional
 from .client import AltiplanoClient, save
 
 log = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ def _ibn_base(rel: str) -> str:
   return f"/{rel}-ac/rest/restconf/data/ibn:ibn"
 
 
-def list_intents(client: AltiplanoClient, output_dir: Path | None = None) -> list[dict]:
+def list_intents(client: AltiplanoClient, output_dir: Optional[Path] = None) -> list[dict]:
   """Enumerate all IBN intents as [{"target", "intent-type"}, ...].
 
   Note: querying the keyed `intent` list directly 500s ("Missing key value");

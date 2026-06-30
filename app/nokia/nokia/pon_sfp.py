@@ -10,6 +10,7 @@ vendorpn is parsed from model-name field: '... (3FE47581BD)' -> '3FE47581BD'
 import logging
 import re
 from pathlib import Path
+from typing import Optional
 from .client import AltiplanoClient, save
 
 log = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ XPON_TO_MODULECLASS = {
 }
 
 
-def _parse_vendorpn(model_name: str) -> str | None:
+def _parse_vendorpn(model_name: str) -> Optional[str]:
   """Extract part number from model-name: 'XGS/GPON SFP-DD ... (3FE47581BD)' -> '3FE47581BD'"""
   m = re.search(r"\(([^)]+)\)\s*$", model_name or "")
   return m.group(1) if m else None

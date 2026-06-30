@@ -5,6 +5,7 @@ import logging
 import time
 import warnings
 from pathlib import Path
+from typing import Optional
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class AltiplanoClient:
     self.password = password
     self.verify_ssl = verify_ssl
     self.rel = rel
-    self.access_token: str | None = None
+    self.access_token: Optional[str] = None
     self._token_acquired_at: float = 0
     self._expires_in: int = 1800
 
@@ -65,7 +66,7 @@ class AltiplanoClient:
     resp.raise_for_status()
     return resp.json()
 
-  def post(self, path: str, body: dict | None = None, es: bool = False) -> dict:
+  def post(self, path: str, body: Optional[dict] = None, es: bool = False) -> dict:
     url = f"{self._base()}{path}"
     log.debug("POST %s", url)
     headers = self._headers_es() if es else self._headers_json()

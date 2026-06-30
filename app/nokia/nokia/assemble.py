@@ -9,6 +9,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ _WAVELENGTH_TO_MEDIATYPE = {
 }
 
 
-def _port_moduleclass(port_id: str) -> str | None:
+def _port_moduleclass(port_id: str) -> Optional[str]:
   """Derive moduleclass from port_id token e.g. 'nt-a:xfp:1' -> '10GE-XFP'."""
   for token, cls in _PORT_TYPE_TO_MODULECLASS.items():
     if f":{token}:" in port_id or port_id.endswith(f":{token}"):
@@ -114,7 +115,7 @@ def _port_moduleclass(port_id: str) -> str | None:
   return None
 
 
-def _vendorpn(part_number: str) -> str | None:
+def _vendorpn(part_number: str) -> Optional[str]:
   """Return first whitespace token of part_number as the vendor PN."""
   pn = (part_number or "").strip()
   return pn.split()[0] if pn and pn != "-" else None
@@ -287,9 +288,9 @@ def run(
   fibers_by_olt: dict[str, list[dict]],
   pon_sfp: dict[str, dict],
   ont_counts: dict[str, int],
-  uplink_sfp: dict[str, list[dict]] | None = None,
-  ont_names_by_fiber: dict[str, list[str]] | None = None,
-  ont_info: dict[str, dict] | None = None,
+  uplink_sfp: Optional[dict[str, list[dict]]] = None,
+  ont_names_by_fiber: Optional[dict[str, list[str]]] = None,
+  ont_info: Optional[dict[str, dict]] = None,
 ) -> None:
   log.info("[ASSEMBLE] building tables ...")
 

@@ -9,13 +9,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 uv sync
 
 # Run discovery (full inventory pull from Nokia Altiplano NBI)
-uv run python discover.py --server <IP> --password <pass> --no-verify-ssl
+uv run python -m nokia.discovery --server <IP> --password <pass> --no-verify-ssl
 
 # Auth token only
-uv run python main.py --server <IP> --password <pass> --no-verify-ssl
+uv run python -m nokia.main --server <IP> --password <pass> --no-verify-ssl
 
 # Refresh access token
-uv run python main.py --server <IP> --password <pass> --refresh-token <TOKEN> --no-verify-ssl
+uv run python -m nokia.main --server <IP> --password <pass> --refresh-token <TOKEN> --no-verify-ssl
 ```
 
 Python 3.12+. Use 2-space indentation.
@@ -59,7 +59,7 @@ are blocked — Nokia RC-Proxy not deployed on testbed.
 | `nokia/es_ont.py` | ES-ONT — ONT count per fiber (blocked, not wired in) |
 | `nokia/mapper.py` | Shared lookup tables (`XPON_TYPE_MAP`, etc.) and JSONL → struct mapping |
 | `nokia/assemble.py` | Builds `device`, `intf`, `ponport` rows from all collected data and writes JSONL |
-| `main.py` | Standalone auth CLI (login / refresh token) |
+| `nokia/main.py` | Standalone auth CLI (login / refresh token) |
 
 ### API backends
 

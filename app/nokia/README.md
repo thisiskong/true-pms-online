@@ -16,12 +16,12 @@ uv sync
 
 ### Full discovery (all items at once)
 ```bash
-uv run python discover.py --server 10.50.238.203 --password password --no-verify-ssl
+uv run python -m nokia.discovery --server 10.50.238.203 --password password --no-verify-ssl
 ```
 
 ### All arguments
 ```bash
-uv run python discover.py \
+uv run python -m nokia.discovery \
   --server 10.50.238.203 \
   --username adminuser \
   --password password \
@@ -331,11 +331,11 @@ Authorization: Bearer {refreshToken}
 Standalone auth script:
 ```bash
 # Print access token only
-uv run python main.py --server 10.50.238.203 --password password --no-verify-ssl
+uv run python -m nokia.main --server 10.50.238.203 --password password --no-verify-ssl
 
 # Full JSON response
-uv run python main.py --server 10.50.238.203 --password password --no-verify-ssl --output json
+uv run python -m nokia.main --server 10.50.238.203 --password password --no-verify-ssl --output json
 
 # Refresh token
-uv run python main.py --server 10.50.238.203 --password x --refresh-token <TOKEN> --no-verify-ssl
+uv run python -m nokia.main --server 10.50.238.203 --password x --refresh-token <TOKEN> --no-verify-ssl
 ```

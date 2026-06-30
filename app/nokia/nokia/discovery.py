@@ -4,8 +4,8 @@ import argparse
 import logging
 from pathlib import Path
 
-from nokia.client import AltiplanoClient
-from nokia import ac, ac_device, ac_fiber, pon_sfp, uplink_sfp, assemble, mapper
+from .client import AltiplanoClient
+from . import ac, ac_device, ac_fiber, pon_sfp, uplink_sfp, assemble, mapper
 
 
 def build_parser() -> argparse.ArgumentParser:

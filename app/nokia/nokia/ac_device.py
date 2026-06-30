@@ -9,6 +9,7 @@ single request.
 
 import logging
 from pathlib import Path
+from typing import Optional
 from .client import AltiplanoClient, save
 from . import ac
 
@@ -17,7 +18,7 @@ log = logging.getLogger(__name__)
 DEVICE_INTENT_TYPES = ("device-mf", "device-df")
 
 
-def _intent_type_of(target: str, intents: list[dict]) -> str | None:
+def _intent_type_of(target: str, intents: list[dict]) -> Optional[str]:
   for i in intents:
     if i.get("target") == target and i.get("intent-type") in DEVICE_INTENT_TYPES:
       return i["intent-type"]

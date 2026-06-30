@@ -3,7 +3,7 @@ name = "nokia"
 version = "0.1.0"
 description = "Nokia"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
     "confluent-kafka>=2.14.2",
     "kazoo>=2.11.0",
@@ -12,6 +12,6 @@ dependencies = [
     "paramiko>=5.0.0",
     "psycopg2-binary>=2.9.12",
     "pyyaml>=6.0.3",
-    "requests>=2.34.2",
-    "termcolor>=3.3.0",
+    "requests>=2.28.0",
+    "termcolor>=2.3.0",
 ]

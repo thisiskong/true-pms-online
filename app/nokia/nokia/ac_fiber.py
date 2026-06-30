@@ -10,6 +10,7 @@ PON-SFP can reuse it without a second fetch.
 import logging
 import re
 from pathlib import Path
+from typing import Optional
 from .client import AltiplanoClient, save
 from . import ac
 
@@ -33,7 +34,7 @@ DL_BW_MAP = {"gpon": 2488, "xgs-pon": 10240, "mpm-gpon-xgs": 10240}
 UL_BW_MAP = {"gpon": 1244, "xgs-pon": 10240, "mpm-gpon-xgs": 10240}
 
 
-def _parse_ponport(fiber_name: str, pon_id: str) -> str | None:
+def _parse_ponport(fiber_name: str, pon_id: str) -> Optional[str]:
   """Derive ponport from pon-id ('LT1.PON16' -> '1-1-1-16') or fiber name."""
   m = re.match(r"LT(\d+)\.PON(\d+)$", pon_id or "", re.IGNORECASE)
   if m:
