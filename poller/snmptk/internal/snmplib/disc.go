@@ -110,6 +110,7 @@ func NewDiscoveryProcessor(task *DiscoveryConfig, wg *sync.WaitGroup, tasksDone 
 	tx, err := db.Begin()
 	if err != nil {
 		log.Printf("Error! %v", err)
+		return err
 	}
 
 	for _, rec := range cnt_map {
