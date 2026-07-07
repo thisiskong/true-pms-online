@@ -7,6 +7,7 @@ and `device-df`), then each device's bare intent GET yields config
 single request.
 """
 
+import json
 import logging
 from pathlib import Path
 from typing import Optional
@@ -79,6 +80,30 @@ def run(client: AltiplanoClient, output_dir: Path,
     log.info("  ip=%s sw=%s reachable=%s boards=%s",
              norm["ip"], norm["swversion"], norm["reachable"],
              [b.get("slot-name") for b in norm["boards"]])
+
+  save(output_dir, "03_ac_device", all_raw,
+       {"devices": devices, "count": len(devices)})
+  return devices, slots
+
+
+def run_normalize(output_dir: Path,
+                   intents: list[dict]) -> tuple[list[dict], dict[str, dict]]:
+  """Rebuild (devices, slots) from 03_ac_device_raw.json — no network."""
+  all_raw: dict[str, dict] = json.loads((output_dir / "03_ac_device_raw.json").read_text())
+  targets = ac.targets_of_type(intents, *DEVICE_INTENT_TYPES)
+
+  devices: list[dict] = []
+  slots: dict[str, dict] = {}
+
+  for name in targets:
+    itype = _intent_type_of(name, intents)
+    intent = all_raw.get(name)
+    if intent is None:
+      log.warning("[AC-DEVICE] no raw data for %s, skipping", name)
+      continue
+    norm = normalize(intent, itype)
+    devices.append(norm)
+    slots[name] = norm
 
   save(output_dir, "03_ac_device", all_raw,
        {"devices": devices, "count": len(devices)})

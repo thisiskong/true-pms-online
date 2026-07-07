@@ -7,7 +7,10 @@
 # uv run python -m nokia.main --server 10.50.238.203 --username adminuser --password password --no-verify-ssl --output json
 
 # discovery
-uv run python -m nokia.discovery --server 10.50.238.203 --username adminuser --password password --no-verify-ssl --output-dir output
+uv run python -m nokia.discovery --phase discover --server 10.50.238.203 --username adminuser --password password --no-verify-ssl --output-dir output
+
+# normalize
+uv run python -m nokia.discovery --phase normalize --output-dir output
 
 # mapper
 # input:  output/device.jsonl, output/intf.jsonl, output/ponport.jsonl

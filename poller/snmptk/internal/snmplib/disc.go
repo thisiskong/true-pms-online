@@ -918,13 +918,13 @@ func saveIntf(tx *sql.Tx, deviceInst *Device, ptime_str string) (string, error) 
 		if err != nil {
 			return sql, err
 		}
+	}
 
-		// Delete obsolete Interface
-		sql = fmt.Sprintf("delete from ponport where device_id='%v' and lastseen<'%v'", deviceInst.DeviceId, ptime_str)
-		_, err = tx.Exec(sql)
-		if err != nil {
-			return sql, err
-		}
+	// Delete obsolete Interface
+	sql := fmt.Sprintf("delete from ponport where device_id='%v' and lastseen<'%v'", deviceInst.DeviceId, ptime_str)
+	_, err := tx.Exec(sql)
+	if err != nil {
+		return sql, err
 	}
 	return "", nil
 }
@@ -960,15 +960,15 @@ func saveBoards(tx *sql.Tx, deviceInst *Device, ptime_str string) (string, error
 		if err != nil {
 			return sql, err
 		}
-
-		// Delete obsolete Boards
-		sql = fmt.Sprintf("delete from board where device_id='%v' and lastseen<'%v'", deviceInst.DeviceId, ptime_str)
-		_, err = tx.Exec(sql)
-		if err != nil {
-			return sql, err
-		}
 	}
 
+	// Delete obsolete Boards
+	log.Printf("delete from board where device_id='%v' and lastseen<'%v'", deviceInst.DeviceId, ptime_str)
+	sql := fmt.Sprintf("delete from board where device_id='%v' and lastseen<'%v'", deviceInst.DeviceId, ptime_str)
+	_, err := tx.Exec(sql)
+	if err != nil {
+		return sql, err
+	}
 	return "", nil
 }
 

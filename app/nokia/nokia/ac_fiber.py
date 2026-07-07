@@ -7,6 +7,7 @@ prefix (`{olt}-{slot}-{pon}`). Each fiber's bare intent GET yields the
 PON-SFP can reuse it without a second fetch.
 """
 
+import json
 import logging
 import re
 from pathlib import Path
@@ -30,20 +31,15 @@ IFSPEED_MAP = {
   "mpm-gpon-xgs": 10000000000,
 }
 
-DL_BW_MAP = {"gpon": 2488, "xgs-pon": 10240, "mpm-gpon-xgs": 10240}
-UL_BW_MAP = {"gpon": 1244, "xgs-pon": 10240, "mpm-gpon-xgs": 10240}
-
-
-def _parse_ponport(fiber_name: str, pon_id: str) -> Optional[str]:
-  """Derive ponport from pon-id ('LT1.PON16' -> '1-1-1-16') or fiber name."""
+def _parse_ponport(pon_id: str) -> Optional[str]:
+  """Derive ponport from pon-id ('PON_14' -> '1-1-1-14') or ('LT2.PON14' -> '1-1-2-14')."""
+  m = re.match(r"PON_(\d+)$", pon_id or "", re.IGNORECASE)
+  if m:
+    return f"1-1-1-{int(m.group(1))}"
   m = re.match(r"LT(\d+)\.PON(\d+)$", pon_id or "", re.IGNORECASE)
   if m:
     return f"1-1-{int(m.group(1))}-{int(m.group(2))}"
-  m = re.match(r".*\.L(\d+)P(\d+)$", fiber_name or "", re.IGNORECASE)
-  if m:
-    return f"1-1-{int(m.group(1))}-{int(m.group(2))}"
   return None
-
 
 def normalize(intent: dict) -> dict:
   fiber_name = intent.get("target")
@@ -51,15 +47,14 @@ def normalize(intent: dict) -> dict:
   xpon_raw = cfg.get("xpon-type", "")
   port = (cfg.get("pon-port") or [{}])[0]
   pon_id = port.get("pon-id", "")
+  logging.info(f"ac_fiber: parse_ponport={pon_id}|{_parse_ponport(pon_id)}")
   return {
     "olt_name": port.get("device-name"),
     "fiber_name": fiber_name,
-    "ponport": _parse_ponport(fiber_name, pon_id),
+    "ponport": _parse_ponport(pon_id),
     "xpon_type_raw": xpon_raw,
     "iftype": XPON_TYPE_MAP.get(xpon_raw),
     "ifspeed": IFSPEED_MAP.get(xpon_raw),
-    "l1_dl_max_bw": DL_BW_MAP.get(xpon_raw),
-    "l1_ul_max_bw": UL_BW_MAP.get(xpon_raw),
     "pon_id": pon_id,
     "l1sp": port.get("port-profile"),
     "required_network_state": intent.get("required-network-state"),
@@ -93,4 +88,31 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict],
   total = sum(len(v) for v in fibers_by_olt.values())
   save(output_dir, "04_ac_fiber", all_raw, {"fibers_by_olt": fibers_by_olt, "total": total})
   log.info("[AC-FIBER] total fibers: %d", total)
+  return fibers_by_olt, fiber_cfg
+
+
+def run_normalize(output_dir: Path, devices: list[dict],
+                   intents: list[dict]) -> tuple[dict[str, list[dict]], dict[str, dict]]:
+  """Rebuild (fibers_by_olt, fiber_cfg_by_name) from 04_ac_fiber_raw.json — no network."""
+  all_raw: dict[str, dict] = json.loads((output_dir / "04_ac_fiber_raw.json").read_text())
+  fiber_targets = ac.targets_of_type(intents, FIBER_INTENT_TYPE)
+
+  fibers_by_olt: dict[str, list[dict]] = {}
+  fiber_cfg: dict[str, dict] = {}
+
+  for dev in devices:
+    olt = dev["name"]
+    names = [t for t in fiber_targets if t.startswith(f"{olt}-")]
+    fibers = []
+    for fname in names:
+      intent = all_raw.get(fname)
+      if intent is None:
+        log.warning("[AC-FIBER] no raw data for %s, skipping", fname)
+        continue
+      fiber_cfg[fname] = intent.get("intent-specific-data", {}).get("fiber:fiber", {})
+      fibers.append(normalize(intent))
+    fibers_by_olt[olt] = fibers
+
+  total = sum(len(v) for v in fibers_by_olt.values())
+  save(output_dir, "04_ac_fiber", all_raw, {"fibers_by_olt": fibers_by_olt, "total": total})
   return fibers_by_olt, fiber_cfg

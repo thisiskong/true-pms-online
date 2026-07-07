@@ -13,10 +13,6 @@ from typing import Optional
 
 log = logging.getLogger(__name__)
 
-NS = "NotSupported"   # not available from Nokia NBI
-NI = "NotImplement"   # available from Nokia NBI but not yet implemented/unblocked
-
-
 def _now() -> str:
   return datetime.now(timezone.utc).isoformat()
 
@@ -55,7 +51,7 @@ def build_device(devices: list[dict], slots: dict[str, dict]) -> list[dict]:
       "lastseen":         ts,
       "first":            ts,
       "model":            slot.get("hardware_type") or dev.get("descr"),
-      "chassisid":        NI,   # eqpt:slot-inventory → Chassis.serial-num
+      "chassisid":        None,
       # --- NotSupported: not available from Nokia NBI ---
       # "network":          None,
       # "region":           None,
@@ -130,6 +126,7 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
     dev = device_map.get(olt, {})
     for sfp in sfp_list:
       port_id = sfp.get("port_id", "")
+      port_descr = sfp.get("port_description", "")
       part_no = _vendorpn(sfp.get("part_number", ""))
       wave = (sfp.get("wave_length") or "").strip().lstrip("0") or None
       oper = sfp.get("oper_state")
@@ -145,30 +142,20 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "first":            ts,
         # --- available from UPLINK-SFP (item 7) ---
         "ifname":           port_id,
-        "ifdescr":          port_id,
-        "name":             f"{olt}:{port_id}",
-        "ifadmin":          "down" if admin == "disable" else "up" if admin else NI,
-        "ifoper":           oper if oper and oper != "-" else NI,
+        "ifdescr":          port_descr,
+        "name":             port_id,
+        "ifadmin":          "down" if admin == "disable" else "up" if admin else None,
+        "ifoper":           oper if oper and oper != "-" else None,
         "moduleclass":      _port_moduleclass(port_id),
         "vendorpn":         part_no,
         "mediatype":        _WAVELENGTH_TO_MEDIATYPE.get(wave) if wave else None,
-        # --- NotImplement: available via RC-INTF (item 9 — RC-Proxy blocked) ---
-        "id":               NI,   # composite {device.id}.{ifindex}
-        "device_id":        NI,   # FK from device table
-        "ifspeed":          NI,   # RC-Proxy interface[].speed
-        "ifindex":          NI,   # RC-Proxy interface[].if-index
-        "ifphyaddr":        NI,   # RC-Proxy interface[].phys-address (MAC)
-        "ifalias":          NI,   # RC-Proxy interface[].description
-        "ifconn":           NI,   # derived from ifoper
-        # --- NotSupported: not available from Nokia NBI ---
-        # "altname":          None,
-        # "dstport":          None,
-        # "dstsite":          None,
-        # "dsttype":          None,
-        # "dstname":          None,
-        # "dstsite2":         None,
-        # "dsttype2":         None,
-        # "remdstsite":       None,
+        "id":               None,
+        "device_id":        None,
+        "ifspeed":          sfp.get("speed_bps"),
+        "ifindex":          None,
+        "ifphyaddr":        None,
+        "ifalias":          None,
+        "ifconn":           None,
       })
   return rows
 
@@ -195,17 +182,14 @@ def build_ponport(
         # --- available from ES-FIBER ---
         "device_name":      olt,
         "device_ip":        dev.get("ip"),
-        "ifname":           fname,
-        "ifdescr":          fname,
+        "ifname":           fiber.get("pon_id"), # fname,
+        "ifdescr":          fiber.get("pon_id"), # fname,
         "ponport":          fiber.get("ponport"),
         "iftype":           fiber.get("iftype"),
         "ifspeed":          fiber.get("ifspeed"),
-        # "l1_dl_max_bw":     fiber.get("l1_dl_max_bw"),
-        # "l1_ul_max_bw":     fiber.get("l1_ul_max_bw"),
-        # "l1sp":             fiber.get("l1sp"),
         "xpon_type":        fiber.get("xpon_type_raw"),
         "pon_id":           fiber.get("pon_id"),
-        "name":             f"{olt}:{fiber.get('ponport')}",
+        "name":             f"{fiber.get('ponport')}",
         # --- available from PON-SFP (item 8) ---
         "moduleclass":      sfp.get("moduleclass"),
         "vendorpn":         sfp.get("vendorpn"),
@@ -213,25 +197,18 @@ def build_ponport(
         # --- available from ES-ONT (item 5) ---
         "ifconn":           ont_counts.get(fname, 0),
         # --- available (defaults) ---
-        # "sys_pollstatus":   1,
-        # "usr_pollstatus":   1,
         "last_modify_by":   "nokia-altiplano",
         "last_modify_at":   ts,
         "lastseen":         ts,
         "first":            ts,
         # --- available from PON-SFP (fiber:fiber AC) and ES-FIBER ---
         "ifadmin":          "down" if sfp.get("admin_state") == "locked" else "up",
-        "ifoper":           "up" if fiber.get("required_network_state") == "active" else "down" if fiber.get("required_network_state") else NI,
-        # --- NotImplement: available via RC-INTF-ONE (item 10 — RC-Proxy blocked) ---
-        "id":               NI,   # compose: {device.id}.{ifindex}
-        "device_id":        NI,   # FK from device.id
-        "ifindex":          NI,   # RC-Proxy interface.if-index
-        # --- NotImplement: optional, requires PON utilization monitoring enabled ---
-        "dl_bw_remaining":  NI,   # OpenTSDB PON utilization — requires §4.2.15 enabled
-        "ul_bw_remaining":  NI,   # OpenTSDB PON utilization — requires §4.2.15 enabled
-        # --- NotSupported: not applicable for PON ports ---
-        "ifphyaddr":        None,   # PON ports have no MAC address
-        "ifalias":          NS,   # not applicable for PON
+        "ifoper":           "up" if fiber.get("required_network_state") == "active" else "down" if fiber.get("required_network_state") else None,
+        "id":               None,
+        "device_id":        None,
+        "ifindex":          None,
+        "ifphyaddr":        None,
+        "ifalias":          None,
       })
   return rows
 

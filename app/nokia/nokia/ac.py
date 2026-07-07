@@ -6,6 +6,7 @@ intent-type. Per-intent detail is fetched with `get_intent` (the bare intent GET
 returns both `intent-specific-data` config/state and top-level `required-network-state`).
 """
 
+import json
 import logging
 from collections import Counter
 from pathlib import Path
@@ -33,6 +34,12 @@ def list_intents(client: AltiplanoClient, output_dir: Optional[Path] = None) -> 
     save(output_dir, "01_intents", raw,
          {"intents": intents, "count": len(intents), "by_type": by_type})
   return intents
+
+
+def load_intents(output_dir: Path) -> list[dict]:
+  """Re-read intents from disk (01_intents_normalized.json) — no network."""
+  data = json.loads((output_dir / "01_intents_normalized.json").read_text())
+  return data["intents"]
 
 
 def targets_of_type(intents: list[dict], *intent_types: str) -> list[str]:

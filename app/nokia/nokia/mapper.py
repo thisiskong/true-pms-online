@@ -140,12 +140,13 @@ def _map_ponport(row: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def _map_board(slot: dict) -> dict:
-  return {
-    "slot-name":              _str(slot.get("slot-name")),
-    "planned-type":           _str(slot.get("planned-type")),
-    "board-service-profile":  _str(slot.get("board-service-profile")),
-    "admin-state":            _str(slot.get("admin-state")),
-  }
+  return {}
+  # return {
+  #   "slot-name":              _str(slot.get("slot-name")),
+  #   "planned-type":           _str(slot.get("planned-type")),
+  #   "board-service-profile":  _str(slot.get("board-service-profile")),
+  #   "admin-state":            _str(slot.get("admin-state")),
+  # }
 
 
 # ---------------------------------------------------------------------------
@@ -183,7 +184,7 @@ def _map_device(
     "Engine":           "nokia-altiplano",
     "Save":             True,
     "Interfaces":       interfaces,
-    "Data":             {"Boards": boards},
+    "Data":             { "Boards": boards},
   }
 
 
