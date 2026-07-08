@@ -100,23 +100,22 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
     ul_raw = fetch_uplink(client, olt)
     all_uplinks_raw[olt] = ul_raw
     uplinks = normalize_uplinks(ul_raw, olt)
-    # port_speeds = _parse_port_speeds(ul_raw)
     log.info("  uplink ports: %d", len(uplinks))
 
     sfp_list = []
     all_sfp_raw[olt] = {}
     for ul in uplinks:
-      ul_name = ul["uplink_name"]
-      port_id = ul["port_id"]
-      log.info("  fetching SFP: intent=%s port=%s", ul_name, port_id)
+      olt_name = ul["olt_name"]
+      port_id  = ul["port_id"]
+      log.info("  fetching SFP: intent=%s port=%s", olt_name, port_id)
       try:
-        sfp_raw = fetch_sfp(client, client.rel, ul_name, port_id)
-        all_sfp_raw[olt][f"{ul_name}:{port_id}"] = sfp_raw
-        sfp_list.append(normalize_sfp(sfp_raw, ul_name, port_id, ul))
+        sfp_raw = fetch_sfp(client, client.rel, olt_name, port_id)
+        all_sfp_raw[olt][f"{olt_name}:{port_id}"] = sfp_raw
+        sfp_list.append(normalize_sfp(sfp_raw, olt_name, port_id, ul))
       except Exception as e:
         log.warning("  [WARN] %s", e)
-        all_sfp_raw[olt][f"{ul_name}:{port_id}"] = {"error": str(e)}
-        sfp_list.append({"uplink_name": ul_name, "port_id": port_id, "error": str(e)})
+        all_sfp_raw[olt][f"{olt_name}:{port_id}"] = {"error": str(e)}
+        sfp_list.append({"olt_name": olt_name, "port_id": port_id, "error": str(e)})
 
     result[olt] = sfp_list
 
@@ -136,9 +135,6 @@ def run_normalize(output_dir: Path, devices: list[dict]) -> dict[str, list[dict]
 
   for dev in devices:
     olt = dev["name"]
-    # if olt != "RET19004G00" and olt != "RET02002G00" and olt != "QCENGNK32GM" and olt != "SMK01058GO0":
-    # if olt != "RET19004G00":
-    #   continue
 
     ul_raw = all_uplinks_raw.get(olt)
     if ul_raw is None:
