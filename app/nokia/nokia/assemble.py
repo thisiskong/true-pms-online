@@ -126,6 +126,7 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
     dev = device_map.get(olt, {})
     for sfp in sfp_list:
       port_id = sfp.get("port_id", "")
+      port_no = sfp.get("port_no", "")
       port_descr = sfp.get("port_description", "")
       part_no = _vendorpn(sfp.get("part_number", ""))
       wave = (sfp.get("wave_length") or "").strip().lstrip("0") or None
@@ -152,7 +153,7 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "id":               None,
         "device_id":        None,
         "ifspeed":          sfp.get("speed_bps"),
-        "ifindex":          None,
+        "ifindex":          port_no,
         "ifphyaddr":        None,
         "ifalias":          None,
         "ifconn":           None,
@@ -195,7 +196,7 @@ def build_ponport(
         "vendorpn":         sfp.get("vendorpn"),
         "model_name":       sfp.get("model_name"),
         # --- available from ES-ONT (item 5) ---
-        "ifconn":           ont_counts.get(fname, 0),
+        "ifconn":           None,
         # --- available (defaults) ---
         "last_modify_by":   "nokia-altiplano",
         "last_modify_at":   ts,
@@ -206,7 +207,7 @@ def build_ponport(
         "ifoper":           "up" if fiber.get("required_network_state") == "active" else "down" if fiber.get("required_network_state") else None,
         "id":               None,
         "device_id":        None,
-        "ifindex":          None,
+        "ifindex":          fiber.get("pon_id"),
         "ifphyaddr":        None,
         "ifalias":          None,
       })

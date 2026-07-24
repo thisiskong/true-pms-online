@@ -62,7 +62,7 @@ class AltiplanoClient:
   def get(self, path: str) -> dict:
     url = f"{self._base()}{path}"
     log.debug("GET %s", url)
-    resp = requests.get(url, headers=self._headers_json(), verify=self.verify_ssl, timeout=60)
+    resp = requests.get(url, headers=self._headers_json(), verify=self.verify_ssl, timeout=180)
     resp.raise_for_status()
     return resp.json()
 
@@ -70,7 +70,7 @@ class AltiplanoClient:
     url = f"{self._base()}{path}"
     log.debug("POST %s", url)
     headers = self._headers_es() if es else self._headers_json()
-    resp = requests.post(url, headers=headers, json=body, verify=self.verify_ssl, timeout=60)
+    resp = requests.post(url, headers=headers, json=body, verify=self.verify_ssl, timeout=180)
     resp.raise_for_status()
     return resp.json()
 

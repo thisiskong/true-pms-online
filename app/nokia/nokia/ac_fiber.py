@@ -46,17 +46,19 @@ def normalize(intent: dict) -> dict:
   cfg = intent.get("intent-specific-data", {}).get("fiber:fiber", {})
   xpon_raw = cfg.get("xpon-type", "")
   port = (cfg.get("pon-port") or [{}])[0]
+  device_name = port.get("device-name")
   pon_id = port.get("pon-id", "")
-  logging.info(f"ac_fiber: parse_ponport={pon_id}|{_parse_ponport(pon_id)}")
+  ponport = _parse_ponport(pon_id)
+  log.info(f"ac_fiber: ponport={device_name}|{pon_id}|{ponport}")
   return {
     "olt_name": port.get("device-name"),
     "fiber_name": fiber_name,
-    "ponport": _parse_ponport(pon_id),
+    "ponport": ponport,
     "xpon_type_raw": xpon_raw,
     "iftype": XPON_TYPE_MAP.get(xpon_raw),
     "ifspeed": IFSPEED_MAP.get(xpon_raw),
     "pon_id": pon_id,
-    "l1sp": port.get("port-profile"),
+    "port_profile": port.get("port-profile"),
     "required_network_state": intent.get("required-network-state"),
   }
 

@@ -46,14 +46,12 @@ def normalize_uplinks(intent: dict, olt_name: str) -> list[dict]:
       # log.info(f"{olt_name}|{object_name}|{object_id}|{object_type}|{admin_state}|{oper_state}")
 
       if "anv-device-holders:device-manager/device" == object_type:
-        lookup = {"1/1/5": "nt-a:xfp:1", "1/1/6": "nt-a:xfp:2"}
         # object_name = port:RET02002G00.IHUB:nokia-state:state/1
         tokens = object_name.split(":")
         if len(tokens) == 4 and tokens[0] == "port":
           # object_id = anv:total-uplink-port:{##objectType=nokia-state:state/port=1/1/5##Name=nt-a:xfp:1##speed=10000}
           m = re.match(r'.*\/port=(.*)##Name=(.*)##speed=(\d+)', object_id)
           if m:
-            # lookup = {"1/1/5": "nt-a:xfp:1", "1/1/6": "nt-a:xfp:2"}
             port_no = m.group(1)
             port_id = m.group(2)
             speed_bps = int(m.group(3)) * 1_000_000

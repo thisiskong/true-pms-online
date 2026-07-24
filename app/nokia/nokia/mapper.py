@@ -51,7 +51,7 @@ def _load_jsonl(path: Path) -> list[dict]:
 
 def _map_intf(row: dict) -> dict:
   return {
-    "IfIndex":       _str(row.get("ifname")),
+    "IfIndex":       _str(row.get("ifindex")),
     "IfName":        _str(row.get("ifname")),
     "IfSpeed":       _int_or(row.get("ifspeed")),
     "IfAdmin":       _str(row.get("ifadmin")),
