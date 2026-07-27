@@ -3,6 +3,7 @@ package poller
 import (
 	"context"
 	"log/slog"
+	"math"
 	"sync"
 	"time"
 
@@ -342,10 +343,11 @@ func handlePathB(
 }
 
 // processNokiaJob polls a Nokia Altiplano-managed device over REST instead
-// of SNMP. It reuses DetectRebootUptime unchanged — Nokia's sys-up-time
-// counter is centiseconds, unit-compatible with SNMP's sysUptime — then
-// substitutes the device's authoritative boot-datetime for the estimate
-// when a reboot is detected.
+// of SNMP. Nokia's sys-up-time counter is not bounded to 32 bits like SNMP's
+// sysUptime (it does not wrap at ~497 days), so it can't be fed through the
+// SNMP-oriented rollover math in DetectRebootUptime. Instead, reboot
+// detection compares the device's own authoritative boot-datetime against
+// the previously stored value — no heuristics needed.
 func processNokiaJob(
 	ctx context.Context,
 	client *nokia.Client,
@@ -362,10 +364,20 @@ func processNokiaJob(
 		return PollResult{Device: dev, NewState: next, Record: errRecord(dev, now, err.Error()), Err: err}
 	}
 
-	result, next := DetectRebootUptime(prev, sysUptime, now, cfg)
+	next := prev
 	next.ConsecutiveFailures = 0
-	if result.IsReboot && !bootTime.IsZero() {
-		result.EstimatedBoot = bootTime
+
+	var result RebootResult
+	switch {
+	case prev.LastBootTime.IsZero():
+		// First poll — seed state, never emit reboot.
+		next.LastBootTime = bootTime
+	case !bootTime.Equal(prev.LastBootTime):
+		result = RebootResult{
+			IsReboot:        true,
+			DetectionMethod: event.MethodBootDatetime,
+			EstimatedBoot:   bootTime,
+		}
 		next.LastBootTime = bootTime
 	}
 
@@ -373,12 +385,14 @@ func processNokiaJob(
 		Timestamp:       event.NewLocalTime(now),
 		IP:              dev.IP,
 		Name:            dev.Name,
-		SysUptime:       &sysUptime,
 		IsReboot:        result.IsReboot,
-		IsSuspected:     result.IsSuspected,
 		DetectionMethod: result.DetectionMethod,
 	}
-	if result.IsReboot && !result.EstimatedBoot.IsZero() {
+	if sysUptime <= math.MaxUint32 {
+		v := uint32(sysUptime)
+		rec.SysUptime = &v
+	}
+	if result.IsReboot {
 		t := event.NewLocalTime(result.EstimatedBoot)
 		rec.BootTime = &t
 	}
@@ -390,9 +404,6 @@ func processNokiaJob(
 			DeviceName:      dev.Name,
 			EstimatedBoot:   result.EstimatedBoot,
 			DetectedAt:      now,
-			PrevValue:       result.PrevValue,
-			CurrValue:       result.CurrValue,
-			IsSuspected:     result.IsSuspected,
 			DetectionMethod: result.DetectionMethod,
 		}
 		rev = &ev

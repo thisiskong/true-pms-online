@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -57,6 +58,24 @@ func NewUptimeUpsert(pool *pgxpool.Pool, batchSize int, retryFile string, log *s
 	return &UptimeUpsert{pool: pool, batchSize: batchSize, retryFile: retryFile, log: log}
 }
 
+// toInterval converts a Go Duration into a pgtype.Interval with the days
+// component pre-normalized (24h blocks moved out of Microseconds into Days),
+// so Postgres's default interval text output shows "N days" instead of the
+// whole value collapsed into an oversized hours count.
+func toInterval(d *time.Duration) *pgtype.Interval {
+	if d == nil {
+		return nil
+	}
+	const day = 24 * time.Hour
+	days := int32(*d / day)
+	remainder := *d % day
+	return &pgtype.Interval{
+		Days:         days,
+		Microseconds: remainder.Microseconds(),
+		Valid:        true,
+	}
+}
+
 // UpsertAll sends all rows to Postgres in batches.
 func (u *UptimeUpsert) UpsertAll(ctx context.Context, rows []UptimeRow) {
 	for i := 0; i < len(rows); i += u.batchSize {
@@ -80,7 +99,7 @@ func (u *UptimeUpsert) sendBatch(ctx context.Context, rows []UptimeRow) error {
 			r.SysUptime, r.EngineBoots, r.EngineTime,
 			r.PolledAt, r.PollMethod, r.LastReboot,
 			r.LastPingSuccessAt, r.LastPingRTTMs,
-			r.Uptime,
+			toInterval(r.Uptime),
 		)
 	}
 	results := u.pool.SendBatch(ctx, b)

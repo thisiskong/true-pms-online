@@ -2,6 +2,7 @@ package ping
 
 import (
 	"context"
+	"math"
 	"net"
 	"os"
 	"sync"
@@ -204,5 +205,6 @@ COLLECT:
 	for _, r := range rtts {
 		sum += r
 	}
-	return Result{Success: true, RTTMs: sum / float64(len(rtts))}
+	avg := sum / float64(len(rtts))
+	return Result{Success: true, RTTMs: math.Round(avg*100) / 100}
 }

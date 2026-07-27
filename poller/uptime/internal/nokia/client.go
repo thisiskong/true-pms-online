@@ -61,9 +61,11 @@ func NewClient(cfg Config) *Client {
 	}
 }
 
-// GetUptime fetches the device's sys-up-time counter (centiseconds, unit-
-// compatible with SNMP's sysUptime TimeTicks) and its reported boot-datetime.
-func (c *Client) GetUptime(ctx context.Context, deviceID string) (sysUpTime uint32, bootTime time.Time, err error) {
+// GetUptime fetches the device's sys-up-time counter (centiseconds) and its
+// reported boot-datetime. Unlike SNMP's sysUptime, Nokia's counter is not
+// bounded to 32 bits and does not wrap at ~497 days, so it's returned as a
+// uint64; boot-datetime is the authoritative signal for reboot detection.
+func (c *Client) GetUptime(ctx context.Context, deviceID string) (sysUpTime uint64, bootTime time.Time, err error) {
 	select {
 	case c.sem <- struct{}{}:
 	case <-ctx.Done():
@@ -82,11 +84,11 @@ func (c *Client) GetUptime(ctx context.Context, deviceID string) (sysUpTime uint
 	if err := c.getJSON(ctx, base+"/nokia-ietf-system-aug:sys-up-time", &sysUpRaw); err != nil {
 		return 0, time.Time{}, fmt.Errorf("get sys-up-time: %w", err)
 	}
-	v, err := strconv.ParseUint(sysUpRaw.SysUpTime, 10, 32)
+	v, err := strconv.ParseUint(sysUpRaw.SysUpTime, 10, 64)
 	if err != nil {
 		return 0, time.Time{}, fmt.Errorf("parse sys-up-time %q: %w", sysUpRaw.SysUpTime, err)
 	}
-	sysUpTime = uint32(v)
+	sysUpTime = v
 
 	var bootRaw struct {
 		BootDatetime string `json:"ietf-system:boot-datetime"`
@@ -140,7 +142,7 @@ func (c *Client) doGet(ctx context.Context, urlStr, token string) (int, []byte, 
 		return 0, nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/yang-data+json")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

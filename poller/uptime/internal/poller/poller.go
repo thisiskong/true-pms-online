@@ -138,7 +138,12 @@ func buildUptimeRow(r PollResult, log *slog.Logger) event.UptimeRow {
 	}
 	if r.Device.Engine == EngineNokiaAltiplano {
 		row.PollMethod = "nokia_altiplano"
-		row.Uptime = uptimeDuration(time.Duration(r.NewState.LastSysUptime)*10*time.Millisecond, maxSysUptimeDuration)
+		// Uptime is derived from the device's authoritative boot-datetime
+		// (see processNokiaJob), not a raw counter, so the 32-bit rollover
+		// cap doesn't apply — reuse the "filter garbage" cap instead.
+		if !r.NewState.LastBootTime.IsZero() {
+			row.Uptime = uptimeDuration(r.Record.Timestamp.Time.Sub(r.NewState.LastBootTime), maxEngineTimeDuration)
+		}
 	} else if r.NewState.UseEngineOIDs {
 		row.PollMethod = "engine_oids"
 		boots := int64(r.NewState.LastEngineBoots)
@@ -154,8 +159,13 @@ func buildUptimeRow(r PollResult, log *slog.Logger) event.UptimeRow {
 		row.PollMethod = "sys_uptime"
 		row.Uptime = uptimeDuration(time.Duration(r.NewState.LastSysUptime)*10*time.Millisecond, maxSysUptimeDuration)
 	}
-	up := int64(r.NewState.LastSysUptime)
-	row.SysUptime = &up
+	if r.Device.Engine != EngineNokiaAltiplano {
+		up := int64(r.NewState.LastSysUptime)
+		row.SysUptime = &up
+	} else if r.Record.SysUptime != nil {
+		up := int64(*r.Record.SysUptime)
+		row.SysUptime = &up
+	}
 	if !r.NewState.LastBootTime.IsZero() {
 		t := r.NewState.LastBootTime
 		row.LastReboot = &t

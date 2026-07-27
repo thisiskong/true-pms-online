@@ -6,9 +6,10 @@ import "time"
 type DetectionMethod string
 
 const (
-	MethodEngineBoots DetectionMethod = "engine_boots" // Path A: snmpEngineBoots incremented
-	MethodSysUptime   DetectionMethod = "sys_uptime"   // Path B: sysUptime went backwards
-	MethodGapInferred DetectionMethod = "gap_inferred" // Path B: inferred from poller outage gap
+	MethodEngineBoots  DetectionMethod = "engine_boots"  // Path A: snmpEngineBoots incremented
+	MethodSysUptime    DetectionMethod = "sys_uptime"    // Path B: sysUptime went backwards
+	MethodGapInferred  DetectionMethod = "gap_inferred"  // Path B: inferred from poller outage gap
+	MethodBootDatetime DetectionMethod = "boot_datetime" // Nokia Altiplano: device-reported boot-datetime changed
 )
 
 // RebootEvent is emitted when a device reboot is detected.

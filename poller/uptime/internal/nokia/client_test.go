@@ -69,6 +69,30 @@ func TestGetUptime_ParsesSysUptimeAndBootDatetime(t *testing.T) {
 	}
 }
 
+func TestGetUptime_ParsesSysUptimeBeyondUint32Range(t *testing.T) {
+	// Regression: Nokia's sys-up-time counter is not bounded to 32 bits like
+	// SNMP's sysUptime — a long-running device can report a value well past
+	// math.MaxUint32 (e.g. 5323663560 centiseconds ~= 616 days uptime).
+	c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/auth/login"):
+			writeJSON(w, `{"accessToken":"tok-1"}`)
+		case strings.HasSuffix(r.URL.Path, "sys-up-time"):
+			writeJSON(w, `{"nokia-ietf-system-aug:sys-up-time":"5323663560"}`)
+		case strings.HasSuffix(r.URL.Path, "boot-datetime"):
+			writeJSON(w, `{"ietf-system:boot-datetime":"2026-06-26T01:08:53+07:00"}`)
+		}
+	})
+
+	sysUp, _, err := c.GetUptime(context.Background(), "RET13002G00")
+	if err != nil {
+		t.Fatalf("GetUptime: %v", err)
+	}
+	if sysUp != 5323663560 {
+		t.Errorf("sysUpTime = %d, want 5323663560", sysUp)
+	}
+}
+
 func TestGetUptime_ReusesTokenAcrossCalls(t *testing.T) {
 	c, loginCount := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
 		switch {
