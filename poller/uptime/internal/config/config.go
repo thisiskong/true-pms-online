@@ -16,13 +16,15 @@ type Config struct {
 	LevelDBPath     string        `mapstructure:"leveldb_path"`
 	DeviceCacheFile string        `mapstructure:"device_cache_file"`
 
-	PollLogDir       string `mapstructure:"poll_log_dir"`
-	RebootLogDir     string `mapstructure:"reboot_log_dir"`
-	LogRetentionDays int    `mapstructure:"log_retention_days"`
-	LogLevel         string `mapstructure:"log_level"`
-	LogFormat        string `mapstructure:"log_format"`
-	LogOutput        string `mapstructure:"log_output"`
-	LogRotate        bool   `mapstructure:"log_rotate"`
+	PollLogDir          string `mapstructure:"poll_log_dir"`
+	PollRetentionDays   int    `mapstructure:"poll_retention_days"`
+	RebootLogDir        string `mapstructure:"reboot_log_dir"`
+	RebootRetentionDays int    `mapstructure:"reboot_retention_days"`
+	LogRetentionDays    int    `mapstructure:"log_retention_days"`
+	LogLevel            string `mapstructure:"log_level"`
+	LogFormat           string `mapstructure:"log_format"`
+	LogOutput           string `mapstructure:"log_output"`
+	LogRotate           bool   `mapstructure:"log_rotate"`
 
 	PostgresDSN     string        `mapstructure:"postgres_dsn"`
 	PostgresTimeout time.Duration `mapstructure:"postgres_timeout"`
@@ -51,6 +53,19 @@ type Config struct {
 	PingTimeout     time.Duration `mapstructure:"ping_timeout"`
 	PingCount       int           `mapstructure:"ping_count"`
 	PingConcurrency int           `mapstructure:"ping_concurrency"`
+
+	NokiaAltiplano NokiaAltiplanoConfig `mapstructure:"nokia_altiplano"`
+}
+
+// NokiaAltiplanoConfig holds connection settings for polling Nokia Altiplano
+// devices over its REST API instead of SNMP.
+type NokiaAltiplanoConfig struct {
+	BaseURL     string        `mapstructure:"baseurl"`
+	Username    string        `mapstructure:"username"`
+	Password    string        `mapstructure:"password"`
+	Timeout     time.Duration `mapstructure:"timeout"`
+	Retries     int           `mapstructure:"retries"`
+	Concurrency int           `mapstructure:"concurrency"`
 }
 
 func Load(cfgFile string) (*Config, error) {
@@ -63,14 +78,16 @@ func Load(cfgFile string) (*Config, error) {
 	v.SetDefault("leveldb_path", "./data/state.db")
 	v.SetDefault("device_cache_file", "./data/devices.json")
 	v.SetDefault("poll_log_dir", "./logs")
+	v.SetDefault("poll_retention_days", 30)
 	v.SetDefault("reboot_log_dir", "./logs")
+	v.SetDefault("reboot_retention_days", 30)
 	v.SetDefault("log_retention_days", 30)
 	v.SetDefault("log_level", "info")
 	v.SetDefault("log_format", "json")
 	v.SetDefault("log_output", "stderr")
 	v.SetDefault("log_rotate", false)
 	v.SetDefault("postgres_timeout", "10s")
-	v.SetDefault("device_query", `SELECT ip, name, COALESCE(port,161)::int, COALESCE(snmp_version,2)::int, COALESCE(community,''), COALESCE(security_name,''), COALESCE(security_level,''), COALESCE(auth_protocol,''), COALESCE(auth_key,''), COALESCE(priv_protocol,''), COALESCE(priv_key,'') FROM device`)
+	v.SetDefault("device_query", `SELECT ip, name, 'snmp' AS engine, COALESCE(port,161)::int, COALESCE(snmp_version,2)::int, COALESCE(community,''), COALESCE(security_name,''), COALESCE(security_level,''), COALESCE(auth_protocol,''), COALESCE(auth_key,''), COALESCE(priv_protocol,''), COALESCE(priv_key,'') FROM device`)
 	v.SetDefault("reboot_pg_timeout", "3s")
 	v.SetDefault("pg_retry_queue_file", "./data/pg_retry.queue")
 	v.SetDefault("uptime_pg_table", "device_uptime")
@@ -87,6 +104,9 @@ func Load(cfgFile string) (*Config, error) {
 	v.SetDefault("ping_timeout", "1s")
 	v.SetDefault("ping_count", 2)
 	v.SetDefault("ping_concurrency", 100)
+	v.SetDefault("nokia_altiplano.timeout", "10s")
+	v.SetDefault("nokia_altiplano.retries", 1)
+	v.SetDefault("nokia_altiplano.concurrency", 20)
 
 	v.SetEnvPrefix("POLLER")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))

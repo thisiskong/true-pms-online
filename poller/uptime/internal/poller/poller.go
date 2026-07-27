@@ -7,7 +7,6 @@ import (
 
 	"github.com/thisiskong/true-pms-online/internal/device"
 	"github.com/thisiskong/true-pms-online/internal/event"
-	"github.com/thisiskong/true-pms-online/internal/snmp"
 	"github.com/thisiskong/true-pms-online/internal/state"
 )
 
@@ -27,7 +26,7 @@ func RunPollCycle(
 	ctx context.Context,
 	devices []device.Device,
 	store state.StateStore,
-	client snmp.SNMPClient,
+	clients Clients,
 	emitter event.EventEmitter,
 	pollLog event.PollLogger,
 	upsert UpsertFunc,
@@ -48,7 +47,7 @@ func RunPollCycle(
 		jobs = append(jobs, PollJob{Device: dev, State: st})
 	}
 
-	results := runWorkers(ctx, jobs, workerCfg, client, detectCfg, log)
+	results := runWorkers(ctx, jobs, workerCfg, clients, detectCfg, log)
 
 	var stats CycleStats
 	stats.Total = len(results)
@@ -137,7 +136,10 @@ func buildUptimeRow(r PollResult, log *slog.Logger) event.UptimeRow {
 		Name:     r.Device.Name,
 		PolledAt: r.Record.Timestamp.Time,
 	}
-	if r.NewState.UseEngineOIDs {
+	if r.Device.Engine == EngineNokiaAltiplano {
+		row.PollMethod = "nokia_altiplano"
+		row.Uptime = uptimeDuration(time.Duration(r.NewState.LastSysUptime)*10*time.Millisecond, maxSysUptimeDuration)
+	} else if r.NewState.UseEngineOIDs {
 		row.PollMethod = "engine_oids"
 		boots := int64(r.NewState.LastEngineBoots)
 		engTime := int64(r.NewState.LastEngineTime)

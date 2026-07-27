@@ -9,7 +9,7 @@ import (
 )
 
 // RotatingWriter is a thread-safe io.WriteCloser that writes to
-// <dir>/poll-uptime.log, rotating at UTC midnight to <dir>/poll-uptime.YYYY-MM-DD.log.
+// <dir>/uptime.log, rotating at UTC midnight to <dir>/uptime.YYYY-MM-DD.log.
 type RotatingWriter struct {
 	mu       sync.Mutex
 	dir      string
@@ -47,14 +47,14 @@ func (w *RotatingWriter) rotateIfNeeded(t time.Time) error {
 	if w.file != nil && w.openDate == today {
 		return nil
 	}
-	active := filepath.Join(w.dir, "poll-uptime.log")
+	active := filepath.Join(w.dir, "uptime.log")
 	if w.file != nil {
 		_ = w.file.Close()
-		_ = os.Rename(active, filepath.Join(w.dir, "poll-uptime."+w.openDate+".log"))
+		_ = os.Rename(active, filepath.Join(w.dir, "uptime."+w.openDate+".log"))
 	} else if info, err := os.Stat(active); err == nil {
 		modDate := info.ModTime().UTC().Format("2006-01-02")
 		if modDate != today {
-			_ = os.Rename(active, filepath.Join(w.dir, "poll-uptime."+modDate+".log"))
+			_ = os.Rename(active, filepath.Join(w.dir, "uptime."+modDate+".log"))
 		}
 	}
 	f, err := os.OpenFile(active, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)

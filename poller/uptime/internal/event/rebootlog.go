@@ -81,14 +81,14 @@ func (e *RebootLogEmitter) rotateIfNeeded(t time.Time) error {
 	if e.file != nil && e.openDate == today {
 		return nil
 	}
-	active := filepath.Join(e.dir, "reboot.log")
+	active := filepath.Join(e.dir, "reboot.jsonl")
 	if e.file != nil {
 		_ = e.file.Close()
-		_ = os.Rename(active, filepath.Join(e.dir, "reboot."+e.openDate+".log"))
+		_ = os.Rename(active, filepath.Join(e.dir, "reboot."+e.openDate+".jsonl"))
 	} else if info, err := os.Stat(active); err == nil {
 		modDate := info.ModTime().UTC().Format("2006-01-02")
 		if modDate != today {
-			_ = os.Rename(active, filepath.Join(e.dir, "reboot."+modDate+".log"))
+			_ = os.Rename(active, filepath.Join(e.dir, "reboot."+modDate+".jsonl"))
 		}
 	}
 	f, err := os.OpenFile(active, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)

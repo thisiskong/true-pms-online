@@ -61,14 +61,14 @@ func (l *FilePollLogger) rotateIfNeeded(t time.Time) error {
 	if l.file != nil && l.openDate == today {
 		return nil
 	}
-	active := filepath.Join(l.dir, "uptime.log")
+	active := filepath.Join(l.dir, "uptime.jsonl")
 	if l.file != nil {
 		_ = l.file.Close()
-		_ = os.Rename(active, filepath.Join(l.dir, "uptime."+l.openDate+".log"))
+		_ = os.Rename(active, filepath.Join(l.dir, "uptime."+l.openDate+".jsonl"))
 	} else if info, err := os.Stat(active); err == nil {
 		modDate := info.ModTime().UTC().Format("2006-01-02")
 		if modDate != today {
-			_ = os.Rename(active, filepath.Join(l.dir, "uptime."+modDate+".log"))
+			_ = os.Rename(active, filepath.Join(l.dir, "uptime."+modDate+".jsonl"))
 		}
 	}
 	f, err := os.OpenFile(active, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
@@ -80,17 +80,18 @@ func (l *FilePollLogger) rotateIfNeeded(t time.Time) error {
 	return nil
 }
 
-// PruneOldLogs deletes poll, reboot, and app log files older than retentionDays.
-// retentionDays=0 means keep forever. appLogDir is only pruned when non-empty.
-func PruneOldLogs(pollDir, rebootDir, appLogDir string, retentionDays int, now time.Time) {
-	if retentionDays <= 0 {
-		return
+// PruneOldLogs deletes poll, reboot, and app log files older than their respective
+// retention windows. A retentionDays value of 0 means keep forever for that log.
+// appLogDir is only pruned when non-empty.
+func PruneOldLogs(pollDir, rebootDir, appLogDir string, pollRetentionDays, rebootRetentionDays, retentionDays int, now time.Time) {
+	if pollRetentionDays > 0 {
+		pruneDir(pollDir, "uptime.", now.UTC().AddDate(0, 0, -pollRetentionDays))
 	}
-	cutoff := now.UTC().AddDate(0, 0, -retentionDays)
-	pruneDir(pollDir, "uptime.", cutoff)
-	pruneDir(rebootDir, "reboot.", cutoff)
-	if appLogDir != "" {
-		pruneDir(appLogDir, "poll-uptime.", cutoff)
+	if rebootRetentionDays > 0 {
+		pruneDir(rebootDir, "reboot.", now.UTC().AddDate(0, 0, -rebootRetentionDays))
+	}
+	if retentionDays > 0 && appLogDir != "" {
+		pruneDir(appLogDir, "uptime.", now.UTC().AddDate(0, 0, -retentionDays))
 	}
 }
 

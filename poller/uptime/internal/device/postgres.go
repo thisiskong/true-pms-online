@@ -31,7 +31,7 @@ func (r *PostgresRepository) LoadFromDB(ctx context.Context) ([]Device, error) {
 		var port int
 		var version int
 		if err := rows.Scan(
-			&d.IP, &d.Name, &port, &version,
+			&d.IP, &d.Name, &d.Engine, &port, &version,
 			&d.Community, &d.SecurityName, &d.SecurityLevel,
 			&d.AuthProtocol, &d.AuthKey, &d.PrivProtocol, &d.PrivKey,
 		); err != nil {

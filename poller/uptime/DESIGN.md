@@ -158,9 +158,9 @@ type PollRecord struct {
 
 ## Output Files
 
-### Poll log — `<poll_log_dir>/uptime.log` (active) / `uptime.YYYY-MM-DD.log` (archived)
+### Poll log — `<poll_log_dir>/uptime.jsonl` (active) / `uptime.YYYY-MM-DD.jsonl` (archived)
 
-One NDJSON record per device per run. Active file has no date suffix; on UTC midnight rotation the file is renamed with the date. Deleted after `log_retention_days`.
+One NDJSON record per device per run. Active file has no date suffix; on UTC midnight rotation the file is renamed with the date. Deleted after `poll_retention_days`.
 
 ```json
 {"timestamp":"2026-05-27T10:00:01","ip":"10.0.0.1","name":"HW-SW-01","sys_uptime":3078000,"engine_boots":3,"engine_time":7200,"is_reboot":false,"last_ping_success_at":"2026-05-27T10:00:01","last_ping_rtt_ms":1.23}
@@ -170,16 +170,16 @@ One NDJSON record per device per run. Active file has no date suffix; on UTC mid
 
 `last_ping_success_at` and `last_ping_rtt_ms` are omitted when `enable_ping: false` or the device has never responded to ping.
 
-### Reboot event log — `<reboot_log_dir>/reboot.log` (active) / `reboot.YYYY-MM-DD.log` (archived)
+### Reboot event log — `<reboot_log_dir>/reboot.jsonl` (active) / `reboot.YYYY-MM-DD.jsonl` (archived)
 
-One NDJSON record per reboot event only. Active file has no date suffix; renamed with date on rotation. Deleted after `log_retention_days`.
+One NDJSON record per reboot event only. Active file has no date suffix; renamed with date on rotation. Deleted after `reboot_retention_days`.
 
 ```json
 {"timestamp":"2026-05-27T10:00:02","ip":"10.0.0.2","name":"ZTE-OLT-03","boot_time":"2026-05-27T09:58:47","is_suspected":false,"detection_method":"engine_boots","prev_value":5,"curr_value":6}
 {"timestamp":"2026-05-27T10:15:07","ip":"10.0.1.5","name":"HW-OLT-12","boot_time":"2026-05-27T10:10:00","is_suspected":true,"detection_method":"gap_inferred","prev_value":1234567,"curr_value":30000}
 ```
 
-### App log — `<log_output>/poll-uptime.log` (active) / `poll-uptime.YYYY-MM-DD.log` (archived) *(when `log_rotate: true`)*
+### App log — `<log_output>/uptime.log` (active) / `uptime.YYYY-MM-DD.log` (archived) *(when `log_rotate: true`)*
 
 Structured application log (slog JSON or text). Active file has no date suffix; renamed with date on rotation. Deleted after `log_retention_days`. When `log_output` is `stderr` or `stdout`, no file is written.
 
@@ -382,7 +382,9 @@ lock_file: "/var/run/pms-poller.lock"
 leveldb_path: "./data/state.db"
 device_cache_file: "./data/devices.json"
 poll_log_dir: "./logs"
+poll_retention_days: 30
 reboot_log_dir: "./logs"
+reboot_retention_days: 30
 log_retention_days: 30
 log_level: "info"
 log_format: "json"       # "json" or "text"

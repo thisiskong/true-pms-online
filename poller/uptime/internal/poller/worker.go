@@ -8,10 +8,22 @@ import (
 
 	"github.com/thisiskong/true-pms-online/internal/device"
 	"github.com/thisiskong/true-pms-online/internal/event"
+	"github.com/thisiskong/true-pms-online/internal/nokia"
 	"github.com/thisiskong/true-pms-online/internal/ping"
 	"github.com/thisiskong/true-pms-online/internal/snmp"
 	"github.com/thisiskong/true-pms-online/internal/state"
 )
+
+// EngineNokiaAltiplano identifies devices polled via the Nokia Altiplano
+// REST API instead of SNMP (see device.Device.Engine).
+const EngineNokiaAltiplano = "nokia-altiplano"
+
+// Clients bundles the transport clients available to the worker pool.
+// Nokia is nil when no nokia_altiplano controller is configured.
+type Clients struct {
+	SNMP  snmp.SNMPClient
+	Nokia *nokia.Client
+}
 
 // PollJob is a single device poll task.
 type PollJob struct {
@@ -35,7 +47,7 @@ func runWorkers(
 	ctx context.Context,
 	jobs []PollJob,
 	cfg WorkerConfig,
-	client snmp.SNMPClient,
+	clients Clients,
 	detectCfg DetectConfig,
 	log *slog.Logger,
 ) []PollResult {
@@ -48,7 +60,7 @@ func runWorkers(
 		go func() {
 			defer wg.Done()
 			for job := range jobCh {
-				resultCh <- processJob(ctx, job, cfg.SNMPTimeout, cfg.Pinger, client, detectCfg, log)
+				resultCh <- processJob(ctx, job, cfg.SNMPTimeout, cfg.Pinger, clients, detectCfg, log)
 			}
 		}()
 	}
@@ -82,7 +94,7 @@ func processJob(
 	job PollJob,
 	timeout time.Duration,
 	pinger ping.Pinger,
-	client snmp.SNMPClient,
+	clients Clients,
 	cfg DetectConfig,
 	log *slog.Logger,
 ) PollResult {
@@ -109,22 +121,32 @@ func processJob(
 		}
 	}
 
-	gc, ok := client.(*snmp.GoSNMPClient)
-	if !ok {
-		r := errRecord(dev, now, "internal: client not GoSNMPClient")
-		attachPing(&r, pingEnabled, lastPingSuccessAt, lastPingRTTMs)
-		return PollResult{Device: dev, NewState: prev, Record: r,
-			PingAttempted: pingEnabled, PingSucceeded: pingSucceeded}
-	}
-
-	// Determine which OIDs to fetch
 	var result PollResult
-	if !prev.EngineProbed || (!prev.EngineProbed && prev.ReprobeAt.Before(now)) {
-		result = handleProbe(devCtx, gc, dev, prev, now, cfg, log)
-	} else if prev.UseEngineOIDs {
-		result = handlePathA(devCtx, gc, dev, prev, now, cfg, log)
+	if dev.Engine == EngineNokiaAltiplano {
+		if clients.Nokia == nil {
+			r := errRecord(dev, now, "internal: nokia_altiplano not configured")
+			attachPing(&r, pingEnabled, lastPingSuccessAt, lastPingRTTMs)
+			return PollResult{Device: dev, NewState: prev, Record: r,
+				PingAttempted: pingEnabled, PingSucceeded: pingSucceeded}
+		}
+		result = processNokiaJob(devCtx, clients.Nokia, dev, prev, now, cfg, log)
 	} else {
-		result = handlePathB(devCtx, gc, dev, prev, now, cfg, log)
+		gc, ok := clients.SNMP.(*snmp.GoSNMPClient)
+		if !ok {
+			r := errRecord(dev, now, "internal: client not GoSNMPClient")
+			attachPing(&r, pingEnabled, lastPingSuccessAt, lastPingRTTMs)
+			return PollResult{Device: dev, NewState: prev, Record: r,
+				PingAttempted: pingEnabled, PingSucceeded: pingSucceeded}
+		}
+
+		// Determine which OIDs to fetch
+		if !prev.EngineProbed || (!prev.EngineProbed && prev.ReprobeAt.Before(now)) {
+			result = handleProbe(devCtx, gc, dev, prev, now, cfg, log)
+		} else if prev.UseEngineOIDs {
+			result = handlePathA(devCtx, gc, dev, prev, now, cfg, log)
+		} else {
+			result = handlePathB(devCtx, gc, dev, prev, now, cfg, log)
+		}
 	}
 	result.NewState.LastPingSuccessAt = lastPingSuccessAt
 	result.NewState.LastPingRTTMs = lastPingRTTMs
@@ -287,6 +309,65 @@ func handlePathB(
 	sysUptime := values[snmp.OIDSysUptime]
 	result, next := DetectRebootUptime(prev, sysUptime, now, cfg)
 	next.ConsecutiveFailures = 0
+
+	rec := event.PollRecord{
+		Timestamp:       event.NewLocalTime(now),
+		IP:              dev.IP,
+		Name:            dev.Name,
+		SysUptime:       &sysUptime,
+		IsReboot:        result.IsReboot,
+		IsSuspected:     result.IsSuspected,
+		DetectionMethod: result.DetectionMethod,
+	}
+	if result.IsReboot && !result.EstimatedBoot.IsZero() {
+		t := event.NewLocalTime(result.EstimatedBoot)
+		rec.BootTime = &t
+	}
+
+	var rev *event.RebootEvent
+	if result.IsReboot {
+		ev := event.RebootEvent{
+			DeviceIP:        dev.IP,
+			DeviceName:      dev.Name,
+			EstimatedBoot:   result.EstimatedBoot,
+			DetectedAt:      now,
+			PrevValue:       result.PrevValue,
+			CurrValue:       result.CurrValue,
+			IsSuspected:     result.IsSuspected,
+			DetectionMethod: result.DetectionMethod,
+		}
+		rev = &ev
+	}
+	return PollResult{Device: dev, NewState: next, Record: rec, RebootEvent: rev}
+}
+
+// processNokiaJob polls a Nokia Altiplano-managed device over REST instead
+// of SNMP. It reuses DetectRebootUptime unchanged — Nokia's sys-up-time
+// counter is centiseconds, unit-compatible with SNMP's sysUptime — then
+// substitutes the device's authoritative boot-datetime for the estimate
+// when a reboot is detected.
+func processNokiaJob(
+	ctx context.Context,
+	client *nokia.Client,
+	dev device.Device,
+	prev state.DeviceState,
+	now time.Time,
+	cfg DetectConfig,
+	log *slog.Logger,
+) PollResult {
+	sysUptime, bootTime, err := client.GetUptime(ctx, dev.Name)
+	if err != nil {
+		next := prev
+		next.ConsecutiveFailures++
+		return PollResult{Device: dev, NewState: next, Record: errRecord(dev, now, err.Error()), Err: err}
+	}
+
+	result, next := DetectRebootUptime(prev, sysUptime, now, cfg)
+	next.ConsecutiveFailures = 0
+	if result.IsReboot && !bootTime.IsZero() {
+		result.EstimatedBoot = bootTime
+		next.LastBootTime = bootTime
+	}
 
 	rec := event.PollRecord{
 		Timestamp:       event.NewLocalTime(now),

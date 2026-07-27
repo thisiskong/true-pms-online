@@ -11,29 +11,44 @@ ping_timeout:     1s
 ping_count:       2     # echo requests per device; success = at least 1 reply; rtt = avg of received
 ping_concurrency: 100   # max simultaneous in-flight pings
 
-poll_log_dir: "./logs"
-reboot_log_dir: "./logs"
+poll_log_dir: "./data/uptime"   # uptime.jsonl log directory
+poll_retention_days: 7          # uptime.jsonl retention in days
+
+reboot_log_dir: "./data/uptime" # reboot log directory
+reboot_retention_days: 7        # reboot.jsonl retention in days
+
 log_retention_days: 7
 log_level: "info"
 log_format: "json"       # "json" or "text"
-log_output: "stderr"     # "stderr", "stdout", or a directory path (e.g. "./logs")
-log_rotate: false        # active: <log_output>/poll-uptime.log, archived: poll-uptime.YYYY-MM-DD.log
+log_output: "./logs"     # "stderr", "stdout", or a directory path (e.g. "./logs")
+log_rotate: false        # active: <log_output>/uptime.log, archived: uptime.YYYY-MM-DD.log
 
 # Set via POLLER_POSTGRES_DSN env var or here
 postgres_dsn: "postgresql://pmsonline:pmsonline@tyb-pms-etl-dv01.pms:5432/pmsonline?sslmode=disable&connect_timeout=10"
 postgres_timeout: 10s
 device_query: |
-  SELECT ip, name,
-         COALESCE(port, 161)::int,
-         COALESCE(snmp_version, 2)::int,
-         COALESCE(community, ''),
-         COALESCE(security_name, ''),
-         COALESCE(security_level, ''),
-         COALESCE(auth_protocol, ''),
-         COALESCE(auth_key, ''),
-         COALESCE(priv_protocol, ''),
-         COALESCE(priv_key, '')
-  FROM device
+  WITH dv AS (
+    SELECT device.*,
+          COALESCE(community, '') snmp_community,
+          case
+              when community is not null and community != '' then 'snmp'
+              when vendor = 'Nokia' and model like 'LS-%' then 'nokia-altiplano'
+          end as engine
+    FROM device
+    WHERE network = 'FTTx'
+  )
+  SELECT ip, name, engine,
+         COALESCE(port, 161)::int snmp_port,
+         COALESCE(snmp_version, 2)::int snmp_version,
+         COALESCE(community, '') snmp_community,
+         COALESCE(security_name, '') security_name,
+         COALESCE(security_level, '') security_level,
+         COALESCE(auth_protocol, '') auth_protocol,
+         COALESCE(auth_key, '') auth_key,
+         COALESCE(priv_protocol, '') priv_protocol,
+         COALESCE(priv_key, '') priv_key
+  FROM dv
+  WHERE engine IS NOT NULL
 
 reboot_pg_table: "device_reboot_event"
 reboot_pg_timeout: 3s
@@ -53,3 +68,12 @@ default_port: 161
 
 pushgateway_url: ""
 pushgateway_job: "pms_poller"
+
+# nokia-altiplano
+nokia_altiplano:
+  baseurl: "https://10.50.238.203"
+  username: "adminuser"
+  password: "password"
+  timeout: 10s
+  retries: 1
+  concurrency: 5  # max simultaneous requests to the shared Altiplano controller

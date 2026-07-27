@@ -17,6 +17,7 @@ import (
 	"github.com/thisiskong/true-pms-online/internal/device"
 	"github.com/thisiskong/true-pms-online/internal/event"
 	"github.com/thisiskong/true-pms-online/internal/metrics"
+	"github.com/thisiskong/true-pms-online/internal/nokia"
 	"github.com/thisiskong/true-pms-online/internal/ping"
 	"github.com/thisiskong/true-pms-online/internal/poller"
 	"github.com/thisiskong/true-pms-online/internal/snmp"
@@ -76,7 +77,7 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 	if cfg.LogRotate {
 		appLogDir = cfg.LogOutput
 	}
-	event.PruneOldLogs(cfg.PollLogDir, cfg.RebootLogDir, appLogDir, cfg.LogRetentionDays, time.Now())
+	event.PruneOldLogs(cfg.PollLogDir, cfg.RebootLogDir, appLogDir, cfg.PollRetentionDays, cfg.RebootRetentionDays, cfg.LogRetentionDays, time.Now())
 
 	// Open LevelDB
 	store, err := state.NewLevelDBStore(cfg.LevelDBPath)
@@ -162,6 +163,20 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 	// SNMP client
 	snmpClient := snmp.NewGoSNMPClient(cfg.SNMPTimeout, cfg.SNMPRetries)
 
+	// Nokia Altiplano REST client (optional)
+	var nokiaClient *nokia.Client
+	if cfg.NokiaAltiplano.BaseURL != "" {
+		nokiaClient = nokia.NewClient(nokia.Config{
+			BaseURL:     cfg.NokiaAltiplano.BaseURL,
+			Username:    cfg.NokiaAltiplano.Username,
+			Password:    cfg.NokiaAltiplano.Password,
+			Timeout:     cfg.NokiaAltiplano.Timeout,
+			Retries:     cfg.NokiaAltiplano.Retries,
+			Concurrency: cfg.NokiaAltiplano.Concurrency,
+		})
+	}
+	clients := poller.Clients{SNMP: snmpClient, Nokia: nokiaClient}
+
 	// Optional ICMP pinger
 	var pinger ping.Pinger
 	if cfg.EnablePing {
@@ -188,7 +203,7 @@ func run(ctx context.Context, cfg *config.Config, log *slog.Logger) error {
 
 	cycleStart := time.Now()
 	stats := poller.RunPollCycle(
-		ctx, devices, store, snmpClient, emitter, pollLog, upsertFn,
+		ctx, devices, store, clients, emitter, pollLog, upsertFn,
 		workerCfg, detectCfg, cfg.MaxConsecutiveFailures, log,
 	)
 

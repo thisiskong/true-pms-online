@@ -5,6 +5,7 @@ package device
 type Device struct {
 	IP            string
 	Name          string
+	Engine        string // "" or "snmp" = SNMP polling (default); "nokia-altiplano" = Nokia Altiplano REST polling
 	Port          uint16
 	SNMPVersion   int    // 2 (v2c) or 3 (v3)
 	Community     string // v2c only
