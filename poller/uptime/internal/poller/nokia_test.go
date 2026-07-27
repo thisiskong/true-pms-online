@@ -53,10 +53,10 @@ func TestProcessNokiaJob_FirstPollSeedsNoReboot(t *testing.T) {
 	if result.NewState.LastBootTime.IsZero() {
 		t.Fatal("expected LastBootTime to be seeded")
 	}
-	// sysUptime (5323663560) exceeds math.MaxUint32, so the PollRecord field
-	// (typed *uint32 for SNMP compatibility) is expected to be omitted.
-	if result.Record.SysUptime != nil {
-		t.Errorf("expected SysUptime to be omitted for values beyond uint32, got %d", *result.Record.SysUptime)
+	// sysUptime (5323663560) exceeds math.MaxUint32, but PollRecord.SysUptime
+	// is *uint64 precisely so Nokia's non-wrapping counter isn't lost.
+	if result.Record.SysUptime == nil || *result.Record.SysUptime != 5323663560 {
+		t.Errorf("expected SysUptime = 5323663560, got %v", result.Record.SysUptime)
 	}
 }
 

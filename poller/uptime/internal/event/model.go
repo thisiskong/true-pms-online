@@ -29,7 +29,7 @@ type PollRecord struct {
 	Timestamp       LocalTime       `json:"timestamp"`
 	IP              string          `json:"ip"`
 	Name            string          `json:"name"`
-	SysUptime       *uint32         `json:"sys_uptime,omitempty"`
+	SysUptime       *uint64         `json:"sys_uptime,omitempty"` // uint64: SNMP values always fit uint32, but Nokia's counter is not bounded to 32 bits
 	EngineBoots     *uint32         `json:"engine_boots,omitempty"`
 	EngineTime      *uint32         `json:"engine_time,omitempty"`
 	Error           string          `json:"error,omitempty"`

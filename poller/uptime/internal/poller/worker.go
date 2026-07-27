@@ -3,7 +3,6 @@ package poller
 import (
 	"context"
 	"log/slog"
-	"math"
 	"sync"
 	"time"
 
@@ -14,6 +13,13 @@ import (
 	"github.com/thisiskong/true-pms-online/internal/snmp"
 	"github.com/thisiskong/true-pms-online/internal/state"
 )
+
+// su64 returns a *uint64 pointer to v, for populating PollRecord.SysUptime
+// (widened beyond uint32 to also fit Nokia's non-wrapping counter).
+func su64(v uint32) *uint64 {
+	w := uint64(v)
+	return &w
+}
 
 // EngineNokiaAltiplano identifies devices polled via the Nokia Altiplano
 // REST API instead of SNMP (see device.Device.Engine).
@@ -195,12 +201,11 @@ func handleProbe(
 		next.ConsecutiveFailures = 0
 		boots32 := boots
 		engTime32 := engTime
-		sysUptime32 := values[snmp.OIDSysUptime]
 		rec := event.PollRecord{
 			Timestamp:   event.NewLocalTime(now),
 			IP:          dev.IP,
 			Name:        dev.Name,
-			SysUptime:   &sysUptime32,
+			SysUptime:   su64(values[snmp.OIDSysUptime]),
 			EngineBoots: &boots32,
 			EngineTime:  &engTime32,
 		}
@@ -215,7 +220,7 @@ func handleProbe(
 		Timestamp: event.NewLocalTime(now),
 		IP:        dev.IP,
 		Name:      dev.Name,
-		SysUptime: &sysUptime,
+		SysUptime: su64(sysUptime),
 	}
 	return PollResult{Device: dev, NewState: next, Record: rec}
 }
@@ -245,7 +250,7 @@ func handlePathA(
 		next.LastSysUptime = sysUptime
 		next.LastWallClock = now
 		next.ConsecutiveFailures = 0
-		rec := event.PollRecord{Timestamp: event.NewLocalTime(now), IP: dev.IP, Name: dev.Name, SysUptime: &sysUptime}
+		rec := event.PollRecord{Timestamp: event.NewLocalTime(now), IP: dev.IP, Name: dev.Name, SysUptime: su64(sysUptime)}
 		return PollResult{Device: dev, NewState: next, Record: rec}
 	}
 
@@ -263,7 +268,7 @@ func handlePathA(
 		Timestamp:       event.NewLocalTime(now),
 		IP:              dev.IP,
 		Name:            dev.Name,
-		SysUptime:       &sysUptime,
+		SysUptime:       su64(sysUptime),
 		EngineBoots:     &boots32,
 		EngineTime:      &engTime32,
 		IsReboot:        result.IsReboot,
@@ -315,7 +320,7 @@ func handlePathB(
 		Timestamp:       event.NewLocalTime(now),
 		IP:              dev.IP,
 		Name:            dev.Name,
-		SysUptime:       &sysUptime,
+		SysUptime:       su64(sysUptime),
 		IsReboot:        result.IsReboot,
 		IsSuspected:     result.IsSuspected,
 		DetectionMethod: result.DetectionMethod,
@@ -385,12 +390,9 @@ func processNokiaJob(
 		Timestamp:       event.NewLocalTime(now),
 		IP:              dev.IP,
 		Name:            dev.Name,
+		SysUptime:       &sysUptime,
 		IsReboot:        result.IsReboot,
 		DetectionMethod: result.DetectionMethod,
-	}
-	if sysUptime <= math.MaxUint32 {
-		v := uint32(sysUptime)
-		rec.SysUptime = &v
 	}
 	if result.IsReboot {
 		t := event.NewLocalTime(result.EstimatedBoot)
