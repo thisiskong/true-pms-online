@@ -382,6 +382,8 @@ func processNokiaJob(
 			IsReboot:        true,
 			DetectionMethod: event.MethodBootDatetime,
 			EstimatedBoot:   bootTime,
+			// PrevValue/CurrValue intentionally left nil: boot_datetime
+			// detection has no SNMP counter pair to report.
 		}
 		next.LastBootTime = bootTime
 	}

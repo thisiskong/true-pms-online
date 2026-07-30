@@ -111,6 +111,13 @@ func printOID(label, oid string, values map[string]uint32, absent map[string]boo
 	}
 }
 
+func fmtU32(v *uint32) string {
+	if v == nil {
+		return "n/a"
+	}
+	return fmt.Sprintf("%d", *v)
+}
+
 func printResult(r poller.RebootResult) {
 	if r.IsReboot {
 		suspected := ""
@@ -118,7 +125,7 @@ func printResult(r poller.RebootResult) {
 			suspected = "  [SUSPECTED — gap inferred]"
 		}
 		fmt.Printf("Decision    : REBOOT detected  method=%s%s\n", r.DetectionMethod, suspected)
-		fmt.Printf("prev=%d  curr=%d\n", r.PrevValue, r.CurrValue)
+		fmt.Printf("prev=%s  curr=%s\n", fmtU32(r.PrevValue), fmtU32(r.CurrValue))
 		if !r.EstimatedBoot.IsZero() {
 			fmt.Printf("estimatedBoot: %s\n", r.EstimatedBoot.Format("2006-01-02T15:04:05"))
 		}

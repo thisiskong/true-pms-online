@@ -13,8 +13,15 @@ type RebootResult struct {
 	IsSuspected     bool
 	DetectionMethod event.DetectionMethod
 	EstimatedBoot   time.Time
-	PrevValue       uint32
-	CurrValue       uint32
+	PrevValue       *uint32 // nil when detection method has no counter pair (e.g. boot_datetime)
+	CurrValue       *uint32
+}
+
+// pu32 returns a *uint32 pointer to v, for populating RebootResult.PrevValue/
+// CurrValue on detection paths that have an actual counter reading.
+func pu32(v uint32) *uint32 {
+	w := v
+	return &w
 }
 
 // DetectConfig holds thresholds used by the detection functions.
@@ -61,8 +68,8 @@ func DetectRebootEngine(prev state.DeviceState, boots, engineTime uint32, now ti
 		IsSuspected:     false,
 		DetectionMethod: event.MethodEngineBoots,
 		EstimatedBoot:   estimatedBoot,
-		PrevValue:       prev.LastEngineBoots,
-		CurrValue:       boots,
+		PrevValue:       pu32(prev.LastEngineBoots),
+		CurrValue:       pu32(boots),
 	}, next
 }
 
@@ -120,8 +127,8 @@ func DetectRebootUptime(prev state.DeviceState, current uint32, now time.Time, c
 			IsSuspected:     false,
 			DetectionMethod: event.MethodSysUptime,
 			EstimatedBoot:   estimatedBoot,
-			PrevValue:       prev.LastSysUptime,
-			CurrValue:       current,
+			PrevValue:       pu32(prev.LastSysUptime),
+			CurrValue:       pu32(current),
 		}, next
 	}
 
@@ -136,8 +143,8 @@ func DetectRebootUptime(prev state.DeviceState, current uint32, now time.Time, c
 			IsSuspected:     true,
 			DetectionMethod: event.MethodGapInferred,
 			EstimatedBoot:   estimatedBoot,
-			PrevValue:       prev.LastSysUptime,
-			CurrValue:       current,
+			PrevValue:       pu32(prev.LastSysUptime),
+			CurrValue:       pu32(current),
 		}, next
 	}
 

@@ -41,6 +41,16 @@ func (e *PostgresEmitter) Emit(ctx context.Context, ev RebootEvent) error {
 	return nil
 }
 
+// i64ptr widens v to *int64 for SQL binding, preserving nil so pgx sends NULL
+// instead of a misleading 0 for detection methods with no counter pair.
+func i64ptr(v *uint32) *int64 {
+	if v == nil {
+		return nil
+	}
+	w := int64(*v)
+	return &w
+}
+
 func (e *PostgresEmitter) insert(ctx context.Context, ev RebootEvent) error {
 	ctx, cancel := context.WithTimeout(ctx, e.timeout)
 	defer cancel()
@@ -59,8 +69,8 @@ func (e *PostgresEmitter) insert(ctx context.Context, ev RebootEvent) error {
 		bootTime,
 		ev.IsSuspected,
 		string(ev.DetectionMethod),
-		int64(ev.PrevValue),
-		int64(ev.CurrValue),
+		i64ptr(ev.PrevValue),
+		i64ptr(ev.CurrValue),
 	)
 	return err
 }

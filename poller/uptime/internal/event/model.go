@@ -18,8 +18,8 @@ type RebootEvent struct {
 	DeviceName      string
 	EstimatedBoot   time.Time
 	DetectedAt      time.Time
-	PrevValue       uint32          // snmpEngineBoots or sysUptime depending on DetectionMethod
-	CurrValue       uint32
+	PrevValue       *uint32         // snmpEngineBoots or sysUptime depending on DetectionMethod; nil for boot_datetime (no counter pair)
+	CurrValue       *uint32
 	IsSuspected     bool            // true only when DetectionMethod == MethodGapInferred
 	DetectionMethod DetectionMethod
 }

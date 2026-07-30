@@ -17,8 +17,8 @@ type rebootLogEntry struct {
 	BootTime        *LocalTime      `json:"boot_time,omitempty"`
 	IsSuspected     bool            `json:"is_suspected"`
 	DetectionMethod DetectionMethod `json:"detection_method"`
-	PrevValue       uint32          `json:"prev_value"`
-	CurrValue       uint32          `json:"curr_value"`
+	PrevValue       *uint32         `json:"prev_value,omitempty"`
+	CurrValue       *uint32         `json:"curr_value,omitempty"`
 }
 
 // RebootLogEmitter appends reboot events to a daily-rotated NDJSON file.

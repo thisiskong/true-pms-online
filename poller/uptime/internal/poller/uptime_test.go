@@ -43,7 +43,8 @@ func TestDetectRebootEngine_SingleReboot(t *testing.T) {
 	if result.DetectionMethod != event.MethodEngineBoots {
 		t.Fatalf("expected engine_boots, got %s", result.DetectionMethod)
 	}
-	if result.PrevValue != 5 || result.CurrValue != 6 {
+	if result.PrevValue == nil || result.CurrValue == nil ||
+		*result.PrevValue != 5 || *result.CurrValue != 6 {
 		t.Fatal("wrong prev/curr values")
 	}
 }
