@@ -44,6 +44,7 @@ def build_device(devices: list[dict], slots: dict[str, dict]) -> list[dict]:
       "swversion":        slot.get("swversion") or dev.get("swversion"),
       "transport_protocol": slot.get("transport_protocol"),
       "lt_slots":         slot.get("lt_slot_names", []),
+      "boards":           slot.get("boards", []),
       "agent":            "nokia-altiplano",
       "required-network-state": dev.get("required-network-state"),
       "last_modify_by":   "nokia-altiplano",
@@ -157,6 +158,8 @@ def build_intf(devices: list[dict], uplink_sfp: dict[str, list[dict]]) -> list[d
         "ifphyaddr":        None,
         "ifalias":          None,
         "ifconn":           None,
+        "lldp_sysname":         sfp.get("lldp_sysname"),
+        "lldp_remote_port_id":  sfp.get("lldp_remote_port_id"),
       })
   return rows
 
@@ -210,6 +213,32 @@ def build_ponport(
         "ifindex":          fiber.get("pon_id"),
         "ifphyaddr":        None,
         "ifalias":          None,
+      })
+  return rows
+
+
+# ---------------------------------------------------------------------------
+# board  (per-device board list — AC config slots + RC-Proxy NT/control boards)
+# ---------------------------------------------------------------------------
+
+def build_board(devices: list[dict], slots: dict[str, dict]) -> list[dict]:
+  device_map = {d["name"]: d for d in devices}
+  rows = []
+  ts = _now()
+  for name, slot in slots.items():
+    dev = device_map.get(name, {})
+    for board in slot.get("boards", []):
+      rows.append({
+        "device_name":    name,
+        "device_ip":      dev.get("ip"),
+        "name":           board.get("name"),
+        "model-name":     board.get("model-name"),
+        "oper-status":    board.get("oper-status"),
+        "board-role":     board.get("board-role"),
+        "last_modify_by": "nokia-altiplano",
+        "last_modify_at": ts,
+        "lastseen":       ts,
+        "first":          ts,
       })
   return rows
 
@@ -275,14 +304,17 @@ def run(
   device_rows = build_device(devices, slots)
   intf_rows = build_intf(devices, uplink_sfp or {})
   ponport_rows = build_ponport(fibers_by_olt, pon_sfp, ont_counts, devices)
+  board_rows = build_board(devices, slots)
 
   _save_jsonl(output_dir / "device.jsonl", device_rows)
   _save_jsonl(output_dir / "intf.jsonl", intf_rows)
   _save_jsonl(output_dir / "ponport.jsonl", ponport_rows)
+  _save_jsonl(output_dir / "board.jsonl", board_rows)
 
   log.info("  device:  %d rows", len(device_rows))
   log.info("  intf:    %d rows", len(intf_rows))
   log.info("  ponport: %d rows", len(ponport_rows))
+  log.info("  board:   %d rows", len(board_rows))
 
   if ont_names_by_fiber is not None and ont_info is not None:
     ont_rows = build_ont(fibers_by_olt, ont_names_by_fiber, ont_info, devices)

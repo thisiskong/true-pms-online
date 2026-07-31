@@ -59,6 +59,8 @@ def main():
 
     log.info("Listing intents (AC) ...")
     intents = ac.list_intents(client, out)
+    # intents = ac.load_intents(out)
+
     log.info("  intents: %d", len(intents))
 
     devices, slots = ac_device.run(client, out, intents)
@@ -83,7 +85,7 @@ def main():
 
   log.info("")
   assemble.run(out, devices, slots, fibers, sfp, ont_counts, uplink, ont_names_by_fiber, ont_info)
-  mapper.run(out, slots)
+  mapper.run(out)
 
 
 if __name__ == "__main__":

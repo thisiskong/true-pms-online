@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 from .client import AltiplanoClient, save
 from . import ac
+from . import rc
 
 log = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ def normalize_uplinks(intent: dict, olt_name: str) -> list[dict]:
   return uplinks
 
 
-def normalize_sfp(sfp_raw: dict, olt_name: str, port_id: str, ul) -> dict:
+def normalize_sfp(sfp_raw: dict, olt_name: str, port_id: str, ul, lldp: Optional[dict] = None) -> dict:
   out = sfp_raw.get("sfp-status:output", {})
   inventory = (out.get("inventory") or [{}])[0]
   return {
@@ -84,12 +85,15 @@ def normalize_sfp(sfp_raw: dict, olt_name: str, port_id: str, ul) -> dict:
     "serial_number": (inventory.get("serial-number") or "").strip(),
     "manufacture_date": inventory.get("manufacture-date"),
     "wave_length": inventory.get("wave-length"),
+    "lldp_sysname": (lldp or {}).get("system-name"),
+    "lldp_remote_port_id": (lldp or {}).get("remote-port-id"),
   }
 
 
 def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[str, list[dict]]:
   all_uplinks_raw: dict = {}
   all_sfp_raw: dict = {}
+  all_lldp_raw: dict = {}
   result: dict[str, list[dict]] = {}
 
   for dev in devices:
@@ -100,6 +104,10 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
     uplinks = normalize_uplinks(ul_raw, olt)
     log.info("  uplink ports: %d", len(uplinks))
 
+    lldp_records, lldp_raw = rc.list_lldp(client, olt, [ul["port_no"] for ul in uplinks])
+    all_lldp_raw[olt] = lldp_raw
+    lldp_by_port = {r["port_no"]: r for r in lldp_records}
+
     sfp_list = []
     all_sfp_raw[olt] = {}
     for ul in uplinks:
@@ -109,7 +117,7 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
       try:
         sfp_raw = fetch_sfp(client, client.rel, olt_name, port_id)
         all_sfp_raw[olt][f"{olt_name}:{port_id}"] = sfp_raw
-        sfp_list.append(normalize_sfp(sfp_raw, olt_name, port_id, ul))
+        sfp_list.append(normalize_sfp(sfp_raw, olt_name, port_id, ul, lldp_by_port.get(ul["port_no"])))
       except Exception as e:
         log.warning("  [WARN] %s", e)
         all_sfp_raw[olt][f"{olt_name}:{port_id}"] = {"error": str(e)}
@@ -118,7 +126,7 @@ def run(client: AltiplanoClient, output_dir: Path, devices: list[dict]) -> dict[
     result[olt] = sfp_list
 
   save(output_dir, "07_uplink_sfp",
-       {"uplinks_ac": all_uplinks_raw, "sfp_calls": all_sfp_raw},
+       {"uplinks_ac": all_uplinks_raw, "sfp_calls": all_sfp_raw, "lldp_calls": all_lldp_raw},
        {"uplink_sfp_by_olt": result})
   return result
 
@@ -128,6 +136,7 @@ def run_normalize(output_dir: Path, devices: list[dict]) -> dict[str, list[dict]
   raw = json.loads((output_dir / "07_uplink_sfp_raw.json").read_text())
   all_uplinks_raw = raw["uplinks_ac"]
   all_sfp_raw = raw["sfp_calls"]
+  all_lldp_raw = raw.get("lldp_calls", {})
 
   result: dict[str, list[dict]] = {}
 
@@ -140,6 +149,7 @@ def run_normalize(output_dir: Path, devices: list[dict]) -> dict[str, list[dict]
       continue
 
     uplinks = normalize_uplinks(ul_raw, olt)
+    lldp_by_port = {r["port_no"]: r for r in rc.lldp_from_raw(all_lldp_raw.get(olt, {}))}
 
     sfp_list = []
     for ul in uplinks:
@@ -153,10 +163,10 @@ def run_normalize(output_dir: Path, devices: list[dict]) -> dict[str, list[dict]
       if isinstance(sfp_raw, dict) and "error" in sfp_raw:
         sfp_list.append({"olt_name": olt_name, "port_id": port_id, "error": sfp_raw["error"]})
       else:
-        sfp_list.append(normalize_sfp(sfp_raw, olt_name, port_id, ul))
+        sfp_list.append(normalize_sfp(sfp_raw, olt_name, port_id, ul, lldp_by_port.get(ul["port_no"])))
     result[olt] = sfp_list
 
   save(output_dir, "07_uplink_sfp",
-       {"uplinks_ac": all_uplinks_raw, "sfp_calls": all_sfp_raw},
+       {"uplinks_ac": all_uplinks_raw, "sfp_calls": all_sfp_raw, "lldp_calls": all_lldp_raw},
        {"uplink_sfp_by_olt": result})
   return result

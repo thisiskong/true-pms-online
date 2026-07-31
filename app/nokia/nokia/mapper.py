@@ -64,8 +64,8 @@ def _map_intf(row: dict) -> dict:
     "IfPhyAddr":     None,
     "IfConn":        _int_or(row.get("ifconn")),
     "Name":          None,
-    "DstName":       _str(row.get("dstname")),
-    "DstPort":       _str(row.get("dstport")),
+    "DstName":       _str(row.get("lldp_sysname")),
+    "DstPort":       _str(row.get("lldp_remote_port_id")),
     "DstSite":       _str(row.get("dstsite")),
     "DstType":       _str(row.get("dsttype")),
     "RemDstSite":    _str(row.get("remdstsite")),
@@ -139,14 +139,13 @@ def _map_ponport(row: dict) -> dict:
 # Board — from slot_inv normalized data
 # ---------------------------------------------------------------------------
 
-def _map_board(slot: dict) -> dict:
-  return {}
-  # return {
-  #   "slot-name":              _str(slot.get("slot-name")),
-  #   "planned-type":           _str(slot.get("planned-type")),
-  #   "board-service-profile":  _str(slot.get("board-service-profile")),
-  #   "admin-state":            _str(slot.get("admin-state")),
-  # }
+def _map_board(board: dict) -> dict:
+  return {
+    "BoardName":   _str(board.get("name")),
+    "BoardType":   _str(board.get("model-name")),
+    "BoardRole":   _str(board.get("board-role")),
+    "OperStatus":  _str(board.get("oper-status")),
+  }
 
 
 # ---------------------------------------------------------------------------
@@ -192,17 +191,18 @@ def _map_device(
 # Entry point
 # ---------------------------------------------------------------------------
 
-def run(output_dir: Path, slots: dict[str, dict]) -> list[dict]:
+def run(output_dir: Path) -> list[dict]:
   """
-  Read device.jsonl, intf.jsonl, ponport.jsonl from output_dir.
+  Read device.jsonl, intf.jsonl, ponport.jsonl, board.jsonl from output_dir.
   Assemble into Device structs with nested Interfaces and Boards.
   Save as devices.json and return the list.
   """
   device_rows  = _load_jsonl(output_dir / "device.jsonl")
   intf_rows    = _load_jsonl(output_dir / "intf.jsonl")
   ponport_rows = _load_jsonl(output_dir / "ponport.jsonl")
+  board_rows   = _load_jsonl(output_dir / "board.jsonl")
 
-  # Group interfaces and ponports by device_name
+  # Group interfaces, ponports, and boards by device_name
   intf_by_device: dict[str, list[dict]] = {}
   for row in intf_rows:
     intf_by_device.setdefault(row.get("device_name", ""), []).append(_map_intf(row))
@@ -211,11 +211,14 @@ def run(output_dir: Path, slots: dict[str, dict]) -> list[dict]:
   for row in ponport_rows:
     ponport_by_device.setdefault(row.get("device_name", ""), []).append(_map_ponport(row))
 
+  board_by_device: dict[str, list[dict]] = {}
+  for row in board_rows:
+    board_by_device.setdefault(row.get("device_name", ""), []).append(_map_board(row))
+
   devices = []
   for row in device_rows:
     name = row.get("name", "")
-    slot = slots.get(name, {})
-    boards = [_map_board(s) for s in slot.get("boards", [])]
+    boards = board_by_device.get(name, [])
     interfaces = intf_by_device.get(name, []) + ponport_by_device.get(name, [])
     devices.append(_map_device(row, interfaces, boards))
 
@@ -229,10 +232,7 @@ def run(output_dir: Path, slots: dict[str, dict]) -> list[dict]:
 if __name__ == "__main__":
   import argparse
   p = argparse.ArgumentParser(description="Map discovery JSONL output to Device struct format")
-  p.add_argument("--output-dir", default="output", help="Directory containing JSONL files and slot_inv JSON")
+  p.add_argument("--output-dir", default="output", help="Directory containing device/intf/ponport/board JSONL files")
   args = p.parse_args()
 
-  out = Path(args.output_dir)
-  slot_inv_path = out / "06_slot_inv_normalized.json"
-  slots = json.loads(slot_inv_path.read_text(encoding="utf-8")) if slot_inv_path.exists() else {}
-  run(out, slots)
+  run(Path(args.output_dir))

@@ -55,6 +55,7 @@ are blocked — Nokia RC-Proxy not deployed on testbed.
 | `nokia/ac_device.py` | AC-DEVICE — OLT list + per-device config/state/boards (replaces former ES-DEVICE + SLOT-INV) |
 | `nokia/ac_fiber.py` | AC-FIBER — fiber list per OLT + `fiber:fiber` config (replaces former ES-FIBER); returns raw config reused by PON-SFP |
 | `nokia/uplink_sfp.py` | UPLINK-SFP — uplink ports via AC intent + SFP diagnostics via AC POST action |
+| `nokia/rc.py` | RC-Proxy (`-av` service) — NT/control board `hardware-type` per OLT, merged into `ac_device`'s `boards` list |
 | `nokia/pon_sfp.py` | PON-SFP — PON SFP inventory from AC-FIBER's `fiber:fiber` config (no extra GET) |
 | `nokia/es_ont.py` | ES-ONT — ONT count per fiber (blocked, not wired in) |
 | `nokia/mapper.py` | Shared lookup tables (`XPON_TYPE_MAP`, etc.) and JSONL → struct mapping |
@@ -65,7 +66,7 @@ are blocked — Nokia RC-Proxy not deployed on testbed.
 
 - **AC** — Altiplano Controller (primary): `GET`/`POST` `/{rel}-ac/rest/restconf/data/ibn:ibn/...`. List all intents via `?fields=intent(target;intent-type)`; per-intent detail via the bare `intent={target},{type}` GET.
 - **ES** — Elasticsearch: `POST /altiplano-indexsearch/intents/_search/`. No longer used by discovery; retained for the blocked ES-ONT path and ad-hoc queries.
-- **RC** — RC-Proxy (blocked): `/{rel}-rcdeviceproxy/rest/restconf/...`
+- **RC** — RC-Proxy: reachable via the `-av` service (`/{rel}-av/rest/restconf/data/anv:device-manager/...`), confirmed working for NT/control board `hardware-type` queries (`nokia/rc.py`). The interface-level RC-INTF/RC-INTF-ONE items (9/10) remain blocked — only the board hardware-state endpoint has been confirmed on the testbed, not `/{rel}-rcdeviceproxy/rest/restconf/...`.
 
 Token lifetime: `accessToken` 1800 s, `refreshToken` 86400 s. `AltiplanoClient` auto-refreshes 60 s before expiry.
 

@@ -13,10 +13,10 @@ uv run python -m nokia.discovery --phase discover --server 10.50.238.203 --usern
 uv run python -m nokia.discovery --phase normalize --output-dir output
 
 # mapper
-# input:  output/device.jsonl, output/intf.jsonl, output/ponport.jsonl
+# input:  output/device.jsonl, output/board.jsonl, output/intf.jsonl, output/ponport.jsonl
 # output: output/devices.jsonl
 uv run python -m nokia.mapper --output-dir output
 
 # cd C:\Users\ST\GitHub\true-pms-online\poller\snmptk
 # make build-win
-./snmptk.exe --disc disc.yml --discid 313490 --devicefile C:/Users/ST/GitHub/true-pms-online/app/nokia/output/devices.json
+# ./snmptk.exe --disc disc.yml --discid 313490 --devicefile C:/Users/ST/GitHub/true-pms-online/app/nokia/output/devices.json

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Optional
 from .client import AltiplanoClient, save
 from . import ac
+from . import rc
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +32,8 @@ def normalize(intent: dict, itype: str) -> dict:
   isd = intent.get("intent-specific-data", {})
   cfg = isd.get(f"{itype}:{itype}", {})
   state = isd.get(f"{itype}:{itype}-state", {})
-  boards = cfg.get("boards", [])
+  # boards = cfg.get("boards", [])
+  boards = []
   hw_type = cfg.get("hardware-type")
   swversion = state.get("actual-active-software-on-device")
   return {
@@ -50,8 +52,8 @@ def normalize(intent: dict, itype: str) -> dict:
     "device_version":         cfg.get("device-version"),
     "ip_port":                cfg.get("ip-port"),
     "boards":                 boards,
-    "lt_slot_names":          [b.get("slot-name") for b in boards
-                               if (b.get("slot-name") or "").upper().startswith("LT")],
+    # "lt_slot_names":          [b.get("slot-name") for b in boards
+    #                            if (b.get("slot-name") or "").upper().startswith("LT")],
   }
 
 
@@ -73,13 +75,17 @@ def run(client: AltiplanoClient, output_dir: Path,
     itype = _intent_type_of(name, intents)
     log.info("[AC-DEVICE] OLT=%s type=%s ...", name, itype)
     intent = ac.get_intent(client, name, itype)
+    rc_boards, rc_raw = rc.list_boards(client, intent)
+    intent["rc-boards-raw"] = rc_raw
+
     norm = normalize(intent, itype)
+    norm["boards"] = norm["boards"] + rc_boards
     all_raw[name] = intent
     devices.append(norm)
     slots[name] = norm
-    log.info("  ip=%s sw=%s reachable=%s boards=%s",
-             norm["ip"], norm["swversion"], norm["reachable"],
-             [b.get("slot-name") for b in norm["boards"]])
+    log.info("[AC-Device] name=%s ip=%s model=%s reachable=%s boards=%s",
+             norm["name"], norm["ip"], norm["hardware_type"], norm["reachable"],
+             [b.get("name") for b in norm["boards"]])
 
   save(output_dir, "03_ac_device", all_raw,
        {"devices": devices, "count": len(devices)})
@@ -102,6 +108,7 @@ def run_normalize(output_dir: Path,
       log.warning("[AC-DEVICE] no raw data for %s, skipping", name)
       continue
     norm = normalize(intent, itype)
+    norm["boards"] = norm["boards"] + rc.boards_from_raw(intent.get("rc-boards-raw", {}))
     devices.append(norm)
     slots[name] = norm
 
