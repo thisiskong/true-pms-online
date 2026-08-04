@@ -154,6 +154,7 @@ func StartSnmpDiscoveryByEngine(discfile string, discid int, devicefile string) 
 		mapper.SetProvince(&deviceInst, &lookupService.ProvinceCode)
 		mapper.SetDiscoveryFields(&deviceInst, &task.Discovery.Discoveries[0])
 		mapper.MapDevice(&deviceInst)
+		mapper.SetIfTopologyIfDstIp(&deviceInst, lookupService)
 		mapper.MapIntfs(&deviceInst)
 
 		// FTTx (after mapping.js)

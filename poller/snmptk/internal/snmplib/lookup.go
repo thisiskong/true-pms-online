@@ -3,6 +3,7 @@ package snmplib
 import (
 	"database/sql"
 	"log"
+	"regexp"
 	"time"
 )
 
@@ -244,6 +245,25 @@ func (service *LookupService) mapDiscDeviceInfo(deviceInst *Device) {
 		deviceInst.SwVersion = entry.SwVersion
 		log.Printf("mapDiscDeviceInfo: disc_device_info: %s|%s|%s", deviceInst.SysName, deviceInst.Model, deviceInst.SwVersion)
 	}
+}
+
+func (service *LookupService) lookupTopologyByIpAddr(ifalias string) (string, string) {
+	// extract ip addr from ifalias and lookup from ip2Topology
+	re := regexp.MustCompile(`.*[-_](?P<ipaddr>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})([^\d])?.*`)
+	m := re.FindAllStringSubmatch(ifalias, -1)
+	if m != nil {
+		ipaddr := m[0][1]
+		iftopology, ok := (service.Ip2Topology)[ipaddr]
+		if ok {
+			// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, ipaddr, iftopology)
+			return ipaddr, iftopology
+		} else {
+			// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, ipaddr, "")
+			return "", ""
+		}
+	}
+	// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, "", "")
+	return "", ""
 }
 
 type DiscDeviceInfo struct {

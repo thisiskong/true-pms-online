@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -16,24 +15,24 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func lookupTopologyByIpAddr(ip2Topology *map[string]string, ifalias string) (string, string) {
-	// extract ip addr from ifalias and lookup from ip2Topology
-	re := regexp.MustCompile(`.*[-_](?P<ipaddr>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})([^\d])?.*`)
-	m := re.FindAllStringSubmatch(ifalias, -1)
-	if m != nil {
-		ipaddr := m[0][1]
-		iftopology, ok := (*ip2Topology)[ipaddr]
-		if ok {
-			// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, ipaddr, iftopology)
-			return ipaddr, iftopology
-		} else {
-			// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, ipaddr, "")
-			return "", ""
-		}
-	}
-	// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, "", "")
-	return "", ""
-}
+// func lookupTopologyByIpAddr(ip2Topology *map[string]string, ifalias string) (string, string) {
+// 	// extract ip addr from ifalias and lookup from ip2Topology
+// 	re := regexp.MustCompile(`.*[-_](?P<ipaddr>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})([^\d])?.*`)
+// 	m := re.FindAllStringSubmatch(ifalias, -1)
+// 	if m != nil {
+// 		ipaddr := m[0][1]
+// 		iftopology, ok := (*ip2Topology)[ipaddr]
+// 		if ok {
+// 			// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, ipaddr, iftopology)
+// 			return ipaddr, iftopology
+// 		} else {
+// 			// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, ipaddr, "")
+// 			return "", ""
+// 		}
+// 	}
+// 	// log.Printf("lookupTopologyByIpAddr: %v = %v, %v", ifalias, "", "")
+// 	return "", ""
+// }
 
 type DiscMetric struct {
 	id      string // disc.id
@@ -631,7 +630,10 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 		ifalias = RemoveInvalidCharacter(ifalias)
 		iftype := ifType.Value.(string)
 		ifspeed := GetIfSpeed(ifHighSpeed, ifSpeed, deviceInst)
-		ifdstip, iftopology := lookupTopologyByIpAddr(&lookupService.Ip2Topology, ifalias)
+		ifdstip := ""
+		iftopology := ""
+		// 2026-08-04: move lookupTopologyByIpAddr to mapper.SetIfTopologyIfDstIp()
+		// ifdstip, iftopology := lookupTopologyByIpAddr(&lookupService.Ip2Topology, ifalias)
 
 		var ifconn int64
 		if ifConnector != nil {
@@ -657,6 +659,9 @@ func snmp2Device(snmpResult *SnmpResult, task *DiscoveryConfig,
 		}
 		deviceInst.Interfaces = append(deviceInst.Interfaces, &intf)
 	}
+
+	// map ifTopology & ifDstIp using ifAlias
+	mapper.SetIfTopologyIfDstIp(&deviceInst, lookupService)
 
 	// lldp
 	lldpMapper.mapLldp(&deviceInst, snmpResult)

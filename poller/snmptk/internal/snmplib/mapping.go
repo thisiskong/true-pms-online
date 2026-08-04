@@ -290,3 +290,12 @@ func (m *Mapper) SetDiscoveryFields(deviceInst *Device, disc *Discovery) {
 	// 	}
 	// }
 }
+
+func (m *Mapper) SetIfTopologyIfDstIp(deviceInst *Device, lookupService *LookupService) {
+	for i := range deviceInst.Interfaces {
+		ifdstip, iftopology := lookupService.lookupTopologyByIpAddr(deviceInst.Interfaces[i].IfAlias)
+		deviceInst.Interfaces[i].IfDstIp = ifdstip
+		deviceInst.Interfaces[i].IfTopology = iftopology
+		// log.Printf("SetIfTopologyIfDstIp: %s|%s => %s, %s", deviceInst.SysName, deviceInst.Interfaces[i].IfAlias, ifdstip, iftopology)
+	}
+}
