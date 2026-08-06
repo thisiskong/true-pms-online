@@ -1,7 +1,7 @@
 MODULE      := true-pms-online
 DEPLOY_USER := pms
 DEPLOY_HOST := dv02
-DEPLOY_PATH := /home/pms/online/sbin
+DEPLOY_PATH := /home/pms/online/app
 DATA_PATH		:= /home/pms/online/data
 
 SHELL       = pwsh.exe
@@ -25,7 +25,6 @@ deploy: build-linux
 	echo "put snmptk $(DEPLOY_PATH)/snmptk.new" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
 	echo "put sping $(DEPLOY_PATH)/sping.new" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
 	echo "put serviceapi $(DEPLOY_PATH)/serviceapi.new" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
-	echo "mkdir $(DATA_PATH)/nokia/disc`nput ../../app/nokia/output/devices.json $(DATA_PATH)/nokia/disc/devices.json" | sftp $(DEPLOY_USER)@$(DEPLOY_HOST)
 	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) "mv -f $(DEPLOY_PATH)/snmptk.new $(DEPLOY_PATH)/snmptk && mv -f $(DEPLOY_PATH)/sping.new $(DEPLOY_PATH)/sping && mv -f $(DEPLOY_PATH)/serviceapi.new $(DEPLOY_PATH)/serviceapi && chmod +x $(DEPLOY_PATH)/snmptk $(DEPLOY_PATH)/sping $(DEPLOY_PATH)/serviceapi"
 	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) "sudo setcap cap_net_raw=+ep $(DEPLOY_PATH)/snmptk"
 	ssh $(DEPLOY_USER)@$(DEPLOY_HOST) "sudo setcap cap_net_raw=+ep $(DEPLOY_PATH)/sping"
