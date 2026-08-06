@@ -2,7 +2,7 @@ MODULE      := true-pms-online
 BINARY      := poll-uptime
 DEPLOY_USER := pms
 DEPLOY_HOST := dv02
-DEPLOY_PATH := /home/pms/online/sbin/$(BINARY)
+DEPLOY_PATH := /home/pms/online/app/$(BINARY)
 
 SHELL       := pwsh.exe
 .SHELLFLAGS := -NoProfile -Command
@@ -16,6 +16,7 @@ build-linux:
 
 deploy: build-linux
 	& "$$env:SystemRoot\System32\OpenSSH\scp.exe" $(BINARY) $(DEPLOY_USER)@$(DEPLOY_HOST):$(DEPLOY_PATH)
+	& "$$env:SystemRoot\System32\OpenSSH\ssh.exe" $(DEPLOY_USER)@$(DEPLOY_HOST) "sudo chmod a+x $(DEPLOY_PATH)"
 	& "$$env:SystemRoot\System32\OpenSSH\ssh.exe" $(DEPLOY_USER)@$(DEPLOY_HOST) "sudo setcap cap_net_raw=+ep $(DEPLOY_PATH)"
 
 test:
