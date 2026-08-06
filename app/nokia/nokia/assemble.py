@@ -53,33 +53,6 @@ def build_device(devices: list[dict], slots: dict[str, dict]) -> list[dict]:
       "first":            ts,
       "model":            slot.get("hardware_type") or dev.get("descr"),
       "chassisid":        None,
-      # --- NotSupported: not available from Nokia NBI ---
-      # "network":          None,
-      # "region":           None,
-      # "province":         None,
-      # "sitename":         None,
-      # "latitude":         None,   # static site coordinates
-      # "longitude":        None,   # static site coordinates
-      # "community":        None,   # SNMP community string — external credential
-      # "dn":               None,
-      # "pn":               None,
-      # "hop":              None,
-      # "rn":               None,
-      # "ringid":           None,
-      # "ringtopo":         None,
-      # "topology":         None,
-      # "uplink_ip1":       None,
-      # "uplink_ip2":       None,
-      # "uplink_model1":    None,
-      # "uplink_model2":    None,
-      # "uplink_site1":     None,
-      # "uplink_site2":     None,
-      # "a_homing_id":      None,
-      # "a_homing_site":    None,
-      # "b_homing_id":      None,
-      # "b_homing_site":    None,
-      # "c_homing_id":      None,
-      # "c_homing_site":    None,
     })
   return rows
 

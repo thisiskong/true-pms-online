@@ -52,12 +52,12 @@ def _load_jsonl(path: Path) -> list[dict]:
 def _map_intf(row: dict) -> dict:
   return {
     "IfIndex":       _str(row.get("ifindex")),
-    "IfName":        _str(row.get("ifname")),
+    "IfName":        _str(row.get("ifindex")),
     "IfSpeed":       _int_or(row.get("ifspeed")),
     "IfAdmin":       _str(row.get("ifadmin")),
     "IfOper":        _str(row.get("ifoper")),
     "IfDescr":       _str(row.get("ifdescr")),
-    "IfAlias":       _str(row.get("ifdescr")),
+    "IfAlias":       _str(row.get("ifname")),
     "IfTopology":    None,
     "IfDstIp":       None,
     "IfType":        _str(row.get("iftype")),
