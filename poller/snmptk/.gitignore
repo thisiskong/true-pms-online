@@ -1,6 +1,6 @@
-snmptk
-sping
-serviceapi
+/snmptk
+/sping
+/serviceapi
 data/
 logs/
 input/
