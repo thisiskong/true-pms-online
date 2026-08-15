@@ -249,7 +249,7 @@ func loadTargetFromDb(setting *AppSetting, pollint int, task *PollTrafficTask) (
 								network, topology, sitename, vendor, model,
 								row_number() over (partition by ip order by lastseen desc) as rownum
 								from device
-								where coalesce(usr_pollstatus, sys_pollstatus) = 1
+								where coalesce(usr_pollstatus, sys_pollstatus) = 1 and coalesce(community, '') != ''
 						) X
 						where
 							( %s )
