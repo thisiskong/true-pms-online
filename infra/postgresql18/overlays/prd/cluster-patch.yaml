@@ -1,0 +1,25 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg18-pms
+spec:
+  # Replace with the real image you built/pushed from ../../Dockerfile.
+  imageName: <REGISTRY_PLACEHOLDER>/pg18-postgis-tsdb:18
+  instances: 3
+  storage:
+    size: 100Gi
+    storageClass: longhorn-pg-ha
+  resources:
+    requests:
+      cpu: "1"
+      memory: "4Gi"
+    limits:
+      cpu: "2"
+      memory: "8Gi"
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    # "preferred" avoids pods getting stuck Pending if fewer than 3 worker nodes
+    # exist. Switch to "required" once node count is confirmed >= 3, for a hard
+    # guarantee that no two replicas ever land on the same node.
+    podAntiAffinityType: preferred

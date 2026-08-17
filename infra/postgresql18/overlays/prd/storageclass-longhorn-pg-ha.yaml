@@ -1,0 +1,22 @@
+# Dedicated StorageClass for prod's CNPG PVCs only. CNPG's 3-instance streaming
+# replication already gives 3x redundancy at the application layer — stacking
+# Longhorn's own default numberOfReplicas (commonly 3) on top would multiply to
+# 9x raw disk for no extra safety. numberOfReplicas: 1 here means a node outage
+# takes that one CNPG replica's disk with it; CNPG's own replication (not
+# Longhorn's) is what provides HA for this cluster, by design — see README.md.
+#
+# TODO before first apply: run `kubectl get sc longhorn -o yaml` against the real
+# cluster and copy over any other parameters (fsType, dataLocality, etc.) so this
+# class differs from the cluster default ONLY in numberOfReplicas.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-pg-ha
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "30"
+  fromBackup: ""

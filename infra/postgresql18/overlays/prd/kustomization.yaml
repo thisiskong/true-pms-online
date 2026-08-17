@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pmsonline-prd-pg18
+
+resources:
+  - ../../base
+  - namespace.yaml
+  - storageclass-longhorn-pg-ha.yaml
+  # NOTE: no Secret resource here on purpose. `pmsonline-credentials` must be
+  # created manually before `kubectl apply -k` will succeed — see
+  # secret-pmsonline-credentials.yaml.example and README.md.
+
+patches:
+  - path: cluster-patch.yaml
+    target:
+      kind: Cluster
+      name: pg18-pms
+  - path: service-external-patch.yaml
+    target:
+      kind: Service
+      name: pg18-pms-external
