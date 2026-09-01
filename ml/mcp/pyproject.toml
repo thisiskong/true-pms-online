@@ -1,0 +1,20 @@
+[project]
+name = "pmsonline-device-mcp"
+version = "0.1.0"
+description = "Read-only MCP server exposing FTTx device inventory (pmsonline.device) to LLMs."
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.2.0",
+    "psycopg2-binary>=2.9",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+pmsonline-device-mcp = "mcp_device.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mcp_device"]
