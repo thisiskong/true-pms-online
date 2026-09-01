@@ -1,7 +1,8 @@
-# PostgreSQL 18 + PostGIS + TimescaleDB (CloudNativePG)
+# PostgreSQL 18 + PostGIS + TimescaleDB + pgvector (CloudNativePG)
 
-CNPG-managed Postgres 18 cluster with PostGIS, TimescaleDB, and pg_stat_statements,
-on Longhorn storage. Kustomize-only, no GitOps — deploy manually via `kubectl apply -k`.
+CNPG-managed Postgres 18 cluster with PostGIS, TimescaleDB, pgvector, and
+pg_stat_statements, on Longhorn storage. Kustomize-only, no GitOps — deploy manually
+via `kubectl apply -k`.
 
 Two environments, one cluster:
 
@@ -30,7 +31,7 @@ kubectl krew install cnpg
 
 ## 2. Build & push the image
 
-No prebuilt image combines PG18 + PostGIS + TimescaleDB yet, so build your own from
+No prebuilt image combines PG18 + PostGIS + TimescaleDB + pgvector yet, so build your own from
 [`Dockerfile`](./Dockerfile):
 
 ```
@@ -90,7 +91,7 @@ kubectl get pods -n cnpg-system                                    # operator he
 kubectl get cluster -n pmsonline-dev-pg18
 kubectl cnpg status pg18-pms -n pmsonline-dev-pg18
 kubectl cnpg psql pg18-pms -n pmsonline-dev-pg18 -- -d pmsonline -c \
-  "SELECT extname, extversion FROM pg_extension;"                  # postgis, timescaledb, pg_stat_statements
+  "SELECT extname, extversion FROM pg_extension;"                  # postgis, timescaledb, vector, pg_stat_statements
 kubectl cnpg psql pg18-pms -n pmsonline-dev-pg18 -- -d pmsonline -c \
   "SHOW shared_preload_libraries;"
 

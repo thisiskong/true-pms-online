@@ -38,6 +38,7 @@ spec:
         - "CREATE EXTENSION IF NOT EXISTS postgis;"
         - "CREATE EXTENSION IF NOT EXISTS timescaledb;"
         - "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
+        - "CREATE EXTENSION IF NOT EXISTS vector;"
 
   storage:
     size: 20Gi # overridden per overlay

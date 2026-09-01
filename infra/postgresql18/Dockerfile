@@ -1,5 +1,5 @@
-# PostgreSQL 18 + PostGIS + TimescaleDB + pg_stat_statements, for use with the
-# CloudNativePG operator.
+# PostgreSQL 18 + PostGIS + TimescaleDB + pgvector + pg_stat_statements, for use with
+# the CloudNativePG operator.
 #
 # Built FROM CNPG's own base image rather than plain postgres:18 — PGDG (needed
 # for the postgresql-18-postgis-3 package) is already configured there, and CNPG's
@@ -28,11 +28,13 @@ ARG TIMESCALEDB_APT_REPO=https://packagecloud.io/timescale/timescaledb
 
 USER root
 
-# PostGIS — PGDG is already configured in the CNPG base image, no extra repo needed.
+# PostGIS + pgvector — both in PGDG, already configured in the CNPG base image,
+# no extra repo needed. Neither requires shared_preload_libraries.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       postgresql-${PG_MAJOR}-postgis-${POSTGIS_MAJOR} \
-      postgresql-${PG_MAJOR}-postgis-${POSTGIS_MAJOR}-scripts && \
+      postgresql-${PG_MAJOR}-postgis-${POSTGIS_MAJOR}-scripts \
+      postgresql-${PG_MAJOR}-pgvector && \
     apt-get purge -y --auto-remove && \
     rm -rf /var/lib/apt/lists/*
 
