@@ -491,7 +491,8 @@ async def onu_detail(date: str | None, device_id: int, ponport: str, ontid: str)
   lake = lake_dir() / "clean_onu"
   if lake.is_dir() and any(lake.glob("date=*/*.parquet")):
     history = await _query(
-      f"""SELECT date, round(rx, 2) AS rx, bip_in, lostcarrier, hw_flag
+      f"""SELECT date, round(rx, 2) AS rx, bip_in, lostcarrier, hw_flag,
+        round(tx, 2) AS tx, round(voltage, 3) AS voltage, round(temp, 1) AS temp, round(current, 2) AS current
       FROM read_parquet('{_sql_path(lake)}/date=*/*.parquet', hive_partitioning = true)
       WHERE device = ? AND ponport = ? AND ontid = ? AND date <= ?::DATE ORDER BY date DESC LIMIT 30""",
       [name, ponport, ontid, run.iso],

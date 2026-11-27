@@ -187,6 +187,11 @@ export interface OnuHistoryDay {
   bip_in: number | null;
   lostcarrier: number | null;
   hw_flag: boolean | null;
+  // ONU hardware readings (clean_onu); null when the ONU did not report them that day.
+  tx?: number | null;
+  voltage?: number | null;
+  temp?: number | null;
+  current?: number | null;
 }
 
 export interface OnuDetail {

@@ -138,7 +138,7 @@ async def onu(
   ontid: Annotated[str, Query(min_length=1, max_length=50)],
   date: Date = None,
 ) -> dict[str, Any]:
-  """One ONU's full score row plus its daily Rx/BIP history from the lake."""
+  """One ONU's full score row plus its daily history from the lake (Rx, BIP, lost carrier, ONU hardware readings)."""
   try:
     d = await fiber.onu_detail(date, device_id, ponport, ontid)
   except fiber.RunNotFound as e:

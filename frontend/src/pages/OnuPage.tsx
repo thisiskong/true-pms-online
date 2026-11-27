@@ -4,16 +4,28 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fiberApi, type OnuHistoryDay, type OnuScore, type OnuScoreRow } from "../api/fiber";
 import { CapNotes, LikelyLocation, OnuFacts, onuPageUrl, SENSITIVITY, useAskAiOnu, WhyScore } from "../components/fiber/OnuSections";
-import { AttributionBadge, BadShare, BAD_SCORE, db, Db, FiberHelpLink, runLabel, ScoreChip, scoreTone } from "../components/fiber/score";
+import { AttributionBadge, BadShare, BAD_SCORE, db, Db, FiberHelpLink, HW_READINGS, runLabel, ScoreChip, scoreTone } from "../components/fiber/score";
 import { Button, Card, cx, Empty, ErrorBox, inputCls, PAGE_CLS, Spinner } from "../components/ui";
 
 const RxHistoryChart = lazy(() => import("../components/fiber/FiberCharts").then((m) => ({ default: m.RxHistoryChart })));
+const HwHistoryChart = lazy(() => import("../components/fiber/FiberCharts").then((m) => ({ default: m.HwHistoryChart })));
 
 const RANGES = [["7d", 7], ["14d", 14], ["30d", 30], ["All", 0]] as const;
 
-function RxSection({ history, expected, mae }: { history: OnuHistoryDay[]; expected: number | null; mae: number | null }) {
+const hwOut = (key: (typeof HW_READINGS)[number]["key"], v: number | null | undefined) => {
+  const h = HW_READINGS.find((x) => x.key === key)!;
+  return v != null && (v < h.ok[0] || v > h.ok[1]);
+};
+
+function RxSection({ history, expected, mae, hwSuspect }: {
+  history: OnuHistoryDay[]; expected: number | null; mae: number | null; hwSuspect: boolean;
+}) {
   const [range, setRange] = useState<number>(30);
   const shown = range ? history.slice(-range) : history;
+  const hasHw = shown.some((h) => HW_READINGS.some((r) => h[r.key] != null));
+  const hwDays = shown.filter((h) => h.hw_flag).length;
+  // Open by default only when the hardware is suspect: for a healthy ONU these are four flat lines.
+  const [hwOpen, setHwOpen] = useState(hwSuspect);
   return (
     <Card title="Rx: measured vs expected" actions={
       <div className="flex rounded-md bg-zinc-100 p-0.5 text-xs" role="group" aria-label="Range">
@@ -30,13 +42,36 @@ function RxSection({ history, expected, mae }: { history: OnuHistoryDay[]; expec
         </Suspense>
       ) : <Empty>No daily history in the lake for this ONU.</Empty>}
       <p className="mt-1 text-[11px] text-zinc-400">Green band = expected Rx ± model error ({db(mae, 1)} dB). Red dots = days with BIP errors. Hover a day for its readings.</p>
+      {hasHw && (
+        <div className="mt-3 border-t border-zinc-100 pt-2">
+          <button type="button" onClick={() => setHwOpen((v) => !v)} aria-expanded={hwOpen}
+            className="flex items-center gap-2 text-xs font-medium text-zinc-600 hover:text-zinc-900">
+            <span aria-hidden className="w-3">{hwOpen ? "▾" : "▸"}</span>ONU hardware readings
+            {hwDays > 0
+              ? <span className="rounded bg-violet-50 px-1.5 py-0.5 font-semibold text-violet-700 ring-1 ring-inset ring-violet-600/20">out of range on {hwDays} of {shown.length} days</span>
+              : <span className="font-normal text-zinc-400">all within normal range</span>}
+          </button>
+          {hwOpen && (
+            <>
+              <Suspense fallback={<div className="h-[310px]" />}>
+                <HwHistoryChart history={shown} />
+              </Suspense>
+              <p className="text-[11px] text-zinc-400">Green band = normal range. Purple = out of range. Rx falling while Tx falls or bias rises points to the ONU optics, not the fiber.</p>
+            </>
+          )}
+        </div>
+      )}
       {history.length > 0 && (
         <details className="mt-3 text-sm">
           <summary className="cursor-pointer text-xs font-medium text-zinc-600 hover:text-zinc-900">Daily readings ({shown.length} days)</summary>
           <div className="mt-2 max-h-80 overflow-auto">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-white text-left text-zinc-500">
-                <tr><th className="px-2 py-1.5 font-medium">Date</th><th className="px-2 py-1.5 font-medium">Rx dBm</th><th className="px-2 py-1.5 font-medium">BIP in</th><th className="px-2 py-1.5 font-medium">Lost carrier</th><th className="px-2 py-1.5 font-medium">HW flag</th></tr>
+                <tr>
+                  {["Date", "Rx dBm", "BIP in", "Lost carrier", ...(hasHw ? HW_READINGS.map((r) => `${r.label} ${r.unit}`) : []), "HW flag"].map((t) => (
+                    <th key={t} className="whitespace-nowrap px-2 py-1.5 font-medium">{t}</th>
+                  ))}
+                </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 tabular-nums">
                 {[...shown].reverse().map((h) => (
@@ -45,6 +80,11 @@ function RxSection({ history, expected, mae }: { history: OnuHistoryDay[]; expec
                     <td className={cx("px-2 py-1", h.rx != null && h.rx < SENSITIVITY && "font-semibold text-red-600")}>{db(h.rx, 1)}</td>
                     <td className={cx("px-2 py-1", (h.bip_in ?? 0) > 0 && "text-red-600")}>{h.bip_in?.toLocaleString() ?? "n/a"}</td>
                     <td className="px-2 py-1">{h.lostcarrier ?? "n/a"}</td>
+                    {hasHw && HW_READINGS.map((r) => (
+                      <td key={r.key} className={cx("px-2 py-1", hwOut(r.key, h[r.key]) && "font-semibold text-violet-700")}>
+                        {h[r.key] == null ? "—" : h[r.key]!.toFixed(r.digits)}
+                      </td>
+                    ))}
                     <td className="px-2 py-1">{h.hw_flag ? <span className="text-violet-700">yes</span> : "–"}</td>
                   </tr>
                 ))}
@@ -193,7 +233,8 @@ export function OnuPage() {
 
           <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_420px]">
             <div className="flex min-w-0 flex-col gap-4">
-              <RxSection history={d.history} expected={o.expected_rx} mae={d.model_mae_db} />
+              <RxSection history={d.history} expected={o.expected_rx} mae={d.model_mae_db}
+                hwSuspect={o.attributed_to === "onu_hw" || !!o.hw_flag || (o.hw_days ?? 0) > 0} />
               <Siblings deviceId={deviceId} o={o} date={d.date} />
             </div>
             <div className="flex flex-col gap-4">
