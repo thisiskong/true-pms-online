@@ -1,6 +1,4 @@
 .env
-data/
-*.jsonl.part
 lake/
 out/
 .venv/

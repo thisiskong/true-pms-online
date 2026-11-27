@@ -5,7 +5,6 @@ File paths come only from run dates discovered on disk; every user value is a bo
 Device names in the ML output match device.name in Postgres, which supplies device_id/region/province.
 """
 import asyncio
-import csv
 import json
 import math
 import re
@@ -90,7 +89,7 @@ class Run:
     return f"{self.date[:4]}-{self.date[4:6]}-{self.date[6:]}"
 
   def suspects(self, level: str) -> Path:
-    return self.report.parent / f"suspect_{level}_{self.date}.csv"
+    return self.report.parent / f"suspect_{level}_{self.date}.parquet"
 
 
 def list_runs() -> list[Run]:
@@ -185,20 +184,8 @@ def summary(date: str | None) -> dict[str, Any]:
 
 # ---------------------------------------------------------------- suspects
 
-NUMERIC = re.compile(r"^-?\d+(\.\d+)?([eE][-+]?\d+)?$")
-
-
-def _load_csv(path: Path) -> list[dict[str, Any]]:
-  with path.open(encoding="utf-8", newline="") as f:
-    rows = list(csv.DictReader(f))
-  for r in rows:
-    for k, v in r.items():
-      if v == "":
-        r[k] = None
-      elif NUMERIC.match(v):
-        n = float(v)
-        r[k] = int(n) if n.is_integer() and "." not in v and "e" not in v.lower() else n
-  return rows
+def _load_suspects(path: Path) -> list[dict[str, Any]]:
+  return _query_sync(f"SELECT * FROM read_parquet('{_sql_path(path)}')", [])
 
 
 _enriched: dict[tuple[str, str, float], list[dict[str, Any]]] = {}
@@ -222,7 +209,7 @@ async def suspects_all(run: Run, level: str) -> list[dict[str, Any]]:
     return []
   key = (str(path), level, path.stat().st_mtime)
   if key not in _enriched:
-    rows = _cached(path, _load_csv)
+    rows = _cached(path, _load_suspects)
     info = await _device_info(sorted({r["device"] for r in rows if r.get("device")}))
     out = []
     for r in rows:
@@ -282,7 +269,7 @@ async def suspect_keys(run: Run) -> dict[str, set[str]]:
   out = {}
   for level, col in (("device", "device"), ("l1", "l1name"), ("l2", "l2name")):
     p = run.suspects(level)
-    out[level] = {r[col] for r in _cached(p, _load_csv)} if p.is_file() else set()
+    out[level] = {r[col] for r in _cached(p, _load_suspects)} if p.is_file() else set()
   return out
 
 

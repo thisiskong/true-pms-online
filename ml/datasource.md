@@ -12,5 +12,5 @@ DataSource:
        from odn_onu
 
 
-create a python script to export data from postgres using above query and save to jsonl file.
+Exported by `fiber/export.py` straight into the Parquet lake (`lake/<table>/date=YYYY-MM-DD/part.parquet`).
 

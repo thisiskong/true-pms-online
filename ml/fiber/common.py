@@ -7,7 +7,6 @@ import duckdb
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent   # ml/
-DATA = ROOT / "data"                             # raw jsonl from export_jsonl.py
 LAKE = ROOT / "lake"                             # parquet, partitioned by date
 OUT = ROOT / "out"                               # scores, suspect lists, reports
 CFG_PATH = Path(__file__).with_name("ranges.yaml")
@@ -48,3 +47,11 @@ def write_parquet(con, select_sql, dst):
 
 def log(msg):
   print(f"[{dt.datetime.now():%H:%M:%S}] {msg}", flush=True)
+
+
+def lake_dates(table):
+  """Dates that have a parquet partition for table."""
+  root = LAKE / table
+  if not root.exists():
+    return []
+  return sorted(dt.date.fromisoformat(p.name[5:]) for p in root.glob("date=*") if (p / "part.parquet").exists())

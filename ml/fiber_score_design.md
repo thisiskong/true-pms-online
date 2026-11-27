@@ -2,9 +2,9 @@
 
 **Goal:** give every ONU (`device|ponport|ontid`) a fiber score from 1 to 10. 1 means poor fiber quality and 10 means excellent. Then roll the scores up the ODN tree (`device → l1name → l2name → ONU`) to find the shared fiber segments most likely causing quality problems.
 
-**Inputs:**
-- `data/onu_pon_1d_YYYYMMDD.jsonl`: daily ONU metrics, one row per ONU per day.
-- `data/odn_onu_YYYYMMDD.jsonl`: passive inventory (L1/L2 splitter names, segment lengths, split ratios).
+**Inputs** (Parquet, exported straight from Postgres by `fiber/export.py`; no JSONL step):
+- `lake/onu_pon_1d/date=YYYY-MM-DD/part.parquet`: daily ONU metrics, one row per ONU per day.
+- `lake/odn_onu/date=YYYY-MM-DD/part.parquet`: passive inventory snapshot (L1/L2 splitter names, segment lengths, split ratios).
 
 Every number below comes from profiling the 2026-11-20 snapshot: 3.32M metric rows, 3.39M inventory rows, 12.5K devices, 162K PON ports, 686K L2 splitters.
 
@@ -61,11 +61,11 @@ All thresholds live in `ml/fiber/ranges.yaml`, not in code, so they can be retun
 ## 3. Pipeline overview
 
 ```
- export_jsonl.py (daily)
+ fiber/export.py (daily): Postgres ──read-only──▶ lake/*/date=…/part.parquet
         │
  ┌──────▼──────┐   ┌───────────┐   ┌─────────────┐   ┌──────────────┐   ┌──────────────┐   ┌─────────────┐
- │ 0. Ingest   │──▶│ 1. Cleanse│──▶│ 2. Daily    │──▶│ 3. Window    │──▶│ 4. Expected  │──▶│ 5. Score    │
- │ jsonl→parq. │   │ + join ODN│   │  features   │   │  aggregates  │   │ loss model   │   │  1–10/ONU   │
+ │ 0. Export   │──▶│ 1. Cleanse│──▶│ 2. Daily    │──▶│ 3. Window    │──▶│ 4. Expected  │──▶│ 5. Score    │
+ │ lake parq.  │   │ + join ODN│   │  features   │   │  aggregates  │   │ loss model   │   │  1–10/ONU   │
  └─────────────┘   └───────────┘   └─────────────┘   │ (7d / 30d)   │   │ (residuals)  │   └──────┬──────┘
                                                       └──────────────┘   └──────────────┘          │
                                                                                           ┌───────▼───────┐
@@ -79,17 +79,15 @@ All thresholds live in `ml/fiber/ranges.yaml`, not in code, so they can be retun
 **Proposed layout:**
 ```
 ml/
-  export_jsonl.py          # existing: daily pull from Postgres
   fiber/
+    export.py              # stage 0: Postgres -> lake/<table>/date=YYYY-MM-DD/part.parquet (read-only)
     ranges.yaml            # §2 thresholds, weights, sentinels
-    ingest.py              # stage 0
     cleanse.py             # stage 1
     features.py            # stages 2–3
     expected_loss.py       # stage 4
     score.py               # stage 5
     attribute.py           # stage 6
     run.py                 # orchestrates: uv run fiber/run.py --date 2026-11-20 --window 7
-  data/                    # raw jsonl (git-ignored)
   lake/                    # parquet, partitioned by date (git-ignored)
   out/                     # scores and suspect lists (git-ignored)
 ```
@@ -98,9 +96,10 @@ ml/
 
 ## 4. Stages
 
-### Stage 0: Ingest
-- Convert each day's JSONL to Parquet at `lake/onu_pon_1d/date=YYYY-MM-DD/` and `lake/odn_onu/date=YYYY-MM-DD/`. The Parquet files are about 10× smaller and columnar.
-- Enforce the schema: cast `ontid` to string, cast counters to double (they may be fractional because they are averaged), and cast `tstamp` to date.
+### Stage 0: Export to the lake
+- `fiber/export.py` reads Postgres through DuckDB's `postgres` extension (attached `read_only`) and writes Parquet directly to `lake/onu_pon_1d/date=YYYY-MM-DD/part.parquet` and `lake/odn_onu/date=YYYY-MM-DD/part.parquet`. There is no JSONL step.
+- It enforces the schema on the way: only the columns the pipeline uses, `ontid` as string, numeric columns as double (counters may be fractional because they are averaged), `tstamp` as date.
+- `fiber/run.py` only reads the lake. It never touches Postgres; a window day missing from the lake is skipped with a warning, so export first.
 
 ### Stage 1: Cleanse
 Apply these steps in order. Each nulled field writes a `dq_<field>` reason code, so the data-quality rates can be monitored over time.
@@ -143,7 +142,7 @@ Apply these steps in order. Each nulled field writes a `dq_<field>` reason code,
 - `lc_days`, `lc_sum`: lost-carrier events.
 - `days_obs`: coverage. It feeds the confidence value.
 
-> The snapshot currently on disk covers one day, so `rx_sd`, `rx_slope` and `bip_days` can't be computed yet. Run `export_jsonl.py --date` daily, or back-fill 7–30 days. Until then the scorer runs in **single-day mode**: stability features are absent and their weight is redistributed (§5).
+> The snapshot currently on disk covers one day, so `rx_sd`, `rx_slope` and `bip_days` can't be computed yet. Run `fiber/export.py onu_pon_1d` daily, or back-fill 7–30 days with `--start/--end`. Until then the scorer runs in **single-day mode**: stability features are absent and their weight is redistributed (§5).
 
 ### Stage 4: Expected-loss model (the ML part)
 Raw Rx alone confounds a bad fiber with a long fiber, a high split ratio or a weak OLT optic. Learn what Rx *should* be for this ONU's path, then score the shortfall.
@@ -221,9 +220,9 @@ Assign each bad ONU to the **highest** level that explains it, so ONUs aren't do
 | File | Grain | Key columns |
 |---|---|---|
 | `out/onu_fiber_score_YYYYMMDD.parquet` | ONU | key, l1name, l2name, vendor, `score`, `conf`, `s_power`/`s_excess`/`s_error`/`s_stability`, `rx_med`, `excess_loss`, `peer_delta`, `hw_flag`, `dq_*`, `attributed_to` |
-| `out/suspect_l2_YYYYMMDD.csv` | L2 | l2name, l1name, device, n_onu, n_bad, bad_rate_shrunk, p_value, med_peer_delta, med_excess_loss, impact |
-| `out/suspect_l1_YYYYMMDD.csv` | L1 / PON | same columns |
-| `out/suspect_device_YYYYMMDD.csv` | device | same columns |
+| `out/suspect_l2_YYYYMMDD.parquet` | L2 | l2name, l1name, device, n_onu, n_bad, bad_rate_shrunk, p_value, med_peer_delta, med_excess_loss, impact |
+| `out/suspect_l1_YYYYMMDD.parquet` | L1 / PON | same columns |
+| `out/suspect_device_YYYYMMDD.parquet` | device | same columns |
 | `out/dq_report_YYYYMMDD.json` | run | null and sentinel rates per field and vendor, join coverage, topology mismatches |
 
 These files can later be loaded into a Postgres table, after a schema change made outside the app (DDL is external), and shown in the webapp.
@@ -290,6 +289,15 @@ uv run fiber/export.py onu_pon_1d          # yesterday, Postgres -> lake/onu_pon
 uv run fiber/export.py odn_onu             # weekly: current inventory -> lake/odn_onu/date=<today>/
 uv run fiber/run.py --date <yesterday>     # reuses models/expected_rx_*.txt up to 7 days old; --retrain to force
 ```
+
+Back-fill a range of days, then score it:
+
+```
+uv run fiber/export.py onu_pon_1d --start 2026-11-02 --end 2026-11-16   # one partition per day; existing ones are skipped (--force replaces)
+uv run fiber/run.py --date 2026-11-08                                    # window = the 7 days ending on --date
+```
+
+Inventory has no history in Postgres (`odn_onu` is a current snapshot), so a back-filled run uses the latest lake snapshot on or before its date, else the earliest one after it (logged as a warning).
 
 - **Export** goes straight into the lake through DuckDB's `postgres` extension, installed on the machine that runs the export. It reads the day's Postgres partition (`onu_pon_1d_pYYYYMMDD00`) over 4 read-only connections. Each day is about 120 MB of Parquet instead of 2 GB of JSONL, and takes 56–99 s instead of 96–215 s. The database is the bottleneck. 14 connections took 26 s but put more load on it.
 - **Model reuse:** a 7-day run takes 59 s with a saved model, against 115 s when it trains. Every run measures holdout MAE on that day's data and warns if it drifts more than 0.3 dB above the training MAE.

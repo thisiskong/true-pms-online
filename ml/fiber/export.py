@@ -7,7 +7,7 @@ Usage (from ml/; credentials from ml/.env or PG* env vars):
   uv run fiber/export.py odn_onu                             # current inventory, filed under today's date
 
 Writes lake/onu_pon_1d/date=YYYY-MM-DD/part.parquet and lake/odn_onu/date=YYYY-MM-DD/part.parquet,
-the same partitions fiber/run.py reads (so run.py skips its own ingest for them).
+the partitions fiber/run.py reads. This is the only way data gets into the lake.
 The Postgres connection is read-only.
 
 onu_pon_1d is partitioned by day in Postgres (onu_pon_1d_pYYYYMMDD00). The export finds that day's

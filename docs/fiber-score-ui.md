@@ -15,9 +15,9 @@ The score comes from rules plus a regression model, so every number can be expla
 | File | Rows | Use in the UI |
 |---|---|---|
 | `out/onu_fiber_score_YYYYMMDD.parquet` (340 MB) | 3.37M ONUs, 45 columns | ONU table, ONU detail, per-OLT tree aggregates |
-| `out/suspect_device_*.csv` | 1 | Suspects table, Device level |
-| `out/suspect_l1_*.csv` | 191 | Suspects table, L1/PON level |
-| `out/suspect_l2_*.csv` | 1,259 | Suspects table, L2 level |
+| `out/suspect_device_*.parquet` | 1 | Suspects table, Device level |
+| `out/suspect_l1_*.parquet` | 191 | Suspects table, L1/PON level |
+| `out/suspect_l2_*.parquet` | 1,259 | Suspects table, L2 level |
 | `out/dq_report_*.json` | 1 run | Run header, histogram, attribution breakdown, model card, data-quality panel |
 | `lake/clean_onu/date=*/` | daily | 7-day Rx/BIP sparkline for one ONU |
 

@@ -1,13 +1,14 @@
-"""Fiber score pipeline: ingest -> cleanse -> features -> expected-loss model -> score -> attribution.
+"""Fiber score pipeline: cleanse -> features -> expected-loss model -> score -> attribution.
 
 Usage (from ml/):
   uv run fiber/run.py --date 2026-11-20               # 7-day window ending on that date
   uv run fiber/run.py --date 2026-11-20 --window 30
-  uv run fiber/run.py --date 2026-11-20 --force       # rebuild the lake parquet for the window
+  uv run fiber/run.py --date 2026-11-20 --force       # re-cleanse the window (clean_onu / clean_odn)
   uv run fiber/run.py --date 2026-11-20 --retrain     # retrain the model (default: reuse one up to 7 days old)
 
-Reads  data/onu_pon_1d_YYYYMMDD.jsonl and data/odn_onu.jsonl (from export_jsonl.py).
-Writes out/onu_fiber_score_YYYYMMDD.parquet, out/suspect_{device,l1,l2}_YYYYMMDD.csv,
+Reads  lake/onu_pon_1d/date=*/part.parquet and lake/odn_onu/date=*/part.parquet, written straight from
+       Postgres by fiber/export.py (run that first; a day missing from the lake is skipped with a warning).
+Writes out/onu_fiber_score_YYYYMMDD.parquet, out/suspect_{device,l1,l2}_YYYYMMDD.parquet,
        out/dq_report_YYYYMMDD.json; models/expected_rx_YYYYMMDD.{txt,json} when it trains
 """
 
@@ -24,10 +25,9 @@ import numpy as np  # noqa: E402
 
 from attribute import attribute  # noqa: E402
 from cleanse import METRIC_FIELDS, cleanse_metrics, cleanse_odn  # noqa: E402
-from common import OUT, connect, load_cfg, log, part, sql_path, ymd  # noqa: E402
+from common import OUT, connect, lake_dates, load_cfg, log, part, sql_path, ymd  # noqa: E402
 from expected_loss import load_or_train  # noqa: E402
 from features import build_features, window_dates  # noqa: E402
-from ingest import ingest, ingest_undated_odn, lake_dates  # noqa: E402
 from score import score  # noqa: E402
 
 ONU_COLUMNS = [
@@ -46,17 +46,10 @@ ONU_COLUMNS = [
 
 
 def latest_odn(con, d, cfg, force):
-  """Pick the ODN snapshot for d: the latest one on or before d, else the earliest one after d.
-
-  Sources: the undated data/odn_onu.jsonl (filed under its export date), legacy dated
-  data/odn_onu_YYYYMMDD.jsonl files, and snapshots already in the lake.
-  """
-  ingest_undated_odn(con, force)
-  for i in range(31):
-    ingest(con, "odn_onu", d - dt.timedelta(days=i), force)   # legacy dated files, if any
+  """Pick the lake ODN snapshot for d: the latest one on or before d, else the earliest one after d."""
   dates = lake_dates("odn_onu")
   if not dates:
-    raise SystemExit("no odn_onu snapshot: run export_jsonl.py first")
+    raise SystemExit("no odn_onu snapshot: run `uv run fiber/export.py odn_onu` first")
   before = [x for x in dates if x <= d]
   x = before[-1] if before else dates[0]
   if not before:
@@ -102,7 +95,7 @@ def main():
   ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
   ap.add_argument("--date", type=dt.date.fromisoformat, default=dt.date.today() - dt.timedelta(days=1))
   ap.add_argument("--window", type=int, default=7, help="days in the scoring window (default 7)")
-  ap.add_argument("--force", action="store_true", help="rebuild lake parquet even if it exists")
+  ap.add_argument("--force", action="store_true", help="re-cleanse lake parquet (clean_onu / clean_odn) even if it exists")
   ap.add_argument("--retrain", action="store_true", help="retrain the expected-Rx model even if a recent one exists")
   args = ap.parse_args()
   d, window = args.date, args.window
@@ -111,11 +104,16 @@ def main():
   con = connect()
   OUT.mkdir(parents=True, exist_ok=True)
 
-  # Stages 0-1 for every day in the window that has raw data.
+  # Stage 1 for every day in the window that fiber/export.py has put in the lake.
+  missing = []
   for i in range(window):
     x = d - dt.timedelta(days=i)
-    if ingest(con, "onu_pon_1d", x, args.force):
+    if part("onu_pon_1d", x).exists():
       cleanse_metrics(con, x, cfg, args.force)
+    else:
+      missing.append(x.isoformat())
+  if missing:
+    log(f"warning: not in the lake, skipped: {', '.join(sorted(missing))} (uv run fiber/export.py onu_pon_1d --date ...)")
   odn_date, odn_path = latest_odn(con, d, cfg, args.force)
   log(f"odn snapshot {odn_date}")
 
@@ -135,7 +133,8 @@ def main():
   # Outputs.
   f[ONU_COLUMNS].to_parquet(OUT / f"onu_fiber_score_{ymd(d)}.parquet", index=False)
   for level, g in suspects.items():
-    g.to_csv(OUT / f"suspect_{level}_{ymd(d)}.csv", index=False, float_format="%.4g")
+    # Typed, full precision. People get CSV from the backend's /api/fiber/suspects.csv.
+    g.to_parquet(OUT / f"suspect_{level}_{ymd(d)}.parquet", index=False)
 
   hist = f["score"].value_counts().sort_index()
   report = dq_report(con, dates, f)
