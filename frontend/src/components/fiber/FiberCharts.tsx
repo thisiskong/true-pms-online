@@ -40,8 +40,8 @@ export function ScoreHistogram({ histogram, onPick }: { histogram: Record<string
 }
 
 /** Daily measured Rx against the model's expected Rx (± MAE band) and the sensitivity line. */
-export function RxHistoryChart({ history, expected, mae, sensitivity = -28 }: {
-  history: OnuHistoryDay[]; expected: number | null; mae: number | null; sensitivity?: number;
+export function RxHistoryChart({ history, expected, mae, sensitivity = -28, height = 200 }: {
+  history: OnuHistoryDay[]; expected: number | null; mae: number | null; sensitivity?: number; height?: number;
 }) {
   const rx = history.map((h) => h.rx).filter((v): v is number => v != null);
   const lo = Math.min(sensitivity, ...rx, expected != null ? expected - (mae ?? 0) : 0) - 1.5;
@@ -54,7 +54,7 @@ export function RxHistoryChart({ history, expected, mae, sensitivity = -28 }: {
     ...(expected != null ? [{ yAxis: Number(expected.toFixed(2)), lineStyle: { color: "#059669", type: "dashed" }, label: { formatter: `expected ${expected.toFixed(1)}`, color: "#059669", position: "insideEndBottom" } }] : []),
   ];
   return (
-    <ReactEChartsCore echarts={echarts} theme={CHART_THEME} style={{ height: 200 }} notMerge
+    <ReactEChartsCore echarts={echarts} theme={CHART_THEME} style={{ height }} notMerge
       option={{
         animation: false,
         tooltip: {

@@ -20,6 +20,7 @@ const InterfacesPage = lazy(() => import("./pages/InterfacesPage").then((m) => (
 const BoardsPage = lazy(() => import("./pages/BoardsPage").then((m) => ({ default: m.BoardsPage })));
 const AccessPage = lazy(() => import("./pages/AccessPage").then((m) => ({ default: m.AccessPage })));
 const TsdbPage = lazy(() => import("./pages/TsdbPage").then((m) => ({ default: m.TsdbPage })));
+const OnuPage = lazy(() => import("./pages/OnuPage").then((m) => ({ default: m.OnuPage })));
 const DeviceDashboard = lazy(() => import("./pages/DeviceDashboard").then((m) => ({ default: m.DeviceDashboard })));
 
 const queryClient = new QueryClient({
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/devices" replace /> },
       { path: "devices", element: <DeviceListPage /> },
       { path: "devices/:id", element: <Suspense fallback={null}><DeviceDashboard /></Suspense> },
+      { path: "devices/:id/onu", element: <Suspense fallback={null}><OnuPage /></Suspense> },
       { path: "interfaces", element: <Suspense fallback={null}><InterfacesPage /></Suspense> },
       { path: "boards", element: <Suspense fallback={null}><BoardsPage /></Suspense> },
       { path: "fiber", element: <Suspense fallback={null}><FiberPage /></Suspense> },
