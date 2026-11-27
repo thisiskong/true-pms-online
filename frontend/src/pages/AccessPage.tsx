@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api, ApiError } from "../api/client";
 import type { AccessLookup, Ticket } from "../api/types";
 import { DataTable, type Column } from "../components/DataTable";
-import { AttributionBadge, db, Db, ScoreChip } from "../components/fiber/score";
+import { AttributionBadge, db, Db, runLabel, ScoreChip } from "../components/fiber/score";
 import { Button, Card, Empty, ErrorBox, Spinner } from "../components/ui";
 import { useChatCtx } from "../hooks/chatContext";
 import { dash, fmtTime, num } from "../lib/format";
@@ -129,7 +129,7 @@ export function AccessPage() {
             )}>
               {!r.fiber ? <p className="py-4 text-sm text-zinc-600">{r.fiber_note ?? "This ONU is not in the latest fiber-score run."}</p> : (
                 <Rows rows={[
-                  ["Score", <span className="flex items-center gap-2"><ScoreChip score={r.fiber.score} conf={r.fiber.conf} /><span className="text-xs text-zinc-500">run {r.fiber.date} · confidence {r.fiber.conf?.toFixed(2) ?? "—"}</span></span>],
+                  ["Score", <span className="flex items-center gap-2"><ScoreChip score={r.fiber.score} conf={r.fiber.conf} /><span className="text-xs text-zinc-500">run {runLabel(r.fiber.date)} · confidence {r.fiber.conf?.toFixed(2) ?? "—"}</span></span>],
                   ["Likely fault", r.fiber.bad ? <AttributionBadge a={r.fiber.attributed_to} /> : <span className="text-zinc-500">not bad (score &gt; 4)</span>],
                   ["Rx measured", <Dbm v={r.fiber.rx_med} />],
                   ["Rx expected", <Dbm v={r.fiber.expected_rx} />],

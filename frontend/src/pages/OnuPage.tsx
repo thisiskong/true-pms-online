@@ -4,7 +4,7 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fiberApi, type OnuHistoryDay, type OnuScore, type OnuScoreRow } from "../api/fiber";
 import { CapNotes, LikelyLocation, OnuFacts, onuPageUrl, SENSITIVITY, useAskAiOnu, WhyScore } from "../components/fiber/OnuSections";
-import { AttributionBadge, BadShare, BAD_SCORE, db, Db, FiberHelpLink, ScoreChip, scoreTone } from "../components/fiber/score";
+import { AttributionBadge, BadShare, BAD_SCORE, db, Db, FiberHelpLink, runLabel, ScoreChip, scoreTone } from "../components/fiber/score";
 import { Button, Card, cx, Empty, ErrorBox, inputCls, PAGE_CLS, Spinner } from "../components/ui";
 
 const RxHistoryChart = lazy(() => import("../components/fiber/FiberCharts").then((m) => ({ default: m.RxHistoryChart })));
@@ -183,7 +183,7 @@ export function OnuPage() {
             <div className="flex flex-wrap items-center gap-2">
               <label className="flex items-center gap-2 text-xs text-zinc-500">Run
                 <select className={cx(inputCls, "w-auto")} value={d.date} onChange={(e) => pickRun(e.target.value)}>
-                  {(runs.data?.length ? runs.data.map((r) => r.date) : [d.date]).map((v, i) => <option key={v} value={v}>{v}{i === 0 && runs.data?.length ? " (latest)" : ""}</option>)}
+                  {(runs.data?.length ? runs.data : [{ date: d.date, window: d.window }]).map((r, i) => <option key={r.date} value={r.date}>{runLabel(r.date, r.window)}{i === 0 && runs.data?.length ? " (latest)" : ""}</option>)}
                 </select>
               </label>
               <Button onClick={copy} title="Copy a link to this page">{copied ? "Copied ✓" : "Copy link"}</Button>

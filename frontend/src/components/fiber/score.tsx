@@ -97,6 +97,51 @@ export function AttributionBadge({ a }: { a: Attribution | null | undefined }) {
   );
 }
 
+// ---------------------------------------------------------------- run labels
+
+const DAY_MS = 86_400_000;
+const month = (d: Date) => d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+
+/** ISO-8601 week of a UTC date: [week-numbering year, week]. */
+function isoWeek(d: Date): [number, number] {
+  const t = new Date(d.getTime());
+  t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));   // the Thursday of that week decides the year
+  const y = t.getUTCFullYear();
+  return [y, Math.ceil(((t.getTime() - Date.UTC(y, 0, 1)) / DAY_MS + 1) / 7)];
+}
+
+/** "16–22 Nov", "30 Nov – 6 Dec", "28 Dec 2026 – 3 Jan 2027". */
+function dayRange(a: Date, b: Date): string {
+  if (a.getUTCFullYear() !== b.getUTCFullYear()) return `${a.getUTCDate()} ${month(a)} ${a.getUTCFullYear()} – ${b.getUTCDate()} ${month(b)} ${b.getUTCFullYear()}`;
+  if (a.getUTCMonth() !== b.getUTCMonth()) return `${a.getUTCDate()} ${month(a)} – ${b.getUTCDate()} ${month(b)}`;
+  return `${a.getUTCDate()}–${b.getUTCDate()} ${month(b)}`;
+}
+
+/**
+ * Week of a fiber-score run. Runs are weekly, Monday–Sunday, dated by the Sunday (fiber/run.py --date <Sunday>).
+ * `week` is null when the run is not a 7-day window ending on a Sunday (ad-hoc runs).
+ */
+export function runWeek(date: string, window = 7): { week: string | null; range: string } {
+  const end = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(end.getTime())) return { week: null, range: date };
+  const start = new Date(end.getTime() - (window - 1) * DAY_MS);
+  if (window !== 7 || end.getUTCDay() !== 0) return { week: null, range: dayRange(start, end) };
+  const [y, w] = isoWeek(end);
+  return { week: `${y}-W${String(w).padStart(2, "0")}`, range: dayRange(start, end) };
+}
+
+/** "2026-W47 · 16–22 Nov"; ad-hoc runs: "17–23 Nov". */
+export function runLabel(date: string, window = 7): string {
+  const { week, range } = runWeek(date, window);
+  return week ? `${week} · ${range}` : range;
+}
+
+/** Compact form for tight spots: "W47", or the date of an ad-hoc run. */
+export function runShort(date: string, window = 7): string {
+  const { week } = runWeek(date, window);
+  return week ? week.slice(5) : date;
+}
+
 export const FIBER_HELP_URL = "/help/fiber-score.html";
 
 export function FiberHelpLink({ className }: { className?: string }) {

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fiberApi } from "../../api/fiber";
 import { Button, cx, ErrorBox, Spinner } from "../ui";
 import { CapNotes, LikelyLocation, OnuFacts, onuPageUrl, SENSITIVITY, useAskAiOnu, WhyScore } from "./OnuSections";
-import { db, ScoreChip, scoreTone } from "./score";
+import { db, runLabel, ScoreChip, scoreTone } from "./score";
 
 const RxHistoryChart = lazy(() => import("./FiberCharts").then((m) => ({ default: m.RxHistoryChart })));
 
@@ -29,7 +29,7 @@ export function OnuDrawer({ deviceId, deviceName, ponport, ontid, date, onClose 
       <aside role="dialog" aria-label={`ONU ${ponport}:${ontid}`} className="flex h-full w-full flex-col border-l border-zinc-200 bg-white shadow-xl sm:w-[520px]">
         <header className="flex items-start justify-between gap-3 border-b border-zinc-100 px-5 py-3">
           <div className="min-w-0">
-            <div className="text-xs text-zinc-500">ONU fiber score{d && ` · run ${d.date}`}</div>
+            <div className="text-xs text-zinc-500">ONU fiber score{d && ` · ${runLabel(d.date, d.window)}`}</div>
             <h2 className="truncate font-mono text-sm font-semibold text-zinc-900">{deviceName} · {ponport} : {ontid}</h2>
           </div>
           <div className="flex shrink-0 items-center gap-1">

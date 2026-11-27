@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { OnuDetail, OnuScore } from "../../api/fiber";
 import { useChatCtx } from "../../hooks/chatContext";
 import { cx } from "../ui";
-import { AttributionBadge, db, Db, HW_READINGS } from "./score";
+import { AttributionBadge, db, Db, HW_READINGS, runLabel } from "./score";
 
 // Mirrors ml/fiber/ranges.yaml (score.weights, score.caps, min_days_for_trend).
 const WEIGHTS = { power: 0.4, excess: 0.25, error: 0.2, stability: 0.15 };
@@ -151,7 +151,7 @@ export function useAskAiOnu(deviceId: number, deviceName: string | null) {
     chat.setDevice({ id: deviceId, name: deviceName });
     chat.setDrawerOpen(true);
     chat.send(
-      `Explain the fiber score of ONU ${o.device} (device_id ${deviceId}) PON ${o.ponport} ONT ${o.ontid}, run ${d.date} ` +
+      `Explain the fiber score of ONU ${o.device} (device_id ${deviceId}) PON ${o.ponport} ONT ${o.ontid}, run ${d.date} (${runLabel(d.date, d.window)}) ` +
       `(score ${o.score}/10). Compare it with its L2 siblings, then say the likely cause and what the field team should check first.`,
       deviceId,
     );

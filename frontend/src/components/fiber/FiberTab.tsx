@@ -6,7 +6,7 @@ import { num } from "../../lib/format";
 import { DataTable, type Column } from "../DataTable";
 import { Card, cx, Empty, ErrorBox, Pagination, Spinner } from "../ui";
 import { OnuDrawer } from "./OnuDrawer";
-import { AttributionBadge, BadShare, BAD_SCORE, Db, FiberHelpLink, ScoreChip } from "./score";
+import { AttributionBadge, BadShare, BAD_SCORE, Db, FiberHelpLink, runLabel, ScoreChip } from "./score";
 
 type Sel = { ponport: string; l1name: string | null; l2name?: string | null } | null;
 
@@ -142,7 +142,7 @@ export function FiberTab({ deviceId, deviceName }: { deviceId: number; deviceNam
   if (tree.error) return <ErrorBox error={tree.error} />;
   if (tree.isLoading) return <div className="flex justify-center p-8"><Spinner /></div>;
   const t = tree.data!;
-  if (!t.n_onu) return <Card><Empty>No fiber scores for this OLT in run {t.date}.</Empty></Card>;
+  if (!t.n_onu) return <Card><Empty>No fiber scores for this OLT in run {runLabel(t.date)}.</Empty></Card>;
 
   const selLabel = !sel ? (onlyBad ? `Bad ONUs on ${t.device}` : `All ONUs on ${t.device}`) : sel.l2name !== undefined ? `L2 ${sel.l2name ?? "(none)"} on PON ${sel.ponport}` : `PON ${sel.ponport} · L1 ${sel.l1name ?? "—"}`;
 
@@ -184,7 +184,7 @@ export function FiberTab({ deviceId, deviceName }: { deviceId: number; deviceNam
               <input type="checkbox" checked={onlyBad} onChange={(e) => { setOnlyBad(e.target.checked); setPage(1); }} /> Only bad
             </label>
           </div>} bodyClass="px-3 pb-3 pt-1">
-          <p className="mb-2 px-2 text-[11px] text-zinc-400">PON (L1) → L2. Bar = share of ONUs scored ≤ {BAD_SCORE}. ⚠ = on a suspect list. Run {t.date}.</p>
+          <p className="mb-2 px-2 text-[11px] text-zinc-400">PON (L1) → L2. Bar = share of ONUs scored ≤ {BAD_SCORE}. ⚠ = on a suspect list. Run {runLabel(t.date)}.</p>
           <div className="max-h-[640px] overflow-y-auto">
             {ports.length ? <Tree ports={ports} sel={sel} onSel={onSel} expanded={expanded} toggle={toggle} /> : <Empty>No bad ONUs on this OLT</Empty>}
           </div>

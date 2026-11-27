@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { api } from "../../api/client";
 import { fiberApi, type Attribution, type OnuScoreRow } from "../../api/fiber";
-import { AttributionBadge, BAD_SCORE, Db, ScoreChip } from "../fiber/score";
+import { AttributionBadge, BAD_SCORE, Db, runLabel, runShort, ScoreChip } from "../fiber/score";
 import type { Onu, PonPort } from "../../api/types";
 import { fmtTime, num } from "../../lib/format";
 import { DataTable, type Column } from "../DataTable";
@@ -246,7 +246,7 @@ function PonPortModal({ deviceId, port, onClose }: { deviceId: number; port: Pon
           <span className="font-mono text-xs">{first?.l1name ?? port.l1sp ?? "—"}</span>
           <span className="text-zinc-500">{first?.l1ratio ? ` · 1:${first.l1ratio}` : ""}{first?.l1len != null ? ` · ${(first.l1len / 1000).toFixed(1)} km` : ""}</span>
         </Stat>
-        <Stat label={`Fiber score${scores.data ? ` · run ${scores.data.date}` : ""}`} hint={`Bad = score ${BAD_SCORE} or below. Daily batch, not live.`}>
+        <Stat label={`Fiber score${scores.data ? ` · ${runShort(scores.data.date)}` : ""}`} hint={`Bad = score ${BAD_SCORE} or below. Daily batch, not live.`}>
           {scores.isLoading ? <Spinner /> : !scored.length ? <span className="text-zinc-400">Not scored</span> : (
             <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className={cx("font-semibold tabular-nums", bad ? "text-red-600" : "text-zinc-900")}>{bad} bad</span>
@@ -323,7 +323,7 @@ function FiberCard({ data, loading }: { data: FiberPorts | undefined; loading: b
     <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm"
       title={`ONUs scored ${BAD_SCORE} or below count as bad. Scores come from the daily fiber-score batch, not live data.`}>
       <div className="flex items-center justify-between gap-2 text-xs text-zinc-500">
-        <span>Fiber score{data ? <span className="text-zinc-400"> · run {data.date}</span> : null}</span>
+        <span>Fiber score{data ? <span className="text-zinc-400" title={runLabel(data.date)}> · {runShort(data.date)}</span> : null}</span>
         {scored > 0 && <Link to="?tab=fiber" className="font-medium text-zinc-500 hover:text-zinc-900">Details →</Link>}
       </div>
       {loading ? (
@@ -377,7 +377,7 @@ export function PonPortPanel({ deviceId }: { deviceId: number }) {
         const x = r.ponport ? f[r.ponport] : undefined;
         if (!x) return <span className="text-zinc-300">—</span>;
         return (
-          <span className="inline-flex items-center gap-1.5" title={`Worst ONU score ${x.min_score ?? "—"} · ${x.n_bad} of ${x.n_onu} ONUs scored ${BAD_SCORE} or below (run ${fiber.data!.date})`}>
+          <span className="inline-flex items-center gap-1.5" title={`Worst ONU score ${x.min_score ?? "—"} · ${x.n_bad} of ${x.n_onu} ONUs scored ${BAD_SCORE} or below (run ${runLabel(fiber.data!.date)})`}>
             <ScoreChip score={x.min_score} />
             <span className={cx("text-xs tabular-nums", x.n_bad ? "text-red-600" : "text-zinc-400")}>{x.n_bad ? `${x.n_bad} bad` : "ok"}</span>
           </span>

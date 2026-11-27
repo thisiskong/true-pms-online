@@ -6,7 +6,7 @@ import { fiberApi, type Attribution, type FacetValue, type FiberSummary, type Le
 import { BadOnuList } from "../components/fiber/BadOnuList";
 import { DataTable, type Column } from "../components/DataTable";
 import { ScoreHistogram } from "../components/fiber/FiberCharts";
-import { ATTRIBUTION, ATTRIBUTION_ORDER, BadShare, BAD_SCORE, Db, FiberHelpLink, LEVEL_LABEL } from "../components/fiber/score";
+import { ATTRIBUTION, ATTRIBUTION_ORDER, BadShare, BAD_SCORE, Db, FiberHelpLink, LEVEL_LABEL, runLabel, runShort } from "../components/fiber/score";
 import { Badge, Button, Card, cx, ErrorBox, Field, inputCls, Pagination, Spinner, PAGE_CLS } from "../components/ui";
 import { num } from "../lib/format";
 
@@ -90,7 +90,7 @@ function Kpi({ label, value, sub, delta, tone, title }: { label: string; value: 
 function KpiStrip({ s }: { s: FiberSummary }) {
   const p = s.prev;
   const mae = s.model.holdout_mae_db;
-  const vs = p ? `vs ${p.date}${p.days < s.window ? ` (${p.days}-day run)` : ""}` : undefined;
+  const vs = p ? `vs ${runShort(p.date, p.window)}${p.days < s.window ? ` (${p.days}-day run)` : ""}` : undefined;
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       <Kpi label="ONUs scored" value={num(s.onus)} sub={`${s.days.length} of ${s.window} days · mean confidence ${s.mean_conf.toFixed(2)}`} />
@@ -166,7 +166,7 @@ function ModelPanel({ s }: { s: FiberSummary }) {
             <div key={k} className="contents"><dt className="text-zinc-600">{k}</dt><dd className="text-right tabular-nums text-zinc-900">{num(v)}</dd></div>
           ))}
         </dl>
-        <p className="mt-2 text-xs text-zinc-400">Run {s.date} · window {s.days[0]} → {s.days[s.days.length - 1]} · ODN inventory {s.odn_date ?? "—"}.</p>
+        <p className="mt-2 text-xs text-zinc-400">Run {runLabel(s.date, s.window)} (dated {s.date}) · data {s.days[0]} → {s.days[s.days.length - 1]} · ODN inventory {s.odn_date ?? "—"}.</p>
       </div>
     </div>
   );
@@ -261,7 +261,7 @@ export function FiberPage() {
           {s && <Badge tone="slate">{s.window}-day window · confidence {s.mean_conf.toFixed(2)}</Badge>}
           <Field label="Run">
             <select className={cx(inputCls, "w-auto")} value={date ?? s?.date ?? ""} onChange={(e) => update({ date: e.target.value === runs.data?.[0]?.date ? null : e.target.value, page: null })}>
-              {(runs.data ?? []).map((r) => <option key={r.date} value={r.date}>{r.date}{r.days < r.window ? ` (${r.days}-day)` : ""}</option>)}
+              {(runs.data ?? []).map((r) => <option key={r.date} value={r.date}>{runLabel(r.date, r.window)}{r.days < r.window ? ` (${r.days}-day)` : ""}</option>)}
             </select>
           </Field>
         </div>
