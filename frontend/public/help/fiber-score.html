@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the fiber score works · PMS Online</title>
+<!-- Source of truth: ml/fiber/score.py, ml/fiber/attribute.py, ml/fiber/ranges.yaml. Update this page when they change. -->
+<style>
+  :root {
+    --fg: #18181b; --muted: #52525b; --faint: #71717a; --line: #e4e4e7; --bg: #fafafa; --card: #fff;
+    --red: #dc2626; --orange: #f97316; --amber: #f59e0b; --green: #059669;
+    --sans: "Inter Variable", "Inter", "Noto Sans Thai", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono Variable", "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.6 var(--sans); }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 17px; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+  h3 { font-size: 14px; margin: 18px 0 6px; }
+  p { margin: 6px 0; }
+  .lead { color: var(--muted); margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0;
+          box-shadow: 0 1px 2px rgb(0 0 0 / 0.04); }
+  .weight { font-size: 12px; font-weight: 600; color: var(--muted); background: #f4f4f5; border-radius: 999px; padding: 1px 9px; }
+  .q { color: var(--muted); margin-top: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--faint); font-size: 12px; }
+  tr:last-child td { border-bottom: 0; }
+  code { font-family: var(--mono); font-size: 0.86em; background: #f4f4f5; border-radius: 4px; padding: 1px 4px; }
+  .map { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+  .note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--line); padding: 2px 0 2px 10px; margin: 10px 0 0; }
+  .formula { font-family: var(--mono); font-size: 13px; background: #f4f4f5; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .bands { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  .band { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px 2px 4px; }
+  .chip { width: 22px; height: 22px; border-radius: 999px; color: #fff; font-weight: 700; font-size: 11px;
+          display: inline-flex; align-items: center; justify-content: center; }
+  .bar { display: inline-block; height: 8px; border-radius: 4px; background: #a1a1aa; vertical-align: middle; margin-right: 6px; }
+  .tree { font-family: var(--mono); font-size: 12.5px; background: #f4f4f5; border-radius: 8px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+  nav a { color: var(--muted); font-size: 13px; margin-right: 14px; }
+  a { color: #0f766e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #f4f4f5; --muted: #a1a1aa; --faint: #a1a1aa; --line: #3f3f46; --bg: #18181b; --card: #27272a; }
+    code, .formula, .tree, .weight { background: #3f3f46; }
+    a { color: #5eead4; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="/fiber">← Fiber health</a></nav>
+  <h1>How the fiber score works</h1>
+  <p class="lead">
+    Every ONU gets a fiber score from <b>1 (poor)</b> to <b>10 (excellent)</b> from a daily batch over a 7-day window.
+    It is built from four sub-scores, each between 0 and 1, combined with weights and then limited by caps.
+    An ONU is <b>bad</b> at score 4 or below.
+  </p>
+
+  <div class="bands">
+    <span class="band"><span class="chip" style="background:var(--red)">2</span>1–3 Poor</span>
+    <span class="band"><span class="chip" style="background:var(--orange)">4</span>4–5 Weak</span>
+    <span class="band"><span class="chip" style="background:var(--amber)">6</span>6–7 Fair</span>
+    <span class="band"><span class="chip" style="background:var(--green)">9</span>8–10 Good</span>
+  </div>
+
+  <section class="card">
+    <h2>1. Power <span class="weight">40%</span></h2>
+    <p class="q">How strong is the received light?</p>
+    <table>
+      <tr><th>Feature</th><th>Meaning</th></tr>
+      <tr><td><code>rx_med</code></td><td>Median daily Rx (dBm) over the window</td></tr>
+      <tr><td><code>rx_p10</code></td><td>10th-percentile Rx, which catches bad days (needs at least 3 days)</td></tr>
+    </table>
+    <p>Each is mapped to 0–1 and the two are averaged:</p>
+    <table>
+      <tr><th>Rx (dBm)</th><td class="map">−30</td><td class="map">−26</td><td class="map">−22 to −9</td><td class="map">−6</td></tr>
+      <tr><th>Sub-score</th><td class="map">0</td><td class="map">0.5</td><td class="map">1 (healthy)</td><td class="map">0 (overload)</td></tr>
+    </table>
+    <p class="note">These limits do not depend on fiber distance, on purpose: the ONU receiver needs at least −28 dBm however long the link is.
+      So long links naturally score lower on power even when nothing is broken. The excess-loss part (below) is what separates
+      “far away” from “faulty”.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Excess loss <span class="weight">25%</span></h2>
+    <p class="q">How much worse is the ONU than it should be for its fiber path?</p>
+    <div class="formula">excess_loss = expected_rx − rx_med &nbsp;(dB)</div>
+    <table>
+      <tr><th>Excess loss (dB)</th><td class="map">≤ 1</td><td class="map">3</td><td class="map">≥ 6</td></tr>
+      <tr><th>Sub-score</th><td class="map">1</td><td class="map">0.5</td><td class="map">0</td></tr>
+    </table>
+    <h3>Where <code>expected_rx</code> comes from</h3>
+    <p>A LightGBM regression model trained on the inventory. These features feed the score only through this model.
+      Share of importance from the 2026-11-23 model:</p>
+    <table>
+      <tr><th>Feature</th><th>Meaning</th><th>Importance</th></tr>
+      <tr><td><code>moduleclass</code></td><td>Optic class</td><td><span class="bar" style="width:76px"></span>25%</td></tr>
+      <tr><td><code>model</code></td><td>ONU / OLT model</td><td><span class="bar" style="width:73px"></span>24%</td></tr>
+      <tr><td><code>len_km</code></td><td>Fiber path length</td><td><span class="bar" style="width:70px"></span>23%</td></tr>
+      <tr><td><code>split_db</code></td><td>Splitter loss from the split ratio</td><td><span class="bar" style="width:46px"></span>15%</td></tr>
+      <tr><td><code>l1ratio</code></td><td>L1 split ratio</td><td><span class="bar" style="width:18px"></span>6%</td></tr>
+      <tr><td><code>l2ratio</code></td><td>L2 split ratio</td><td><span class="bar" style="width:11px"></span>4%</td></tr>
+      <tr><td><code>vendor</code></td><td>Vendor</td><td><span class="bar" style="width:6px"></span>2%</td></tr>
+    </table>
+    <p class="note">The model's typical error is about ±1.9 dB, so an excess loss inside that band is noise rather than a fault.</p>
+
+    <h3 id="distance">How fiber distance is taken into account</h3>
+    <p>A long link is <i>expected</i> to be weaker, so only the loss beyond that counts against the ONU.
+      Measured on 2.7M clean ONUs (2026-11-23 run), Rx drops by about <b>0.3–0.4 dB per km</b>,
+      in line with the textbook 0.25–0.35 dB/km for 1490 nm downstream plus splices:</p>
+    <table>
+      <tr><th>Split</th><th>Optic</th><th>ONUs</th><th>Rx loss per km</th><th>Rx at 0 km</th></tr>
+      <tr><td>1:64</td><td>B+</td><td class="map">452K</td><td class="map">0.33 dB/km</td><td class="map">−20.6 dBm</td></tr>
+      <tr><td>1:32</td><td>B+</td><td class="map">349K</td><td class="map">0.34 dB/km</td><td class="map">−18.8 dBm</td></tr>
+      <tr><td>1:28</td><td>B+</td><td class="map">202K</td><td class="map">0.42 dB/km</td><td class="map">−18.0 dBm</td></tr>
+      <tr><td>1:64</td><td>C+</td><td class="map">159K</td><td class="map">0.52 dB/km</td><td class="map">−17.4 dBm</td></tr>
+    </table>
+    <ul>
+      <li><b>The splitter, not the distance, uses most of the budget.</b> A 1:64 split costs about 18–21 dB; 20 km of fiber adds only about 6–7 dB.
+        Length explains only about 5% of the spread in Rx: connectors, splices and optic class vary much more.</li>
+      <li><b>The length comes from inventory</b> (<code>len_km = (l1len + l2len) / 1000</code>), not from the OLT's measured <code>ranging</code>.
+        For about 6.5% of ONUs the two differ by more than 2 km (<code>range_mismatch</code>), and their expected Rx is less reliable.
+        The inventory length may not include the drop cable.</li>
+      <li>ONUs with <b>no ODN inventory row</b> have no length, so the excess sub-score is missing and its weight is shared out among the others.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>3. Errors <span class="weight">20%</span></h2>
+    <p class="q">Are there line errors on the fiber link? The worse of the two signals counts.</p>
+    <table>
+      <tr><th>Feature</th><th>Meaning</th><th>Mapping to sub-score</th></tr>
+      <tr><td><code>bip_log_mean</code></td><td>Mean of log10(1 + BIP-in errors per day)</td><td class="map">0 → 1 · 3 → 0.5 · ≥ 5 → 0</td></tr>
+      <tr><td><code>bip_days / bip_obs</code></td><td>Share of observed days with any error (needs at least 3 days)</td><td class="map">0 → 1 · 15% → 0.5 · 100% → 0</td></tr>
+    </table>
+    <p class="note">GCOM and Raisecom ONUs report no BIP counters, so this sub-score is missing for them and its weight is shared out among the other three.</p>
+  </section>
+
+  <section class="card">
+    <h2>4. Stability <span class="weight">15%</span></h2>
+    <p class="q">Is the signal steady, or getting worse? The worst of the three signals counts.</p>
+    <table>
+      <tr><th>Feature</th><th>Meaning</th><th>Mapping to sub-score</th></tr>
+      <tr><td><code>rx_sd</code></td><td>Day-to-day Rx standard deviation</td><td class="map">≤ 0.5 dB → 1 · 1.5 → 0.5 · ≥ 3 → 0</td></tr>
+      <tr><td><code>rx_slope</code></td><td>Rx trend (dB per day)</td><td class="map">≥ −0.05 → 1 · ≤ −0.3 → 0 (fading)</td></tr>
+      <tr><td><code>lc_mean</code></td><td>RADIUS sessions ended with cause <i>Lost-Carrier</i>, per day</td><td class="map">≤ 1 → 1 · 5 → 0.3 · ≥ 20 → 0</td></tr>
+    </table>
+    <p class="note">Lost-carrier is the only RADIUS input to the score. It is a weak fiber signal: 35% of ONUs have at least one event in a week,
+      mostly the customer switching the ONU off. That is why it only counts at 5 or more events a day and is one of three stability inputs.</p>
+  </section>
+
+  <section class="card">
+    <h2>Putting it together</h2>
+    <div class="formula">score = round(1 + 9 × weighted average of the sub-scores that exist)</div>
+    <h3>Caps (applied after the weighted score)</h3>
+    <table>
+      <tr><th>Condition</th><th>Maximum score</th></tr>
+      <tr><td><code>rx_med</code> below −28 dBm (receiver sensitivity)</td><td>3</td></tr>
+      <tr><td><code>rx_med</code> below −30 dBm</td><td>1</td></tr>
+      <tr><td>BIP errors on every observed day (at least 3 days observed)</td><td>5</td></tr>
+    </table>
+    <p class="note">A cap is why an ONU can show a low score even when its other sub-scores look fine. The ONU drawer lists the cap that applied.</p>
+    <h3>Confidence</h3>
+    <div class="formula">conf = (share of the total weight that had data) × (share of the window's days observed)</div>
+    <p>Confidence is not part of the score. A score with confidence below 0.5 is shown as a hollow chip: treat it with care.</p>
+  </section>
+
+  <section class="card">
+    <h2>Not part of the score</h2>
+    <p>These are computed for every ONU but only used to decide <i>where</i> a fault is and as notes in the explanation:</p>
+    <ul>
+      <li><code>peer_delta_l2</code>, <code>peer_delta_l1</code>: the ONU's Rx compared with its siblings on the same L2 / L1</li>
+      <li><code>hw_flag</code>: ONU Tx, voltage, temperature or current out of range (likely the ONU, not the fiber)</li>
+      <li><code>range_mismatch</code>, <code>dq_no_odn</code>, <code>dq_topo_mismatch</code>, <code>dq_l2_multi_device</code>: inventory and data-quality flags</li>
+    </ul>
+
+    <h3 id="radius">Other RADIUS terminate causes (not used)</h3>
+    <p>Session counts and the other RADIUS terminate causes are not used by the score or the expected-Rx model:</p>
+    <table>
+      <tr><th>Cause</th><th>Why it is not used</th></tr>
+      <tr><td><code>radius_porterror</code></td><td>Checked against 3 days of data (2026-11-17 to 11-19): no relation to Rx (correlation 0.00) or BIP errors (0.004).
+        It comes in bursts: on 11-19, 63% of port errors came from 20 OLTs, and no ONU had errors on all 3 days.
+        This looks like an OLT/BRAS-side event that drops many sessions at once, not a fiber fault on one ONU.</td></tr>
+      <tr><td><code>radius_adminreset</code>, <code>radius_nasrequest</code></td><td>Operations or BRAS-side actions</td></tr>
+      <tr><td><code>radius_idletimeout</code>, <code>radius_sesstimeout</code>, <code>radius_userrequest</code></td><td>Normal session behaviour</td></tr>
+    </table>
+  </section>
+
+  <section class="card" id="suspects">
+    <h2>Suspect segments and “likely location”</h2>
+    <div class="tree">OLT ── PON port ── L1 splitter (feeder) ── L2 splitter ── drop cable ── ONU
+                    “L1” in the UI            “L2” in the UI</div>
+    <p>A <b>suspect segment</b> is a shared part of the fiber tree where bad ONUs cluster more than chance explains,
+      which points to one fault there rather than separate problems at each home.</p>
+    <h3>Suspect L2 segment: all three must hold</h3>
+    <ul>
+      <li>At least <b>2 bad ONUs</b></li>
+      <li><b>p-value ≤ 0.01</b> against the network-wide bad rate (about 1.2%)</li>
+      <li>Either <b>at least half</b> its ONUs are bad, or its median Rx is <b>at least 3 dB worse</b> than the other L2s on the same L1</li>
+    </ul>
+    <p>L2 names that appear on more than one OLT are skipped as an inventory error.</p>
+    <h3>Likely location of each bad ONU</h3>
+    <p>Each bad ONU is assigned to the highest level that explains it, so it is counted once:</p>
+    <table>
+      <tr><th>Likely location</th><th>Pattern</th></tr>
+      <tr><td>OLT</td><td>Most PONs on the OLT are bad: optics batch, configuration, or site power/temperature</td></tr>
+      <tr><td>L1 / PON</td><td>One PON is bad, its sibling PONs are fine, and the bad ONUs are spread over its L2s. May be the OLT PON optic, since L1 maps 1:1 to the PON port</td></tr>
+      <tr><td>L2 segment</td><td>The ONU's L2 is a suspect: L2 splitter or distribution fiber</td></tr>
+      <tr><td>ONU hardware</td><td>Isolated bad ONU with <code>hw_flag</code> set</td></tr>
+      <tr><td>Drop / connector</td><td>Isolated bad ONU whose siblings are healthy</td></tr>
+    </table>
+    <h3>Impact (how suspects are ranked)</h3>
+    <div class="formula">impact = bad ONUs attributed × (1 + median excess loss of the bad ONUs, dB)</div>
+    <p>Higher impact means one repair is likely to fix more customers.</p>
+  </section>
+
+  <p class="note">Scores come from a daily batch, not live data. Every page shows the run date it is based on.</p>
+</main>
+</body>
+</html>

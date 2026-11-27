@@ -1,3 +1,0 @@
-# Real prod credentials — never commit. Copy from the .example template and
-# apply manually via `kubectl create secret`. See README.md.
-overlays/prd/secret-pmsonline-credentials.yaml

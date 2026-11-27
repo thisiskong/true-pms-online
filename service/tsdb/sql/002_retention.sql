@@ -1,0 +1,12 @@
+-- Per-metric retention for tsdb.points (see ../DESIGN.md "Retention per metric").
+-- MODIFY TTL replaces the whole rule list: keep every rule here, and edit this file to change retention.
+-- A row is deleted when ANY matching rule expires, so a metric kept LONGER than the default
+-- must be excluded from the default rule with NOT IN.
+--
+-- Template (no per-metric rules are set yet; the table uses the 400-day default from 001_schema.sql):
+--
+-- ALTER TABLE tsdb.points MODIFY TTL
+--     toDateTime(ts) + INTERVAL 90  DAY DELETE WHERE metric IN ('in_err'),
+--     toDateTime(ts) + INTERVAL 730 DAY DELETE WHERE metric IN ('in_bw', 'out_bw'),
+--     toDateTime(ts) + INTERVAL 400 DAY DELETE WHERE metric NOT IN ('in_bw', 'out_bw')
+-- SETTINGS materialize_ttl_after_modify = 0;

@@ -1,0 +1,104 @@
+# Fiber score configuration: every threshold lives here, not in code.
+# Rationale for each number: ml/fiber_score_design.md (sections 1-2).
+
+# --- Stage 1: cleansing -----------------------------------------------------
+
+# "Not reported" placeholder values. Matching values become null.
+sentinels:
+  rx_at_or_below: -50        # e.g. -255
+  tx_at_or_below: -39        # -40
+  current_below: 0           # ~ -1
+  temp_neg_band: [-2, 0]     # ~ -1.2, only when current is also negative
+
+# Values below this voltage are stored /1000 (3.2 V reported as 0.0032), so multiply by 1000.
+voltage_unit_fix_below: 1.0
+
+# Valid range: outside it the value is a sensor or collection error and becomes null.
+valid:
+  rx:          [-40, 0]
+  tx:          [-10, 10]
+  voltage:     [2.5, 4.0]
+  temp:        [-40, 110]
+  current:     [0, 100]
+  bip_in:      [0, 1.0e12]   # above = uint64 counter wrap
+  bip_out:     [0, 1.0e12]
+  ranging:     [0, 60000]
+  lostcarrier: [0, 1000]
+  l1len:       [0, 40000]
+  l2len:       [0, 40000]
+  splitratio:  [2, 128]
+
+# ONU hardware problem (not fiber): any of these outside its range sets hw_flag.
+hw_ok:
+  tx:      [0.5, 7]
+  voltage: [3.0, 3.6]
+  temp:    [-40, 80]
+  current: [0, 60]
+hw_flag_min_share: 0.5       # flag the ONU when at least this share of observed days is flagged
+
+# --- Stages 2-3: features ---------------------------------------------------
+
+rx_sensitivity: -28          # dBm; GPON B+ knee, confirmed by the BIP error curve
+rx_overload: -9              # dBm
+min_days_for_trend: 3        # rx_sd / rx_slope / bip frequency need at least this many days
+range_mismatch_m: 2000       # |ranging - (l1len + l2len)| above this is an inventory flag
+
+# --- Stage 4: expected-loss model ------------------------------------------
+
+model:
+  categorical: [moduleclass, vendor, model]
+  numeric: [split_db, len_km, l1ratio, l2ratio]
+  holdout_share: 0.2         # held out by PON port, not by row
+  max_age_days: 7            # reuse a saved model up to this age; older -> retrain
+  max_mae_drift_db: 0.3      # warn when today's holdout MAE exceeds training MAE by this much
+  params:
+    objective: huber
+    alpha: 2.0               # Huber delta in dB
+    learning_rate: 0.05
+    num_leaves: 63
+    min_data_in_leaf: 200
+    feature_fraction: 0.9
+    bagging_fraction: 0.8
+    bagging_freq: 1
+    metric: l1
+    verbose: -1
+  num_boost_round: 2000
+  early_stopping_rounds: 50
+
+# --- Stage 5: score ---------------------------------------------------------
+# Piecewise-linear maps as [x, sub-score] points; values outside the points are clamped.
+
+score:
+  weights: {power: 0.40, excess: 0.25, error: 0.20, stability: 0.15}
+  power:      [[-30, 0.0], [-26, 0.5], [-22, 1.0], [-9, 1.0], [-6, 0.0]]   # rx dBm
+  excess:     [[1, 1.0], [3, 0.5], [6, 0.0]]                                # excess loss dB
+  error_mag:  [[0, 1.0], [1, 0.8], [3, 0.5], [5, 0.0]]                      # mean log10(1 + in_biperr/day)
+  error_freq: [[0, 1.0], [0.15, 0.5], [1, 0.0]]                             # share of days with errors
+  rx_sd:      [[0.5, 1.0], [1.5, 0.5], [3, 0.0]]                            # dB
+  rx_slope:   [[-0.3, 0.0], [-0.05, 1.0]]                                   # dB/day
+  lostcarrier: [[1, 1.0], [5, 0.3], [20, 0.0]]                              # mean events/day
+  caps:
+    - {rx_below: -28, max_score: 3}
+    - {rx_below: -30, max_score: 1}
+  bip_every_day_max_score: 5
+
+# --- Stage 6: attribution ---------------------------------------------------
+
+attribution:
+  bad_score: 4               # ONU is "bad" at or below this score
+  shrink_alpha: 10           # beta-binomial prior strength (pseudo-ONUs at the global bad rate)
+  l2:
+    min_bad: 2
+    max_p: 0.01
+    min_bad_share: 0.5       # ...or med_peer_delta at or below the next value
+    max_peer_delta: -3.0
+  l1:
+    min_onu: 5
+    min_bad: 3
+    max_p: 0.001
+    min_shrunk_rate: 0.2
+    min_bad_l2: 2            # bad ONUs must be spread over at least this many L2s (unless the L1 has one L2)
+  device:
+    min_l1: 3
+    min_suspect_l1_share: 0.5
+    max_p: 0.001

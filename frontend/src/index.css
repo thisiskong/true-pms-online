@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", "Noto Sans Thai", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  /* Primary = near-black (shadcn/ui neutral, as in assistant-ui). */
+  --color-brand-50: #f4f4f5;
+  --color-brand-100: #e4e4e7;
+  --color-brand-500: #a1a1aa;
+  --color-brand-600: #3f3f46;
+  --color-brand-700: #18181b;
+  --color-brand-800: #3f3f46;
+  --radius-xl: 0.75rem;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-white text-zinc-900 antialiased;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Markdown inside chat answers */
+.prose-chat { line-height: 1.7; }
+.prose-chat > * + * { margin-top: 0.75em; }
+.prose-chat ul { list-style: disc; padding-left: 1.25rem; }
+.prose-chat ol { list-style: decimal; padding-left: 1.25rem; }
+.prose-chat li + li { margin-top: 0.2em; }
+.prose-chat strong { font-weight: 600; color: var(--color-zinc-900); }
+.prose-chat code { @apply rounded bg-zinc-100 px-1 py-0.5 font-mono text-[0.85em]; }
+.prose-chat pre { @apply overflow-x-auto rounded-xl bg-zinc-950 p-4 text-zinc-100; }
+.prose-chat pre code { @apply bg-transparent p-0 text-inherit; }
+.prose-chat table { @apply w-full border-collapse overflow-hidden rounded-lg text-sm; }
+.prose-chat th { @apply border-b border-zinc-200 bg-zinc-50 px-3 py-1.5 text-left font-medium text-zinc-600; }
+.prose-chat td { @apply border-b border-zinc-100 px-3 py-1.5; }
+.prose-chat a { @apply font-medium text-zinc-900 underline underline-offset-4; }
+.prose-chat h1, .prose-chat h2, .prose-chat h3 { @apply font-semibold text-zinc-900; }

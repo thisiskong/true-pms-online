@@ -1,0 +1,58 @@
+name: pms-infra
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.8.36.3
+    container_name: clickhouse
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: ${CH_DB:?set CH_DB in .env}
+      CLICKHOUSE_USER: ${CH_USER:?set CH_USER in .env}
+      CLICKHOUSE_PASSWORD: ${CH_PASSWORD:?set CH_PASSWORD in .env}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    ports:
+      - "127.0.0.1:${CH_HTTP_PORT:-18123}:8123"   # HTTP + /play SQL console
+      - "127.0.0.1:${CH_TCP_PORT:-19000}:9000"    # native protocol
+    volumes:
+      - ch-data:/var/lib/clickhouse
+      - ch-logs:/var/log/clickhouse-server
+      # mount the file, not the dir: config.d already holds the image's docker_related_config.xml (listen_host)
+      - ./clickhouse/config.d/dev.xml:/etc/clickhouse-server/config.d/dev.xml:ro
+      - ./clickhouse/initdb:/docker-entrypoint-initdb.d:ro
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --user \"$$CLICKHOUSE_USER\" --password \"$$CLICKHOUSE_PASSWORD\" -q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+  postgres:
+    image: postgres:18.6
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PG_DB:?set PG_DB in .env}
+      POSTGRES_USER: ${PG_USER:?set PG_USER in .env}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?set PG_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${PG_PORT:-15432}:5432"
+    volumes:
+      # Postgres 18 images keep data in /var/lib/postgresql/18/docker, so mount the parent
+      - pg-data:/var/lib/postgresql
+      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+volumes:
+  ch-data:
+  ch-logs:
+  pg-data:

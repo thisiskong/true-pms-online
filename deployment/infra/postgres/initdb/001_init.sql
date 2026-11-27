@@ -1,0 +1,3 @@
+-- Runs once, on first start with an empty data volume, connected to database $PG_DB
+-- (created by POSTGRES_DB). Add schema/role scripts here as 002_*.sql, 003_*.sql, ...
+SELECT 1;

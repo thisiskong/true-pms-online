@@ -1,0 +1,224 @@
+[
+ {
+  "backend": "clickhouse",
+  "ingest": {
+   "points": 20160000,
+   "failed": 0,
+   "seconds": 135.1,
+   "lines_per_s": 149219
+  },
+  "reingest_cycle_s": 1.66,
+  "settle_s": 6.1,
+  "storage": {
+   "points_bytes": 100697581,
+   "points_uncompressed_bytes": 665319451,
+   "all_tables_bytes": 105323747,
+   "bytes_per_point": 4.99
+  },
+  "queries": {
+   "1 series, raw (288 pts)": {
+    "first_ms": 56.3,
+    "median_ms": 37.4,
+    "p95_ms": 48.2,
+    "groups": 1,
+    "points": 288,
+    "digest": "c4c38ab5826a",
+    "digest_3dp": "c4c38ab5826a"
+   },
+   "1 series, 1h-avg": {
+    "first_ms": 39.8,
+    "median_ms": 38.8,
+    "p95_ms": 40.9,
+    "groups": 1,
+    "points": 24,
+    "digest": "67c68df92279",
+    "digest_3dp": "e27651dd79ff"
+   },
+   "1 device, 40 series grouped, 5m-sum": {
+    "first_ms": 71.2,
+    "median_ms": 72.8,
+    "p95_ms": 78.9,
+    "groups": 40,
+    "points": 11520,
+    "digest": "cad1434cbb93",
+    "digest_3dp": "cad1434cbb93"
+   },
+   "1 device total (40 series summed), 1h-sum": {
+    "first_ms": 52.1,
+    "median_ms": 50.6,
+    "p95_ms": 54.7,
+    "groups": 1,
+    "points": 24,
+    "digest": "e9ca8e85a653",
+    "digest_3dp": "e9ca8e85a653"
+   },
+   "1 device, p95 per intf, 1h": {
+    "first_ms": 57.1,
+    "median_ms": 57.3,
+    "p95_ms": 62.2,
+    "groups": 40,
+    "points": 960,
+    "digest": "f56dd63b060e",
+    "digest_3dp": "34853587da11"
+   },
+   "1 device, fill zero (Python agg), 5m-avg": {
+    "first_ms": 74.7,
+    "median_ms": 77.8,
+    "p95_ms": 83.3,
+    "groups": 40,
+    "points": 11520,
+    "digest": "cad1434cbb93",
+    "digest_3dp": "cad1434cbb93"
+   },
+   "10 devices regexp, per device, 1h-max": {
+    "first_ms": 104.5,
+    "median_ms": 89.0,
+    "p95_ms": 97.2,
+    "groups": 10,
+    "points": 240,
+    "digest": "d417a1c0273b",
+    "digest_3dp": "d417a1c0273b"
+   },
+   "whole metric total (10k series), 1h-sum": {
+    "first_ms": 421.5,
+    "median_ms": 281.3,
+    "p95_ms": 321.1,
+    "groups": 1,
+    "points": 24,
+    "digest": "748d61ed969e",
+    "digest_3dp": "344f4f664995"
+   },
+   "whole metric, every series (none), 1d-avg": {
+    "first_ms": 312.9,
+    "median_ms": 363.3,
+    "p95_ms": 392.1,
+    "groups": 10000,
+    "points": 10000,
+    "digest": "253b65a85de1",
+    "digest_3dp": "9fc2f6e2c628"
+   },
+   "whole metric total, raw 5m (no downsample)": {
+    "first_ms": 289.9,
+    "median_ms": 260.8,
+    "p95_ms": 291.4,
+    "groups": 1,
+    "points": 288,
+    "digest": "5086e9582db4",
+    "digest_3dp": "5086e9582db4"
+   }
+  },
+  "concurrent_32_single_series_ms": 377.6,
+  "suggest_tagv_ms": 10.8
+ },
+ {
+  "backend": "postgres",
+  "ingest": {
+   "points": 20160000,
+   "failed": 0,
+   "seconds": 338.5,
+   "lines_per_s": 59557
+  },
+  "reingest_cycle_s": 3.15,
+  "settle_s": 1.4,
+  "storage": {
+   "points_bytes": 2072059904,
+   "points_heap_bytes": 1214349312,
+   "all_tables_bytes": 2110169088,
+   "bytes_per_point": 102.78
+  },
+  "queries": {
+   "1 series, raw (288 pts)": {
+    "first_ms": 39.6,
+    "median_ms": 8.0,
+    "p95_ms": 8.6,
+    "groups": 1,
+    "points": 288,
+    "digest": "c4c38ab5826a",
+    "digest_3dp": "c4c38ab5826a"
+   },
+   "1 series, 1h-avg": {
+    "first_ms": 10.7,
+    "median_ms": 8.6,
+    "p95_ms": 10.9,
+    "groups": 1,
+    "points": 24,
+    "digest": "67c68df92279",
+    "digest_3dp": "fa79772218a2"
+   },
+   "1 device, 40 series grouped, 5m-sum": {
+    "first_ms": 111.8,
+    "median_ms": 56.5,
+    "p95_ms": 67.3,
+    "groups": 40,
+    "points": 11520,
+    "digest": "cad1434cbb93",
+    "digest_3dp": "cad1434cbb93"
+   },
+   "1 device total (40 series summed), 1h-sum": {
+    "first_ms": 32.5,
+    "median_ms": 23.6,
+    "p95_ms": 26.9,
+    "groups": 1,
+    "points": 24,
+    "digest": "e9ca8e85a653",
+    "digest_3dp": "e9ca8e85a653"
+   },
+   "1 device, p95 per intf, 1h": {
+    "first_ms": 36.3,
+    "median_ms": 36.2,
+    "p95_ms": 38.8,
+    "groups": 40,
+    "points": 960,
+    "digest": "f56dd63b060e",
+    "digest_3dp": "53696ff7d484"
+   },
+   "1 device, fill zero (Python agg), 5m-avg": {
+    "first_ms": 64.6,
+    "median_ms": 60.8,
+    "p95_ms": 74.7,
+    "groups": 40,
+    "points": 11520,
+    "digest": "cad1434cbb93",
+    "digest_3dp": "cad1434cbb93"
+   },
+   "10 devices regexp, per device, 1h-max": {
+    "first_ms": 325.8,
+    "median_ms": 355.4,
+    "p95_ms": 378.2,
+    "groups": 10,
+    "points": 240,
+    "digest": "d417a1c0273b",
+    "digest_3dp": "d417a1c0273b"
+   },
+   "whole metric total (10k series), 1h-sum": {
+    "first_ms": 4088.3,
+    "median_ms": 3864.0,
+    "p95_ms": 3904.2,
+    "groups": 1,
+    "points": 24,
+    "digest": "a7ec3e60a05a",
+    "digest_3dp": "344f4f664995"
+   },
+   "whole metric, every series (none), 1d-avg": {
+    "first_ms": 1910.6,
+    "median_ms": 3827.2,
+    "p95_ms": 3960.1,
+    "groups": 10000,
+    "points": 10000,
+    "digest": "e2d5d106ce88",
+    "digest_3dp": "9fc2f6e2c628"
+   },
+   "whole metric total, raw 5m (no downsample)": {
+    "first_ms": 1979.6,
+    "median_ms": 4533.2,
+    "p95_ms": 4636.1,
+    "groups": 1,
+    "points": 288,
+    "digest": "359e13e2c00c",
+    "digest_3dp": "5086e9582db4"
+   }
+  },
+  "concurrent_32_single_series_ms": 2172.8,
+  "suggest_tagv_ms": 4.6
+ }
+]

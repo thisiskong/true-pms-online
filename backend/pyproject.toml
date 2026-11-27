@@ -1,0 +1,25 @@
+[project]
+name = "pms-proto-backend"
+version = "0.1.0"
+description = "PMS Online prototype backend: REST API, Claude chat, MCP server (read-only)"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "asyncpg>=0.30",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4",
+  "cachetools>=5.5",
+  "anthropic>=0.70",
+  "mcp>=1.12",
+  "httpx[socks]>=0.27",
+  "duckdb>=1.1",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "httpx>=0.27"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
