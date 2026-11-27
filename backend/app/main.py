@@ -2,7 +2,7 @@
 
 `app` is a small ASGI dispatcher:
   /mcp        -> MCP Streamable HTTP server (bearer token required)
-  everything  -> FastAPI (REST API, chat SSE, and the built React app if frontend/dist exists)
+  everything  -> FastAPI (REST API, chat SSE, read-only /tsdb proxy, and the built React app if frontend/dist exists)
 """
 import hmac
 import json
@@ -18,7 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from mcp.server.transport_security import TransportSecuritySettings
 
 from app import db
-from app.api import access, board, chat, devices, fiber, interfaces, network, stats
+from app.api import access, board, chat, devices, fiber, interfaces, network, stats, tsdb_proxy
 from app.config import get_settings
 from app.mcp_server.server import mcp
 
@@ -40,6 +40,7 @@ async def lifespan(_: FastAPI):
   await db.open_pool()
   async with mcp.session_manager.run():
     yield
+  await tsdb_proxy.close()
   await db.close_pool()
 
 
@@ -55,6 +56,7 @@ api.include_router(network.router)
 api.include_router(interfaces.router)
 api.include_router(board.router)
 api.include_router(chat.router)
+api.include_router(tsdb_proxy.router)  # before the SPA catch-all below
 
 # Serve the production React build (frontend/dist) when present; SPA fallback to index.html.
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"

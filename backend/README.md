@@ -6,6 +6,7 @@ FastAPI service with three entry points over one read-only data layer:
 |---|---|
 | `/api/*` | REST API for the React app (device list, dashboard, CSV export, fleet stats) |
 | `/api/chat` | Claude chat, one turn per POST, streamed as Server-Sent Events |
+| `/tsdb/api/*` | Read-only proxy to the tsdb service (`TSDB_URL`): `health`, `stats`, `suggest`, `query`. Ingest is not proxied |
 | `/mcp` | MCP server (Streamable HTTP, bearer token) exposing the same tools to Claude Desktop / Claude Code |
 
 Design: [`../docs/architecture.md`](../docs/architecture.md).

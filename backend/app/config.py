@@ -48,6 +48,11 @@ class Settings(BaseSettings):
   ml_lake_dir: str = "../ml/lake"
   ml_duckdb_threads: int = 4
 
+  # tsdb service (service/tsdb), proxied read-only at /tsdb/api/*. The key is sent as X-API-Key, never to the browser.
+  tsdb_url: str = "http://localhost:8080"
+  tsdb_api_key: str = ""
+  tsdb_timeout_s: float = 30.0
+
   @property
   def chat_configured(self) -> bool:
     if self.llm_provider == "openrouter":

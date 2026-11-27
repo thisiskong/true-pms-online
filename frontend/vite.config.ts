@@ -8,8 +8,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": { target: "http://localhost:8000", changeOrigin: true },
-      // tsdb service (service/tsdb): /tsdb/api/... -> http://localhost:8080/api/...
-      "/tsdb": { target: "http://localhost:8080", changeOrigin: true, rewrite: (p) => p.replace(/^\/tsdb/, "") },
+      // tsdb service (service/tsdb) via the backend's read-only proxy, same path as in production.
+      "/tsdb": { target: "http://localhost:8000", changeOrigin: true },
     },
   },
 });

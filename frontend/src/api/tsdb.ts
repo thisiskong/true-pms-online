@@ -1,4 +1,4 @@
-// Client for the tsdb service (service/tsdb), reached through the /tsdb dev proxy.
+// Client for the tsdb service (service/tsdb), reached through the backend's read-only /tsdb proxy.
 import { ApiError, qs, type Params } from "./client";
 
 const BASE = "/tsdb/api";
@@ -60,7 +60,7 @@ export interface TsdbResult {
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, init);
   if (!res.ok) {
-    let msg = res.status === 502 || res.status === 504 ? "tsdb service is not reachable (is it running on :8080?)" : res.statusText;
+    let msg = res.status === 502 || res.status === 504 ? "tsdb service is not reachable (is it running? check TSDB_URL in backend/.env)" : res.statusText;
     try {
       const body = await res.json();
       msg = body?.error?.message ?? (typeof body.detail === "string" ? body.detail : msg);

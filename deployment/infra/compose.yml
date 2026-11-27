@@ -52,6 +52,40 @@ services:
       retries: 6
       start_period: 20s
 
+  # tsdb service (service/tsdb) on the ClickHouse above. tsdb-migrate runs once and exits, then tsdb starts.
+  tsdb-migrate:
+    image: pms/tsdb:dev
+    build: ../../service/tsdb
+    container_name: tsdb-migrate
+    command: ["python", "-m", "tsdb.migrate"]
+    environment: &tsdb-env
+      TSDB_BACKEND: clickhouse
+      CH_URL: http://clickhouse:8123
+      CH_USER: ${CH_USER:?set CH_USER in .env}
+      CH_PASSWORD: ${CH_PASSWORD:?set CH_PASSWORD in .env}
+      CH_DATABASE: ${TSDB_CH_DATABASE:-tsdb}
+      TSDB_API_KEY: ${TSDB_API_KEY:-}
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: "no"
+
+  tsdb:
+    image: pms/tsdb:dev
+    build: ../../service/tsdb
+    container_name: tsdb
+    restart: unless-stopped
+    environment:
+      <<: *tsdb-env
+      TSDB_WORKERS: ${TSDB_WORKERS:-2}
+    ports:
+      - "127.0.0.1:${TSDB_PORT:-8080}:8080"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      tsdb-migrate:
+        condition: service_completed_successfully
+
 volumes:
   ch-data:
   ch-logs:
