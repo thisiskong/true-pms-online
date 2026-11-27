@@ -282,13 +282,20 @@ Open points:
 - GCOM and Raisecom score worse: 4% bad, against 1.2–1.6% for other vendors. They have no BIP counters, and their median Rx is about 1.5 dB lower. Check whether this is real or comes from reweighting the missing sub-score.
 - The model's top inputs are `moduleclass` and OLT `model`, which stand in for OLT launch power. An OLT-side Tx or upstream Rx feature is the most likely way to bring MAE under 1.5 dB.
 
-### Production run (daily)
+### Production run (weekly, Monday–Sunday)
+
+Runs cover one Monday–Sunday week and are dated by its Sunday; the UI labels them as ISO weeks (`2026-W47 · 16–22 Nov`).
+Export daily, score on Monday once Sunday's data is in:
 
 ```
-uv run fiber/export.py onu_pon_1d          # yesterday, Postgres -> lake/onu_pon_1d/date=.../part.parquet
-uv run fiber/export.py odn_onu             # weekly: current inventory -> lake/odn_onu/date=<today>/
-uv run fiber/run.py --date <yesterday>     # reuses models/expected_rx_*.txt up to 7 days old; --retrain to force
+uv run fiber/export.py onu_pon_1d          # daily: yesterday, Postgres -> lake/onu_pon_1d/date=.../part.parquet
+uv run fiber/export.py odn_onu             # weekly (Sunday/Monday): current inventory -> lake/odn_onu/date=<today>/
+uv run fiber/run.py                        # Monday: scores last week (--date defaults to last Sunday)
 ```
+
+`run.py` reuses `models/expected_rx_*.txt` up to 7 days old (`--retrain` to force), so with weekly runs it retrains every other week.
+A `--date` that is not a Sunday is still allowed, as an ad-hoc 7-day window; the UI shows it as a date range without a week label.
+`run.py` refuses a window with days missing from the lake and prints the `export.py --start/--end` command that fills the gap; `--allow-partial` scores it anyway without those days.
 
 Back-fill a range of days, then score it:
 

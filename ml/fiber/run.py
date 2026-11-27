@@ -1,13 +1,17 @@
 """Fiber score pipeline: cleanse -> features -> expected-loss model -> score -> attribution.
 
+Runs are weekly, Monday-Sunday, dated by the Sunday (the UI labels them as ISO weeks, e.g. 2026-W47).
+
 Usage (from ml/):
-  uv run fiber/run.py --date 2026-11-20               # 7-day window ending on that date
-  uv run fiber/run.py --date 2026-11-20 --window 30
-  uv run fiber/run.py --date 2026-11-20 --force       # re-cleanse the window (clean_onu / clean_odn)
-  uv run fiber/run.py --date 2026-11-20 --retrain     # retrain the model (default: reuse one up to 7 days old)
+  uv run fiber/run.py                                 # last complete week: Monday-Sunday ending last Sunday
+  uv run fiber/run.py --date 2026-11-22               # the week ending on that Sunday (other dates: ad-hoc 7-day window)
+  uv run fiber/run.py --date 2026-11-22 --window 30
+  uv run fiber/run.py --date 2026-11-22 --force       # re-cleanse the window (clean_onu / clean_odn)
+  uv run fiber/run.py --date 2026-11-22 --retrain     # retrain the model (default: reuse one up to 7 days old)
 
 Reads  lake/onu_pon_1d/date=*/part.parquet and lake/odn_onu/date=*/part.parquet, written straight from
-       Postgres by fiber/export.py (run that first; a day missing from the lake is skipped with a warning).
+       Postgres by fiber/export.py. Run that first: a window with days missing from the lake is refused
+       (--allow-partial scores it anyway, without those days).
 Writes out/onu_fiber_score_YYYYMMDD.parquet, out/suspect_{device,l1,l2}_YYYYMMDD.parquet,
        out/dq_report_YYYYMMDD.json; models/expected_rx_YYYYMMDD.{txt,json} when it trains
 """
@@ -91,29 +95,48 @@ def dq_report(con, dates, f):
   }
 
 
+def last_sunday(today=None):
+  """The Sunday that ends the last complete Monday-Sunday week. On a Sunday that is the previous Sunday,
+  because the day's data is only exported the next day."""
+  today = today or dt.date.today()
+  return today - dt.timedelta(days=(today.weekday() + 1) % 7 or 7)
+
+
 def main():
   ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-  ap.add_argument("--date", type=dt.date.fromisoformat, default=dt.date.today() - dt.timedelta(days=1))
+  ap.add_argument("--date", type=dt.date.fromisoformat, default=None,
+                  help="last day of the window (default: last Sunday, i.e. the last complete Monday-Sunday week)")
   ap.add_argument("--window", type=int, default=7, help="days in the scoring window (default 7)")
   ap.add_argument("--force", action="store_true", help="re-cleanse lake parquet (clean_onu / clean_odn) even if it exists")
   ap.add_argument("--retrain", action="store_true", help="retrain the expected-Rx model even if a recent one exists")
+  ap.add_argument("--allow-partial", action="store_true",
+                  help="score the window even if some days are missing from the lake (default: refuse)")
   args = ap.parse_args()
-  d, window = args.date, args.window
+  d, window = args.date or last_sunday(), args.window
+  if window == 7 and d.weekday() != 6:
+    log(f"note: {d} is a {d:%A}, so this is an ad-hoc run, not a Monday-Sunday week")
+  log(f"run {d}, window {d - dt.timedelta(days=window - 1)} .. {d}")
   started = time.monotonic()
   cfg = load_cfg()
+  # A run must cover its whole window: check the lake before doing any work.
+  days = [d - dt.timedelta(days=i) for i in range(window - 1, -1, -1)]
+  missing = [x for x in days if not part("onu_pon_1d", x).exists()]
+  if missing:
+    fix = f"uv run fiber/export.py onu_pon_1d --start {missing[0]} --end {missing[-1]}"
+    msg = f"{len(missing)} of {window} day(s) not in the lake: {', '.join(x.isoformat() for x in missing)}"
+    if not args.allow_partial:
+      raise SystemExit(f"refusing to score an incomplete window: {msg}\n"
+                       f"  export them first: {fix}\n"
+                       f"  (or pass --allow-partial to score without them)")
+    log(f"warning: --allow-partial, scoring without {msg}")
+
   con = connect()
   OUT.mkdir(parents=True, exist_ok=True)
 
-  # Stage 1 for every day in the window that fiber/export.py has put in the lake.
-  missing = []
-  for i in range(window):
-    x = d - dt.timedelta(days=i)
-    if part("onu_pon_1d", x).exists():
+  # Stage 1 for every day in the window.
+  for x in days:
+    if x not in missing:
       cleanse_metrics(con, x, cfg, args.force)
-    else:
-      missing.append(x.isoformat())
-  if missing:
-    log(f"warning: not in the lake, skipped: {', '.join(sorted(missing))} (uv run fiber/export.py onu_pon_1d --date ...)")
   odn_date, odn_path = latest_odn(con, d, cfg, args.force)
   log(f"odn snapshot {odn_date}")
 
