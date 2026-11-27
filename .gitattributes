@@ -1,0 +1,20 @@
+# Store and check out text files with LF on every OS; this overrides core.autocrlf.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary: never convert or diff as text.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.pdf    binary
+*.xlsx   binary
+*.zip    binary
+*.gz     binary
+*.exe    binary
+*.parquet binary
+*.bin    binary
